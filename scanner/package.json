@@ -1,0 +1,27 @@
+{
+  "name": "scanner",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node src/runner.js",
+    "dev": "nodemon src/runner.js",
+    "local": "env-cmd .env/local.env nodemon src/runner.js"
+  },
+  "author": "maurizio.lupini@bcx.co.za",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "cron": "^1.7.1",
+    "ping": "^0.2.2",
+    "request": "^2.88.0",
+    "tcp-port-used": "^1.0.1"
+  },
+  "localDependencies": {
+    "env-cmd": "^8.0.2",
+    "nodemon": "^1.18.10"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.10"
+  },
+  "description": "scan ipam endpoint for address status"
+}
