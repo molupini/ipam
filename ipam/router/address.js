@@ -3,7 +3,7 @@ const express = require("express")
 const router = new express.Router()
 const auth = require('../middleware/auth')
 const Address = require("../model/address")
-const { doPingCheck } = require("../../scanner/src/util/check")
+const { doPingCheck } = require("../src/util/check")
 
 // endpoint
 // CRUD
