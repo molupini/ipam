@@ -1,10 +1,3 @@
-FROM mongo:4.0
-
-ENV MONGO_INITDB_ROOT_USERNAME=dbadmin
-ENV MONGO_INITDB_ROOT_PASSWORD=CoffeeTea123
-ENV MONGO_INITDB_DATABASE=ipam
-ENV MONGO_PORT=27017
-ENV APP_MONGO_USER=dbexpress
-ENV APP_MONGO_PASS=CoffeeTea123
+FROM mongo:4.0.9-xenial
 
 COPY ./mongo/seed/*.js ./docker-entrypoint-initdb.d

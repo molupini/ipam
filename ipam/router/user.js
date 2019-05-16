@@ -4,44 +4,57 @@ const User = require("../model/user")
 const auth = require("../middleware/auth")
 const router = new express.Router()
 const valid = require("../src/util/compare")
+const { confirmUser } = require('../email/message')
 
 // CRUD
 // create user
 router.post("/users", async (req, res) => {
     try {
         const user = await new User(req.body)
-        const token = await user.generateAuthToken(1)
+        // TODO moving to user confirmation
+        // const token = await user.generateAuthToken(1)
         await user.save()
-        res.status(201).send({user, token})
+        // res.status(201).send({user, token})
+        res.status(201).send({user})
         // TODO
         // send email confirmation with object id
+        confirmUser(user.emailAddress, user.id)
     } catch (e) {
         res.status(500).send(e)
     }
 })
 
 // get, confirm user 
-// TODO deprecate as you could send the login endpoint rather 
-// router.patch("/users/:id/confirm", async (req, res) => {
-//     try {
-//         const _id = req.params.id
-//         const user = await User.findByIdAndUpdate(_id, {
-//             userConfirmed: true
-//         })
-//         if (!user) {
-//             return res.status(404).send({error: "User Not Found"})
-//         }
-//         res.status(202).send()
-//     } catch (e) {
-//         res.status(500).send(e)
-//     }
-// })
+// 
+router.get("/users/:id/confirm", async (req, res) => {
+    try {
+        const _id = req.params.id
+        const user = await User.findByIdAndUpdate(_id, {
+            userConfirmed: true
+        })
+        if (!user) {
+            return res.status(404).send({error: "User Not Found"})
+        }
+
+        // TODO added from above endpoint 
+        const token = await user.generateAuthToken(30)
+
+        res.status(202).send({
+            "emailAddress": user.emailAddress,
+            "userConfirmed": user.userConfirmed,
+            "token": token
+        })
+
+    } catch (e) {
+        res.status(500).send(e)
+    }
+})
 
 // post, login
 router.post("/users/login", async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.emailAddress, req.body.password)
-        const token = await user.generateAuthToken(14)
+        const token = await user.generateAuthToken(60)
         res.status(200).send({user, token})
     } catch (e) {
         res.status(500).send({

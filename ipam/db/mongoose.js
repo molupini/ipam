@@ -1,6 +1,5 @@
 const mongoose = require("mongoose")
 
-
 const options = {
     useCreateIndex: true,
     useFindAndModify: true,
@@ -16,6 +15,7 @@ const mongooseConnection = () => {
     mongoose.connect(process.env.MONGODB_URL, options).then((result) => {
         console.log('mongodb - connected')
     }).catch((e) => {
+        // console.log(process.env.MONGODB_URL)
         console.log('mongodb - not connected, retry in 5 seconds')
         setTimeout(mongooseConnection, 5000)
     })

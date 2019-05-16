@@ -45,7 +45,7 @@ RUN npm install --only=development
 
 WORKDIR /node/app
 
-COPY ./ipam/. .
+# COPY ./ipam/. .
 
 CMD ["nodemon", "./src/index.js"]
 

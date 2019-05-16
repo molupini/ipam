@@ -10,7 +10,7 @@ const auth = async (req, res, next) => {
     // maintenance 
     // return res.status(503).send({ error: "Currently under maintenance" })
     // logging
-    logging(req, process.env.LOG_USER_REQUEST)
+    // logging(req, process.env.LOG_USER_REQUEST)
 
     try {
         // vaild methods

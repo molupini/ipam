@@ -1,3 +1,4 @@
+// source code from scanner/src/util/check.js
 const ping = require('ping') 
 
 var doPingCheck = async function (ip) {
@@ -13,7 +14,6 @@ var doPingCheck = async function (ip) {
         throw new Error(e)
     }
 }
-
 
 module.exports = {
     doPingCheck
