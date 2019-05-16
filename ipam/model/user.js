@@ -5,6 +5,7 @@ const Filter = require("bad-words")
 const bcryptjs = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const Address = require("../model/address")
+const { accountRest } = require('../email/message')
 
 const userSchema = new mongoose.Schema({
     emailAddress: {
@@ -51,7 +52,16 @@ const userSchema = new mongoose.Schema({
                 throw new Error("Please provide a South African mobile number")
             }
         }
-    }, 
+    },
+    loginFailure :{
+        type: Number,
+        required: true,
+        default: 0
+    },
+    // userLocked :{
+    //     type: Boolean,
+    //     default: false
+    // }, 
     userConfirmed: {
         type: Boolean,
         default: false
@@ -93,7 +103,7 @@ userSchema.methods.generateAuthToken = async function (days) {
 
     const token = jwt.sign({
         _id: user._id.toString()
-    }, process.env.JSON_WEB_TOKEN_SERCET, { expiresIn: `${parseInt(days)} days` }) 
+    }, process.env.JSON_WEB_TOKEN_SERCET, { expiresIn: `${parseInt(days)} days` }) // days
 
     user.tokens = user.tokens.concat({
         token
@@ -106,16 +116,26 @@ userSchema.methods.generateAuthToken = async function (days) {
 // statics methods are accessible on the models - model methods  
 userSchema.statics.findByCredentials = async (email, password) => {
     const user = await User.findOne({ emailAddress: email })
+    if(user.loginFailure >= 3){
+        await accountRest(user.emailAddress, user.userName, user._id)
+        throw new Error('Account locked')
+    }
     if (!user) {
         throw new Error('Unable to login')
     }
-    // if (!user.userConfirmed) {
-    //     throw new Error('First confirm email')
-    // }
+    if (!user.userConfirmed) {
+        throw new Error('Please confirm email')
+    }
     const isMatch = await bcryptjs.compare(password, user.password)
     if (!isMatch) {
+        await user.loginFailure++
+        await user.save()
         throw new Error('Unable to login')
     }
+
+    user.loginFailure = 0
+    await user.save()
+
     return user
 }
 

@@ -5,6 +5,7 @@ const auth = require("../middleware/auth")
 const router = new express.Router()
 const valid = require("../src/util/compare")
 const { confirmUser } = require('../email/message')
+const random = require('randomatic')
 
 // CRUD
 // create user
@@ -15,7 +16,7 @@ router.post("/users", async (req, res) => {
         // const token = await user.generateAuthToken(1)
         await user.save()
         // res.status(201).send({user, token})
-        res.status(201).send({user})
+        res.status(201).send(user)
         // TODO
         // send email confirmation with object id
         confirmUser(user.emailAddress, user.id)
@@ -25,7 +26,6 @@ router.post("/users", async (req, res) => {
 })
 
 // get, confirm user 
-// 
 router.get("/users/:id/confirm", async (req, res) => {
     try {
         const _id = req.params.id
@@ -41,7 +41,7 @@ router.get("/users/:id/confirm", async (req, res) => {
 
         res.status(202).send({
             "emailAddress": user.emailAddress,
-            "userConfirmed": user.userConfirmed,
+            "userConfirmed": true,
             "token": token
         })
 
@@ -56,6 +56,26 @@ router.post("/users/login", async (req, res) => {
         const user = await User.findByCredentials(req.body.emailAddress, req.body.password)
         const token = await user.generateAuthToken(60)
         res.status(200).send({user, token})
+    } catch (e) {
+        res.status(500).send({
+            error: e.message
+        })
+    }    
+})
+
+// post, reset
+router.get("/users/:id/reset", async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+        if (!user) {
+            return res.status(404).send({error: "User Not Found"})
+        }
+        user.userConfirmed = true
+        const password = random('Aa0', 8)
+        // user.password = password
+        //  user.loginFailure = 0
+        await user.save()
+        res.status(200).send({user, password})
     } catch (e) {
         res.status(500).send({
             error: e.message
@@ -124,14 +144,16 @@ router.get("/users/me/addresses", auth, async (req, res) => {
 
 // get, all
 // TODO for admins only  - deprecated (might reopen for administrators)
-// router.get("/users", auth, async (req, res) => {
-//     try {
-//         const user = await User.find({})
-//         res.status(200).send(user)
-//     } catch (e) {
-//         res.status(500).send(e)
-//     }
-// })
+// TODO for admins only - first create account/root
+// admin only endpoint
+router.get("/users", async (req, res) => {
+    try {
+        const user = await User.find({})
+        res.status(200).send(user)
+    } catch (e) {
+        res.status(500).send(e)
+    }
+})
 
 // get, id - deprecated (might reopen for administrators)
 // router.get("/users/:id", async (req, res) => {
@@ -188,19 +210,23 @@ router.patch("/users/me", auth, async (req, res) => {
     }
 })
 
-// delete user - deprecated (might reopen for administrators) 
-// router.delete("/users/:id", auth, async (req, res) => {
-//     try {
-//         const user = await User.findByIdAndDelete(req.params.id)
-//         if (!user) {
-//             return res.status(404).send()
-//         }
-//         res.status(200).send()
-//     } catch (e) {
-//         res.status(500).send()
-//     }
-// })
 
+// TODO delete user - deprecated (might reopen for administrators) 
+// TODO for admins only - first create account/root
+// admin only endpoint
+router.delete("/users/:id", async (req, res) => {
+    try {
+        const user = await User.findByIdAndDelete(req.params.id)
+        if (!user) {
+            return res.status(404).send()
+        }
+        res.status(200).send()
+    } catch (e) {
+        res.status(500).send()
+    }
+})
+
+// delete, me
 router.delete("/users/me", auth, async (req, res) => {
     try {
         await req.user.remove()
