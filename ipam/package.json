@@ -2,9 +2,8 @@
   "name": "ipam",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts":  {
+  "scripts": {
     "start": "node ./src/index.js",
-    "dev": "nodemon ./src/index.js",
     "local": "env-cmd .env/local.env nodemon src/index.js"
   },
   "author": "maurizio.lupini@bcx.co.za",
@@ -20,14 +19,15 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.1.13",
     "mongoose": "^5.4.19",
-    "validator": "^10.11.0"
+    "validator": "^10.11.0",
+    "winston": "^3.2.1"
   },
   "localDependencies": {
     "env-cmd": "^8.0.2",
     "nodemon": "^1.18.10"
   },
   "devDependencies": {
-    "env-cmd": "^8.0.2"
+    "nodemon": "^1.18.10"
   },
   "description": "ipam endpoint"
 }

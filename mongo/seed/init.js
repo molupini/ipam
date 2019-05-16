@@ -8,10 +8,10 @@ db.createUser({
     pwd: 'CoffeeTea123',
     roles: [{
         role: 'dbOwner',
-        db: 'docker'
+        db: 'ipam'
     }, 
     {
         role: 'readWrite',
-        db: 'docker'
+        db: 'ipam'
     }]
 });

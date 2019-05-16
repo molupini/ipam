@@ -1,8 +1,7 @@
-node_modules
-.env
+node_modules/
 .git/
 npm-debug.log
 docker-compose*
-*.dockerfile
+.gitignore
 *.env
 TODO

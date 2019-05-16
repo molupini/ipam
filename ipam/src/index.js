@@ -2,6 +2,7 @@
 const express = require("express")
 const app = express()
 require("../db/mongoose")
+const { logger } = require('./util/log')
 
 // routers
 const userRouter = require("../router/user")
@@ -17,7 +18,13 @@ app.use(userRouter)
 app.use(networkRouter)
 app.use(addressRouter)
 
+app.use('/healthv', (req, res) => {
+    res.status(200).send('healthy')
+})
+
 // listening
-app.listen(port, () => {
-    console.log('listening on port :', port);    
+app.listen(process.env.PORT, () => {
+    logger.log('info', "EXPRESS")
+    logger.log('info', `PORT=${process.env.PORT}`)
+    logger.log('info', `NODE_ENV=${process.env.NODE_ENV}`)
 })
