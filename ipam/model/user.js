@@ -90,8 +90,8 @@ userSchema.virtual('address', {
 
 userSchema.methods.toJSON = function () {
     const thisObject = this.toObject()
-    delete thisObject.userConfirmed
-    delete thisObject.password
+    // delete thisObject.userConfirmed
+    // delete thisObject.password
     delete thisObject.tokens
     return thisObject
 } 
@@ -116,12 +116,12 @@ userSchema.methods.generateAuthToken = async function (days) {
 // statics methods are accessible on the models - model methods  
 userSchema.statics.findByCredentials = async (email, password) => {
     const user = await User.findOne({ emailAddress: email })
+    if (!user) {
+        throw new Error('User Not Found')
+    }
     if(user.loginFailure >= 3){
         await accountRest(user.emailAddress, user.userName, user._id)
         throw new Error('Account locked')
-    }
-    if (!user) {
-        throw new Error('Unable to login')
     }
     if (!user.userConfirmed) {
         throw new Error('Please confirm email')
@@ -130,7 +130,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
     if (!isMatch) {
         await user.loginFailure++
         await user.save()
-        throw new Error('Unable to login')
+        throw new Error('Mismatch username or password ')
     }
 
     user.loginFailure = 0
@@ -145,6 +145,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
 userSchema.pre('save', async function (next) {
     const user = this
     if (user.isModified("password")) {
+        // console.log(`user.save() password ${user.password}`)
         user.password = await bcryptjs.hash(user.password, 8)
         user.userConfirmed = false
     }

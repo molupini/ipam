@@ -9,16 +9,11 @@ const random = require('randomatic')
 
 // CRUD
 // create user
-router.post("/users", async (req, res) => {
+router.post("/users/create", async (req, res) => {
     try {
         const user = await new User(req.body)
-        // TODO moving to user confirmation
-        // const token = await user.generateAuthToken(1)
         await user.save()
-        // res.status(201).send({user, token})
         res.status(201).send(user)
-        // TODO
-        // send email confirmation with object id
         confirmUser(user.emailAddress, user.id)
     } catch (e) {
         res.status(500).send(e)
@@ -26,6 +21,7 @@ router.post("/users", async (req, res) => {
 })
 
 // get, confirm user 
+// TODO, confirm only allow once
 router.get("/users/:id/confirm", async (req, res) => {
     try {
         const _id = req.params.id
@@ -35,16 +31,12 @@ router.get("/users/:id/confirm", async (req, res) => {
         if (!user) {
             return res.status(404).send({error: "User Not Found"})
         }
-
-        // TODO added from above endpoint 
         const token = await user.generateAuthToken(30)
-
         res.status(202).send({
             "emailAddress": user.emailAddress,
             "userConfirmed": true,
             "token": token
         })
-
     } catch (e) {
         res.status(500).send(e)
     }
@@ -54,7 +46,7 @@ router.get("/users/:id/confirm", async (req, res) => {
 router.post("/users/login", async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.emailAddress, req.body.password)
-        const token = await user.generateAuthToken(60)
+        const token = await user.generateAuthToken(30)
         res.status(200).send({user, token})
     } catch (e) {
         res.status(500).send({
@@ -64,18 +56,20 @@ router.post("/users/login", async (req, res) => {
 })
 
 // post, reset
-router.get("/users/:id/reset", async (req, res) => {
+// TODO reset, one time only when account locked
+// TODO password should be temp and redirect user to patch('/users/me') but for now leave as is
+router.patch("/users/:id/reset", async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if (!user) {
             return res.status(404).send({error: "User Not Found"})
         }
+        const pass = random('Aa0', 12)
         user.userConfirmed = true
-        const password = random('Aa0', 8)
-        // user.password = password
-        //  user.loginFailure = 0
+        user.loginFailure = 0
+        user.password = pass
         await user.save()
-        res.status(200).send({user, password})
+        res.status(200).send({user, pass})
     } catch (e) {
         res.status(500).send({
             error: e.message
@@ -142,55 +136,7 @@ router.get("/users/me/addresses", auth, async (req, res) => {
     }
 })
 
-// get, all
-// TODO for admins only  - deprecated (might reopen for administrators)
-// TODO for admins only - first create account/root
-// admin only endpoint
-router.get("/users", async (req, res) => {
-    try {
-        const user = await User.find({})
-        res.status(200).send(user)
-    } catch (e) {
-        res.status(500).send(e)
-    }
-})
-
-// get, id - deprecated (might reopen for administrators)
-// router.get("/users/:id", async (req, res) => {
-//     const _id = req.params.id   
-//     try {
-//         const user = await User.findById({ _id })
-//         if (!user) {
-//            return res.status(404).send()
-//         }
-//         res.status(200).send(user)
-//     } catch (e) {
-//         res.status(500).send(e)
-//     }
-// })
-
-// patch user, with rest body validation  - deprecated (might reopen for administrators)
-// router.patch("/users/:id", async (req, res) => {
-//     const isValid = valid(req.body, User.schema.obj)
-//     if (!isValid) {
-//        return res.status(400).send({error: "Please provide a valid input"})
-//     }
-//     try {
-//         const user = await User.findById(req.params.id)
-//         if (!user) {
-//             return res.status(404).send()
-//         }
-//         const body = Object.keys(req.body)
-//         body.forEach(value => {
-//             user[value] = req.body[value]
-//         })
-//         await user.save()
-//         res.status(200).send(user)
-//     } catch (e) {
-//         res.status(500).send(e)
-//     }    
-// })
-
+// patch, me
 router.patch("/users/me", auth, async (req, res) => {
     const isValid = valid(req.body, User.schema.obj)
     if (!isValid) {
@@ -207,22 +153,6 @@ router.patch("/users/me", auth, async (req, res) => {
         res.status(200).send(req.user)
     } catch (e) {
         res.status(500).send(e)
-    }
-})
-
-
-// TODO delete user - deprecated (might reopen for administrators) 
-// TODO for admins only - first create account/root
-// admin only endpoint
-router.delete("/users/:id", async (req, res) => {
-    try {
-        const user = await User.findByIdAndDelete(req.params.id)
-        if (!user) {
-            return res.status(404).send()
-        }
-        res.status(200).send()
-    } catch (e) {
-        res.status(500).send()
     }
 })
 
