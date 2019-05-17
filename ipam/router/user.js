@@ -1,27 +1,30 @@
-// modules
+// user router
+// authenication required for operating IPAM solution
+// Basic CRUD operation 
 const express = require("express")
 const User = require("../model/user")
 const auth = require("../middleware/auth")
 const router = new express.Router()
 const valid = require("../src/util/compare")
-const { confirmUser } = require('../email/message')
+const message = require('../email/message')
 const random = require('randomatic')
 
-// CRUD
 // create user
 router.post("/users/create", async (req, res) => {
     try {
         const user = await new User(req.body)
         await user.save()
         res.status(201).send(user)
-        confirmUser(user.emailAddress, user.id)
+        
     } catch (e) {
         res.status(500).send(e)
     }
 })
 
-// get, confirm user 
-// TODO, confirm only allow once
+// get, confirm user
+// TODO - send JWT
+// endpoint used to retrieve your credentials
+// query string, for jwt extension
 router.get("/users/:id/confirm", async (req, res) => {
     try {
         const _id = req.params.id
@@ -31,22 +34,35 @@ router.get("/users/:id/confirm", async (req, res) => {
         if (!user) {
             return res.status(404).send({error: "User Not Found"})
         }
-        const token = await user.generateAuthToken(30)
-        res.status(202).send({
-            "emailAddress": user.emailAddress,
-            "userConfirmed": true,
-            "token": token
-        })
+        // already confirmed
+        if(user.userConfirmed === true){
+            return res.status(400).send({error:'userConfirmed'})
+        }
+        if(req.query.userMoified === 'true'){
+            return res.status(200).send()
+        }
+        
+        var days = 0
+        if(req.query.extendToken){
+            days = 365
+        }else{
+            days = 60
+        }
+
+        const token = await user.generateAuthToken(days)
+        res.status(202).send({user, token})
     } catch (e) {
         res.status(500).send(e)
     }
 })
 
 // post, login
-router.post("/users/login", async (req, res) => {
+// TODO - send JWT
+// endpoint used to retrieve your credentials
+router.patch("/users/login", async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.emailAddress, req.body.password)
-        const token = await user.generateAuthToken(30)
+        const token = await user.generateAuthToken(60)
         res.status(200).send({user, token})
     } catch (e) {
         res.status(500).send({
@@ -56,18 +72,24 @@ router.post("/users/login", async (req, res) => {
 })
 
 // post, reset
-// TODO reset, one time only when account locked
-// TODO password should be temp and redirect user to patch('/users/me') but for now leave as is
-router.patch("/users/:id/reset", async (req, res) => {
+// TODO - prevent multi resets
+router.get("/users/:id/reset", async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if (!user) {
             return res.status(404).send({error: "User Not Found"})
         }
+        
+        // already reset
+        // if(user.loginFailure === 0){
+        //     return res.status(400).send()
+        // }
+        
         const pass = random('Aa0', 12)
         user.userConfirmed = true
         user.loginFailure = 0
         user.password = pass
+
         await user.save()
         res.status(200).send({user, pass})
     } catch (e) {
@@ -93,7 +115,8 @@ router.post("/users/logout", auth, async (req, res) => {
 })
 
 // logout, all sessions
-router.post("/users/logoutAll", auth, async (req, res) => {
+// helpful when more then one device or a shared account
+router.post("/users/logoutall", auth, async (req, res) => {
     try {
         req.user.tokens = []
         await req.user.save()
@@ -111,7 +134,7 @@ router.get("/users/me", auth, (req, res) => {
 })
 
 // get, my networks
-router.get("/users/me/networks", auth, async(req, res) => {
+router.get("/users/my/networks", auth, async(req, res) => {
     try {
         const user = await User.findById(req.user.id)
         await user.populate('network').execPopulate()
@@ -122,7 +145,7 @@ router.get("/users/me/networks", auth, async(req, res) => {
 })
 
 // get, my addresses
-router.get("/users/me/addresses", auth, async (req, res) => {
+router.get("/users/my/addresses", auth, async (req, res) => {
     try {
         const options = {}
         options.sort = {
@@ -141,13 +164,13 @@ router.patch("/users/me", auth, async (req, res) => {
     const isValid = valid(req.body, User.schema.obj)
     if (!isValid) {
         return res.status(400).send({
-            error: "Please provide a valid input"
+            error: "Please provide valid data"
         })
     }
     try {
         const body = Object.keys(req.body)
         body.forEach(value => {
-            user[value] = req.body[value]
+            req.user[value] = req.body[value]
         })
         await req.user.save()
         res.status(200).send(req.user)

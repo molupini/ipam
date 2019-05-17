@@ -5,7 +5,7 @@ const Filter = require("bad-words")
 const bcryptjs = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const Address = require("../model/address")
-const { accountRest } = require('../email/message')
+const message = require('../email/message')
 
 const userSchema = new mongoose.Schema({
     emailAddress: {
@@ -64,7 +64,8 @@ const userSchema = new mongoose.Schema({
     // }, 
     userConfirmed: {
         type: Boolean,
-        default: false
+        default: false,
+        required: true
     },
     tokens: [{
         token: {
@@ -91,7 +92,7 @@ userSchema.virtual('address', {
 userSchema.methods.toJSON = function () {
     const thisObject = this.toObject()
     // delete thisObject.userConfirmed
-    // delete thisObject.password
+    delete thisObject.password
     delete thisObject.tokens
     return thisObject
 } 
@@ -120,11 +121,11 @@ userSchema.statics.findByCredentials = async (email, password) => {
         throw new Error('User Not Found')
     }
     if(user.loginFailure >= 3){
-        await accountRest(user.emailAddress, user.userName, user._id)
+        await message.userReset(user.emailAddress, user.userName, user._id)
         throw new Error('Account locked')
     }
     if (!user.userConfirmed) {
-        throw new Error('Please confirm email')
+        throw new Error('Please confirm email address')
     }
     const isMatch = await bcryptjs.compare(password, user.password)
     if (!isMatch) {
@@ -144,13 +145,19 @@ userSchema.statics.findByCredentials = async (email, password) => {
 // needs to be standard function as arrow functions don't bind 'this' below as in this object 
 userSchema.pre('save', async function (next) {
     const user = this
-    if (user.isModified("password")) {
-        // console.log(`user.save() password ${user.password}`)
+
+    if (user.isModified("password") && user.createdAt === user.updatedAt) {
         user.password = await bcryptjs.hash(user.password, 8)
         user.userConfirmed = false
+        await message.userCreated(user.emailAddress, user.id)
     }
-    if (user.isModified("emailAddress") || user.isModified("userName")) {
+    else if(user.isModified("password") & user.createdAt !== user.updatedAt){
+        user.password = await bcryptjs.hash(user.password, 8)
+    }
+
+    if (user.isModified("emailAddress") && user.createdAt !== user.updatedAt) {
         user.userConfirmed = false
+        await message.userModified(user.emailAddress, user.userName, user._id)
     }
     next()
 })

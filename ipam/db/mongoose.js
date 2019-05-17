@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 
 const options = {
     useCreateIndex: true,
-    useFindAndModify: true,
+    useFindAndModify: false,
     useNewUrlParser: true,
     // autoIndex: false,
     reconnectTries: 30,
