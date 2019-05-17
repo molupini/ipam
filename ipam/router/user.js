@@ -43,7 +43,7 @@ router.get("/users/:id/confirm", async (req, res) => {
         }
         
         var days = 0
-        if(req.query.extendToken){
+        if(req.query.extendToken === 'true'){
             days = 365
         }else{
             days = 60
@@ -57,7 +57,7 @@ router.get("/users/:id/confirm", async (req, res) => {
 })
 
 // post, login
-// TODO - send JWT
+// TODO - send JWT via email
 // endpoint used to retrieve your credentials
 router.patch("/users/login", async (req, res) => {
     try {
@@ -72,18 +72,17 @@ router.patch("/users/login", async (req, res) => {
 })
 
 // post, reset
-// TODO - prevent multi resets
 router.get("/users/:id/reset", async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if (!user) {
             return res.status(404).send({error: "User Not Found"})
         }
-        
+
         // already reset
-        // if(user.loginFailure === 0){
-        //     return res.status(400).send()
-        // }
+        if(user.loginFailure === 0){
+            return res.status(400).send()
+        }
         
         const pass = random('Aa0', 12)
         user.userConfirmed = true
