@@ -126,11 +126,11 @@ router.get("/networks/:id", auth, async (req, res) => {
     }
 })
 
-// patch network, with vaildation and key exclusion
+// patch network, with validation and key exclusion
 // findByIdAndUpdate() will bypass the middleware which is what we require when posting the changes below
 router.patch("/networks/:id", auth, async (req, res) => {
-    const excluding = ["networkAddress", "subnetMask", "numHosts", "subnetMaskLength", "broadcastAddress", "lastAddress", "firstAddress"]
-    const isValid = valid(req.body, Network.schema.obj, excluding)
+    const exclude = ["networkAddress", "subnetMask", "numHosts", "subnetMaskLength", "broadcastAddress", "lastAddress", "firstAddress"]
+    const isValid = valid(req.body, Network.schema.obj, exclude)
     if (!isValid) {
         return res.status(400).send({
             error: "Please provide a valid input"

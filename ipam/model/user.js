@@ -1,4 +1,4 @@
-// schema's created allow for pre and post hooks. 
+// schema created allow for pre and post hooks. 
 const mongoose = require("mongoose")
 const validator = require("validator")
 const Filter = require("bad-words")
@@ -8,6 +8,11 @@ const Address = require("../model/address")
 const message = require('../email/message')
 
 const userSchema = new mongoose.Schema({
+    n:{
+        type: Number,
+        required: true,
+        default: 0
+    },
     emailAddress: {
         type: String,
         lowercase: true,
@@ -17,8 +22,7 @@ const userSchema = new mongoose.Schema({
             if (!validator.isEmail(value)) {
                 throw new Error("Please provide a valid email address")
             }
-        }
-        ,
+        },
         unique: true
     },
     userName: {
@@ -58,10 +62,16 @@ const userSchema = new mongoose.Schema({
         required: true,
         default: 0
     },
-    // userLocked :{
-    //     type: Boolean,
-    //     default: false
-    // }, 
+    userAdmin :{
+        type: Boolean,
+        default: false,
+        required: true
+    }, 
+    userRoot :{
+        type: Boolean,
+        default: false,
+        required: true
+    }, 
     userConfirmed: {
         type: Boolean,
         default: false,
@@ -92,24 +102,23 @@ userSchema.virtual('address', {
 userSchema.methods.toJSON = function () {
     const thisObject = this.toObject()
     // delete thisObject.userConfirmed
-    delete thisObject.password
-    delete thisObject.tokens
+    // delete thisObject.password
+    // delete thisObject.tokens
     return thisObject
 } 
 
 // methods are accessible on the instances - instance methods 
-// need to use a unqiue payload 
+// need to use a unique payload 
 userSchema.methods.generateAuthToken = async function (days) {
     const user = this
-
+    // jwt module use secret to generate a jwt and add to array
     const token = jwt.sign({
         _id: user._id.toString()
-    }, process.env.JSON_WEB_TOKEN_SERCET, { expiresIn: `${parseInt(days)} days` }) // days
-
+    }, process.env.JSON_WEB_TOKEN_SECRET, { expiresIn: `${parseInt(days)} days` }) // days
+    // add to tokens array
     user.tokens = user.tokens.concat({
         token
     })
-
     await user.save()
     return token
 }
@@ -120,23 +129,22 @@ userSchema.statics.findByCredentials = async (email, password) => {
     if (!user) {
         throw new Error('User Not Found')
     }
+    // if login failure 3 and more, account lockout
     if(user.loginFailure >= 3){
         await message.userReset(user.emailAddress, user.userName, user._id)
         throw new Error('Account locked')
     }
-    if (!user.userConfirmed) {
-        throw new Error('Please confirm email address')
-    }
     const isMatch = await bcryptjs.compare(password, user.password)
+    // if false, login failure increment 
     if (!isMatch) {
         await user.loginFailure++
         await user.save()
-        throw new Error('Mismatch username or password ')
+        throw new Error('Mismatch username or password')
     }
-
+    // if successful reset to zero 
     user.loginFailure = 0
     await user.save()
-
+    // return user 
     return user
 }
 
@@ -145,26 +153,43 @@ userSchema.statics.findByCredentials = async (email, password) => {
 // needs to be standard function as arrow functions don't bind 'this' below as in this object 
 userSchema.pre('save', async function (next) {
     const user = this
-
-    if (user.isModified("password") && user.createdAt === user.updatedAt) {
-        user.password = await bcryptjs.hash(user.password, 8)
-        user.userConfirmed = false
-        await message.userCreated(user.emailAddress, user.id)
+    // is new document 
+    if(user.createdAt === user.updatedAt){
+        if (user.isModified("password")) {
+            user.password = await bcryptjs.hash(user.password, 8)
+        }
+        if(user.n === 0){
+            user.userRoot = true
+            user.userAdmin = true
+        }
     }
-    else if(user.isModified("password") & user.createdAt !== user.updatedAt){
-        user.password = await bcryptjs.hash(user.password, 8)
+    // is a old document
+    if(user.createdAt !== user.updatedAt){
+        if (!user.userConfirmed) {
+            throw new Error('Please confirm email address')
+        } 
+        if(user.isModified("password")){
+            user.password = await bcryptjs.hash(user.password, 8)
+        }
+        if (user.isModified("emailAddress")) {
+            user.userConfirmed = false
+            // if successful save user modified email will be sent
+            await message.userModified(user.emailAddress, user.userName, user._id)
+        }
     }
-
-    if (user.isModified("emailAddress") && user.createdAt !== user.updatedAt) {
-        user.userConfirmed = false
-        await message.userModified(user.emailAddress, user.userName, user._id)
-    }
+    // continue 
     next()
 })
 
-// delete middelware, change owner on addresses and author on networks
+// delete middleware, change owner on addresses and author on networks
 userSchema.pre('remove', async function (next) {
     const user = this
+    const num = await User.countDocuments()
+    // unable to remove account if userRoot unless only account created
+    if(num > 1 && user.userRoot === true){
+        throw new Error('Nominate root user')
+    }
+    // remove all addresses owned by account
     await Address.updateMany({
         owner: user._id
     }, {

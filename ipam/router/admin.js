@@ -4,19 +4,8 @@ const auth = require('../middleware/auth')
 const router = new express.Router()
 const valid = require("../src/util/compare")
 
-// TODO auth required
-// TODO for admins only - first create account/root
-
-router.post('/admin/create', async (req, res) => {
-    try {
-        
-    } catch (e) {
-        
-    }
-})
-
 // get, all users
-router.get('/admin/users', async (req, res) => {
+router.get('/admins/users', auth, async (req, res) => {
     try {
         const user = await User.find({})
         res.status(200).send(user)
@@ -26,7 +15,7 @@ router.get('/admin/users', async (req, res) => {
 })
 
 // get, id
-router.get('/admin/users/:id', async (req, res) => {
+router.get('/admins/users/:id', auth, async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if (!user) {
@@ -38,8 +27,9 @@ router.get('/admin/users/:id', async (req, res) => {
     }
 })
 
-router.patch("/admin/users/:id", async (req, res) => {
-    const isValid = valid(req.body, User.schema.obj)
+router.patch("/admins/users/:id", auth, async (req, res) => {
+    const exclude = ['n', 'emailAddress', 'userName', 'password']
+    const isValid = valid(req.body, User.schema.obj, exclude)
     if (!isValid) {
        return res.status(400).send({error: "Please provide a valid input"})
     }
@@ -53,18 +43,36 @@ router.patch("/admin/users/:id", async (req, res) => {
             user[value] = req.body[value]
         })
         await user.save()
+        // if userRoot specified and authentication passed in auth middleware, 
+        // find existing and remove privileges
+        // only one root account possible
+        const options = {}
+        // sort by updatedAt ascending, note -1 is descending 
+        options.sort = {
+            'updatedAt': 1
+        }
+        if(body.indexOf('userRoot') !== -1){
+            const root = await User.findOne({userRoot: true}, null, options)
+            // first item in array
+            if(!root){
+                return res.status(404).send()
+            }
+            root.userRoot = false
+            await root.save()
+        }
         res.status(200).send(user)
     } catch (e) {
         res.status(500).send(e)
     }    
 })
 
-router.delete('/admin/users/:id', async (req, res) => {
+router.delete('/admins/users/:id', auth, async (req, res) => {
     try {
-        const user = await User.findByIdAndDelete(req.params.id)
+        const user = await User.findById(req.params.id)
         if(!user){
             return res.status(404).send({error: "User Not Found"})
         }
+        await user.remove()
         await res.status(200).send(user)
     } catch (e) {
         await res.status(500).send()

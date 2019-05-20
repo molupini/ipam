@@ -21,7 +21,7 @@ const userCreated = (email, id) => {
         html: body,  
     }
 
-    console.log({sendgrid: msg.subject, action: 'confirm account'})
+    console.log({date: new Date(Date.now()), sendgrid: msg.subject, action: 'confirm account'})
     // sendgrid.send(msg)
 } 
 
@@ -42,7 +42,7 @@ const userReset = (email, user, id) => {
         html: body,  
     }
 
-    console.log({sendgrid: msg.subject, action: 'reset'})
+    console.log({date: new Date(Date.now()), sendgrid: msg.subject, action: 'reset'})
     // sendgrid.send(msg)
 }
 
@@ -50,7 +50,7 @@ const userModified = (email, user, id) => {
 
     const body = `<strong>We noticed your account was modified!</strong><br><br>\
     To confirm this was you, please click this link:<br><br>\
-    <a href="http://localhost:3000/users/${id}/confirm?userMoified=true"><strong>/Confirm</strong></a><br>
+    <a href="http://localhost:3000/users/${id}/confirm?userModified=true"><strong>/Confirm</strong></a><br>
     `
 
     const subject = `Account Modified, ${user}`
@@ -62,7 +62,7 @@ const userModified = (email, user, id) => {
         html: body,  
     }
 
-    console.log({sendgrid: msg.subject, action: 'confirm changes'})
+    console.log({date: new Date(Date.now()), sendgrid: msg.subject, action: 'confirm changes'})
     // sendgrid.send(msg)
 }
 

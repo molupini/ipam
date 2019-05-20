@@ -87,7 +87,7 @@ router.patch("/addresses/:id", auth, async (req, res) => {
     }
 })
 
-// get, user check-out address with hardcoded options and -- populate network to be provided
+// get, user check-out address with hard-coded options and -- populate network to be provided
 router.get('/addresses/checkout', auth, async (req, res) => {
     try {
         const match = {}
