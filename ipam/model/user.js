@@ -6,6 +6,7 @@ const bcryptjs = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const Address = require("../model/address")
 const message = require('../email/message')
+const random = require('randomatic')
 
 const userSchema = new mongoose.Schema({
     n:{
@@ -108,11 +109,26 @@ userSchema.methods.toJSON = function () {
 } 
 
 // methods are accessible on the instances - instance methods 
-// need to use a unique payload 
-userSchema.methods.generateAuthToken = async function (days) {
+userSchema.methods.generateAuthToken = async function (days = 2) {
     const user = this
+    // query string, for jwt extension, will not allow greater then 365,
+    // default 2 days
+    var extension = parseInt(days)
+    if (isNaN(extension) || extension < 2) {
+        days = 2
+     }
+    if(extension > 1){
+        if (extension > 366){
+            extension = 365
+        } else {
+            extension = extension
+        }
+
+        days = extension
+    }
+    // console.log('days =', days)
     // jwt module use secret to generate a jwt and add to array
-    const token = jwt.sign({
+    const token = await jwt.sign({
         _id: user._id.toString()
     }, process.env.JSON_WEB_TOKEN_SECRET, { expiresIn: `${parseInt(days)} days` }) // days
     // add to tokens array
@@ -121,6 +137,17 @@ userSchema.methods.generateAuthToken = async function (days) {
     })
     await user.save()
     return token
+}
+
+userSchema.methods.restPassword = async function () {
+    const user = this
+    // random password returned
+    const pass = random('Aa0', 12)
+    // user.userConfirmed = false
+    user.loginFailure = 0
+    user.password = pass
+
+    return pass
 }
 
 // statics methods are accessible on the models - model methods  
@@ -153,15 +180,24 @@ userSchema.statics.findByCredentials = async (email, password) => {
 // needs to be standard function as arrow functions don't bind 'this' below as in this object 
 userSchema.pre('save', async function (next) {
     const user = this
+    
     // is new document 
     if(user.createdAt === user.updatedAt){
+        // user creation count, userRoot, userAdmin role assigned to count 'n' 0
+        const num = await User.countDocuments()
+
         if (user.isModified("password")) {
             user.password = await bcryptjs.hash(user.password, 8)
         }
+
+        user.n = num 
+
         if(user.n === 0){
             user.userRoot = true
             user.userAdmin = true
         }
+        // if successful save confirmation email will be sent
+        await message.userCreated(user.emailAddress, user.id)
     }
     // is a old document
     if(user.createdAt !== user.updatedAt){

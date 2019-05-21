@@ -1,4 +1,4 @@
-// user router
+// User router
 // authentication required for operating IP Address Manager solution
 // Basic CRUD operation 
 const express = require("express")
@@ -6,19 +6,15 @@ const User = require("../model/user")
 const auth = require("../middleware/auth")
 const router = new express.Router()
 const valid = require("../src/util/compare")
-const random = require('randomatic')
+
 const message = require('../email/message')
+
 
 // create user
 router.post("/users/create", async (req, res) => {
     try {
         const user = await new User(req.body)
-        // user creation count, userRoot, userAdmin role assigned to count 'n' 0
-        const num = await User.countDocuments()
-        user.n = num
         await user.save()
-        // if successful save confirmation email will be sent
-        await message.userCreated(user.emailAddress, user.id)
         res.status(201).send(user)
     } catch (e) {
         res.status(500).send({error: e.message})
@@ -46,18 +42,9 @@ router.get("/users/:id/confirm", async (req, res) => {
             // return res.redirect('/users/login')
             return res.status(200).send()
         }
-        // query string, for jwt extension, will not allow greater then 365, default 2 days
-        var days = 2
-        if(req.query.extendToken && typeof parseInt(req.query.extendToken) === 'number'){
-            if(parseInt(req.query.extendToken) >= 365) { 
-                days = 365
-            }
-            else{
-                days = parseInt(req.query.extendToken)
-            }
-        }
+        // console.log(req.query.extendToken);
         // generate jwt token 
-        const token = await user.generateAuthToken(days)
+        const token = await user.generateAuthToken(req.query.extendToken)
         res.status(202).send({user, token})
     } catch (e) {
         res.status(500).send({error: e.message})
@@ -70,19 +57,10 @@ router.get("/users/:id/confirm", async (req, res) => {
 // different default for JWT 
 router.patch("/users/login", async (req, res) => {
     try {
+        // user login by emailAddress and password
         const user = await User.findByCredentials(req.body.emailAddress, req.body.password)
-        // query string, for jwt extension, will not allow greater then 365, default 2 days
-        var days = 14
-        if(req.query.extendToken && typeof parseInt(req.query.extendToken) === 'number'){
-            if(parseInt(req.query.extendToken) >= 365) { 
-                days = 365
-            }
-            else{
-                days = parseInt(req.query.extendToken)
-            }
-        }
         // generate jwt token
-        const token = await user.generateAuthToken(days)
+        const token = await user.generateAuthToken(req.query.extendToken)
         res.status(200).send({user, token})
     } catch (e) {
         res.status(500).send({
@@ -103,11 +81,7 @@ router.get("/users/:id/reset", async (req, res) => {
         if(user.loginFailure === 0){
             return res.status(400).send({error: "Account unlocked"})
         }
-        // random password returned
-        const pass = random('Aa0', 12)
-        // user.userConfirmed = false
-        user.loginFailure = 0
-        user.password = pass
+        const pass = await user.restPassword()
         await user.save()
         // res.redirect(`/users/${req.params.id}/confirm?userModified=true`)
         res.status(200).send({user, pass})
