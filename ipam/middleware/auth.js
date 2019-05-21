@@ -29,7 +29,7 @@ const auth = async (req, res, next) => {
             throw new Error()
         }
 
-        //  path access control, only allow userAdmin access 
+        // admins path access control, only allow userAdmin access 
         if(req.path.match(/^\/admins\//)){
             if(!user.userAdmin){
                 throw new Error()
@@ -45,6 +45,18 @@ const auth = async (req, res, next) => {
                     throw new Error()
                 }
                 user.userRoot = false
+            }
+        }
+        // networks path access control, only allow userAdmin access 
+        if(req.path.match(/^\/admins\//)){
+            if(!user.userAdmin){
+                throw new Error()
+            }
+        }
+        // addresses path access control, only allow userAdmin access 
+        if(req.path.match(/^\/addresses\//)){
+            if(!user.userConfirmed){
+                throw new Error()
             }
         }
         // give the route handler the user fetched from the database

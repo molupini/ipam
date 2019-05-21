@@ -102,9 +102,26 @@ userSchema.virtual('address', {
 
 userSchema.methods.toJSON = function () {
     const thisObject = this.toObject()
-    // delete thisObject.userConfirmed
-    // delete thisObject.password
-    // delete thisObject.tokens
+    if (!thisObject.userAdmin){
+        delete thisObject.n
+        delete thisObject.userConfirmed
+        delete thisObject.password
+        delete thisObject.tokens
+        delete thisObject.loginFailure
+        delete thisObject.userAdmin
+        delete thisObject.userRoot
+        delete thisObject.createdAt
+        delete thisObject.updatedAt
+        delete thisObject.__v
+    } else if (thisObject.userAdmin){
+        if(!thisObject.userAdmin){
+            delete thisObject.userRoot
+            
+        }
+        delete thisObject.tokens
+        delete thisObject.password
+    }
+  
     return thisObject
 } 
 
@@ -118,8 +135,8 @@ userSchema.methods.generateAuthToken = async function (days = 2) {
         days = 2
      }
     if(extension > 1){
-        if (extension > 366){
-            extension = 365
+        if (extension >= process.env.JWT_MAX_TTL){
+            extension = process.env.JWT_MAX_TTL
         } else {
             extension = extension
         }
@@ -135,6 +152,11 @@ userSchema.methods.generateAuthToken = async function (days = 2) {
     user.tokens = user.tokens.concat({
         token
     })
+    // tokens array length, remove stale elements
+    if (user.tokens.length > process.env.TOKENS_ARRAY_LENGTH) {
+        user.tokens.shift()
+    }
+
     await user.save()
     return token
 }
@@ -213,6 +235,7 @@ userSchema.pre('save', async function (next) {
             await message.userModified(user.emailAddress, user.userName, user._id)
         }
     }
+
     // continue 
     next()
 })

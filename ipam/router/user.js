@@ -6,8 +6,7 @@ const User = require("../model/user")
 const auth = require("../middleware/auth")
 const router = new express.Router()
 const valid = require("../src/util/compare")
-
-const message = require('../email/message')
+// const message = require('../email/message')
 
 
 // create user
@@ -40,7 +39,7 @@ router.get("/users/:id/confirm", async (req, res) => {
         if(req.query.userModified === 'true') {
             user.save()
             // return res.redirect('/users/login')
-            return res.status(200).send()
+            return res.status(202).send(user)
         }
         // console.log(req.query.extendToken);
         // generate jwt token 
@@ -61,7 +60,7 @@ router.patch("/users/login", async (req, res) => {
         const user = await User.findByCredentials(req.body.emailAddress, req.body.password)
         // generate jwt token
         const token = await user.generateAuthToken(req.query.extendToken)
-        res.status(200).send({user, token})
+        res.status(202).send({user, token})
     } catch (e) {
         res.status(500).send({
             error: e.message
@@ -71,7 +70,7 @@ router.patch("/users/login", async (req, res) => {
 
 // post, reset
 // TODO - send password
-router.get("/users/:id/reset", async (req, res) => {
+router.get("/users/:id/reset", auth, async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if (!user) {
@@ -84,7 +83,7 @@ router.get("/users/:id/reset", async (req, res) => {
         const pass = await user.restPassword()
         await user.save()
         // res.redirect(`/users/${req.params.id}/confirm?userModified=true`)
-        res.status(200).send({user, pass})
+        res.status(202).send({user, pass})
     } catch (e) {
         res.status(500).send({
             error: e.message
@@ -173,7 +172,7 @@ router.patch("/users/me", auth, async (req, res) => {
             req.user[value] = req.body[value]
         })
         await req.user.save()
-        res.status(200).send(req.user)
+        res.status(202).send(req.user)
     } catch (e) {
         res.status(500).send({error: e.message})
     }

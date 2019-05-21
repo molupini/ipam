@@ -82,7 +82,7 @@ networkSchema.virtual('address', {
 networkSchema.methods.toJSON = function () {
     const network = this
     const networkObject = network.toObject()
-    delete networkObject.networkConfirmed
+    // delete networkObject.networkConfirmed
     return networkObject
 }
 

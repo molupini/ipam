@@ -21,6 +21,8 @@ router.get('/admins/users/:id', auth, async (req, res) => {
         if (!user) {
            return res.status(404).send()
         }
+        // debugging
+        // console.log('user :', user);
         res.status(200).send(user)
     } catch (e) {
         res.status(500).send(e)
@@ -28,7 +30,7 @@ router.get('/admins/users/:id', auth, async (req, res) => {
 })
 
 router.patch("/admins/users/:id", auth, async (req, res) => {
-    const exclude = ['n', 'emailAddress', 'userName', 'password']
+    const exclude = ['n', 'userName', 'password']
     const isValid = valid(req.body, User.schema.obj, exclude)
     if (!isValid) {
        return res.status(400).send({error: "Please provide a valid input"})
@@ -44,8 +46,7 @@ router.patch("/admins/users/:id", auth, async (req, res) => {
         })
         await user.save()
         // if userRoot specified and authentication passed in auth middleware, 
-        // find existing and remove privileges
-        // only one root account possible
+        // find existing and remove privileges, only one root account possible
         const options = {}
         // sort by updatedAt ascending, note -1 is descending 
         options.sort = {
