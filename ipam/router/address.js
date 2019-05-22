@@ -16,12 +16,12 @@ router.get("/addresses", auth, async (req, res) => {
         const options = {}
         const sort = {}
         if (req.query.network) {
-            if (!req.query.network.match(/^[0-9]{1,3}(\.[0-9]{1,3}|\.){0,3}$/)) {
+            if (!req.query.network.match(/^[0-9]{1,3}(\.[0-9]{1,3}|\.){1,2}\.0$/)) {
                 return res.status(400).send({
                     error: 'Please provide a valid network'
                 })
             }
-            match.address = new RegExp(`^${req.query.network}`)
+            match.address = new RegExp(`^${req.query.network.replace(/0$/,'')}`)
         }
         if (req.query.available) {
             match.isAvailable = req.query.available === 'true'
@@ -53,6 +53,7 @@ router.get("/addresses", auth, async (req, res) => {
 })
 
 // patch address by id, available=true or false, check-in / check-out address
+// used by scanner to patch specific attributes within query string 
 router.patch("/addresses/:id", auth, async (req, res) => {
     try {
         const match = {}
@@ -62,24 +63,26 @@ router.patch("/addresses/:id", auth, async (req, res) => {
                 error: "Not Found"
             })
         }
-
+        // used by scanner 
         if (req.query.available) {
             match.isAvailable = req.query.available === 'true'
             address.isAvailable = match.isAvailable
+            // is available, true - update true count
             if (match.isAvailable) {
                 address.trueCount++
             }
+            // is available, false - update false count
             if (!match.isAvailable) {
                 address.falseCount++
             }
+            // scanned 
             address.count++
         }
-
+        // if request owner is not equal to address owner on record then update to null 
         if (req.query.owner === address.owner.toString()) {
             // console.log(address)
             address.owner = null
         }
-
         await address.save()
         res.status(200).send(address)
     } catch (e) {
@@ -99,9 +102,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         options.sort = {
             'updatedAt': -1
         }
-
         // console.log({match, options})
-
         if (req.query.network) {
             if (!req.query.network.match(/^[0-9]{1,3}(\.[0-9]{1,3}|\.){1,2}\.0$/)) {
                 return res.status(400).send({

@@ -4,7 +4,7 @@ const router = new express.Router()
 const auth = require("../middleware/auth")
 const Network = require("../model/network")
 const valid = require("../src/util/compare")
-const { ipV4 } = require("../src/util/range")
+// const { ipV4 } = require("../src/util/range")
 
 // endpoints 
 // CRUD operations below
@@ -25,7 +25,7 @@ router.post('/networks', auth, async (req, res) => {
 
 // get, confirm network and build addresses
 // TODO might deprecate
-router.patch("/networks/:id/confirm", auth, async (req, res) => {
+router.get("/networks/:id/confirm", auth, async (req, res) => {
     try {
         const _id = req.params.id
         const network = await Network.findById(_id)
@@ -56,62 +56,6 @@ router.get("/networks", auth, async (req, res) => {
     }
 })
 
-// get, populate addresses 
-// GET {{url}}/networks/addresses?network=192.168.77.0&limit=5&skip=0&sort=updatedAt:desc
-router.get("/networks/addresses", auth, async (req, res) => {
-    try {
-
-        const match = {}
-        const options = {}
-        const sort = {}
-        match.isAvailable = true
-        var network = null
-        // if (req.query.available) {
-        //     match.isAvailable = req.query.available === 'true'
-        // }
-        if (req.query.network) {
-            if (!ipV4(req.query.network)) {
-                return res.status(400).send({error: 'Please provide a valid network'})
-            }
-            network = req.query.network
-        }
-        if (req.query.limit) {
-            if (req.query.limit >= 5) {
-                req.query.limit = 5
-            }
-            options.limit = parseInt(req.query.limit)
-        }
-        if (req.query.skip) {
-            options.skip = parseInt(req.query.skip)
-        }
-        if (req.query.sort) {
-            const parts = req.query.sort.split(':')
-            sort[parts[0]] = parts[1] === 'desc' ? -1 : 1
-            options.sort = sort
-        }
-        // console.log(options)
-        network = await Network.findOne({
-            networkAddress: network
-        })
-        if (!network) {
-            return res.status(404).send({
-                error: 'Please provide a valid network'
-            })
-        }
-        await network.populate({
-            path: 'address',
-            match,
-            options
-        }).execPopulate()
-        res.status(200).send({
-            network,
-            addresses: network.address
-        })
-    } catch (e) {
-        res.status(500).send(e)
-    }
-})
-
 // get, id 
 router.get("/networks/:id", auth, async (req, res) => {
     const _id = req.params.id
@@ -120,7 +64,15 @@ router.get("/networks/:id", auth, async (req, res) => {
         if (!network) {
             return res.status(404).send()
         }
-        res.status(200).send(network)
+        if (req.query.populate === 'true') {
+            await network.populate({
+                path: 'address'
+            }).execPopulate()
+        }
+        res.status(200).send({
+            network, 
+            addresses: network.address}
+        )
     } catch (e) {
         res.status(500).send(e)
     }
@@ -129,7 +81,7 @@ router.get("/networks/:id", auth, async (req, res) => {
 // patch network, with validation and key exclusion
 // findByIdAndUpdate() will bypass the middleware which is what we require when posting the changes below
 router.patch("/networks/:id", auth, async (req, res) => {
-    const exclude = ["networkAddress", "subnetMask", "numHosts", "subnetMaskLength", "broadcastAddress", "lastAddress", "firstAddress"]
+    const exclude = ["networkAddress", "networkConfirmed", "subnetMask", "numHosts", "subnetMaskLength", "broadcastAddress", "lastAddress", "firstAddress"]
     const isValid = valid(req.body, Network.schema.obj, exclude)
     if (!isValid) {
         return res.status(400).send({
@@ -153,7 +105,7 @@ router.patch("/networks/:id", auth, async (req, res) => {
             network[value] = req.body[value]
         })
         await network.save()
-        res.status(200).send(network)
+        res.status(201).send(network)
     } catch (e) {
         res.status(500).send({
             error: e.message

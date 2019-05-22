@@ -28,9 +28,9 @@ const auth = async (req, res, next) => {
         if (!user) {
             throw new Error()
         }
-
+        // console.log(req.path);
         // admins path access control, only allow userAdmin access 
-        if(req.path.match(/^\/admins\//)){
+        if(req.path.match(/^\/admins/)){
             if(!user.userAdmin){
                 throw new Error()
             }
@@ -48,13 +48,13 @@ const auth = async (req, res, next) => {
             }
         }
         // networks path access control, only allow userAdmin access 
-        if(req.path.match(/^\/admins\//)){
+        if(req.path.match(/^\/networks/)){
             if(!user.userAdmin){
                 throw new Error()
             }
         }
         // addresses path access control, only allow userAdmin access 
-        if(req.path.match(/^\/addresses\//)){
+        if(req.path.match(/^\/addresses/)){
             if(!user.userConfirmed){
                 throw new Error()
             }

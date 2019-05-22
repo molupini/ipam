@@ -23,7 +23,7 @@ const networkSchema = new mongoose.Schema({
         trim: true,
         validate(value) {
             if (!validator.isIP(value,4)) {
-                throw new Error("Please provide a valid Subnet Mask")
+                throw new Error("Please provide a valid subnet mask")
             }
         }
     }, 
@@ -82,7 +82,7 @@ networkSchema.virtual('address', {
 networkSchema.methods.toJSON = function () {
     const network = this
     const networkObject = network.toObject()
-    // delete networkObject.networkConfirmed
+    delete networkObject.networkConfirmed
     return networkObject
 }
 
@@ -91,14 +91,17 @@ networkSchema.methods.toJSON = function () {
 networkSchema.pre("save", async function (next) {
     const network = this
     const subnet = await ip.subnet(network.networkAddress, network.subnetMask)
+    
     // allowed modification, note order above first post/save below
      const cidr = `${network.networkAddress}/${network.subnetMaskLength}`
      if (network.isModified("defaultGateway") && !ip.cidrSubnet(cidr).contains(network.defaultGateway)) {
          throw new Error("Please provide a valid gateway")
     }
+
      if (network.isModified("VLAN") && (network.VLAN < 0 || network.VLAN > 4094)) {
          throw new Error("Please provide a valid vlan")
     }
+
     if (network.isModified("networkConfirmed") && network.networkConfirmed === true) {
         const cidrSubnet = `${network.networkAddress}/${network.subnetMaskLength}`
         const addresses = await ipScope(cidrSubnet, network.cidrExclusion)

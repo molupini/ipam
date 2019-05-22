@@ -135,15 +135,15 @@ userSchema.methods.generateAuthToken = async function (days = 2) {
         days = 2
      }
     if(extension > 1){
-        if (extension >= process.env.JWT_MAX_TTL){
-            extension = process.env.JWT_MAX_TTL
+        if (extension >= process.env.MAX_JWT_TTL){
+            extension = process.env.MAX_JWT_TTL
         } else {
             extension = extension
         }
 
         days = extension
     }
-    // console.log('days =', days)
+    console.log('days =', days)
     // jwt module use secret to generate a jwt and add to array
     const token = await jwt.sign({
         _id: user._id.toString()
@@ -153,7 +153,7 @@ userSchema.methods.generateAuthToken = async function (days = 2) {
         token
     })
     // tokens array length, remove stale elements
-    if (user.tokens.length > process.env.TOKENS_ARRAY_LENGTH) {
+    if (user.tokens.length > process.env.MAX_ARRAY_LENGTH) {
         user.tokens.shift()
     }
 
