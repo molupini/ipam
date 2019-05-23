@@ -55,7 +55,6 @@ router.get("/addresses", auth, async (req, res) => {
 router.patch("/addresses/:id", auth, async (req, res) => {
     try {
         const match = {}
-
         const address = await Address.findById(req.params.id)
         if (!address) {
             return res.status(404).send({
@@ -63,6 +62,7 @@ router.patch("/addresses/:id", auth, async (req, res) => {
             })
         }
         // used by scanner 
+        // debugging
         if (req.query.available) {
             match.isAvailable = req.query.available === 'true'
             address.isAvailable = match.isAvailable
@@ -77,13 +77,16 @@ router.patch("/addresses/:id", auth, async (req, res) => {
             // scanned 
             address.count++
         }
-        // used by scanner if request owner is not equal to address owner on record then update to null 
-        if (req.query.owner) {
+        // used by scanner, if trueCount above threshold need to release address
+        if (req.query.owner && address.owner !== null) {
+            // console.log(req.query.owner);
+            // console.log(address.owner);
             if(req.query.owner === address.owner.toString()) {
-            // console.log(address)
             address.owner = null
             }
         }
+        // debugging 
+        // console.log(address)
         await address.save()
         res.status(200).send(address)
     } catch (e) {
@@ -100,7 +103,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         // limit amount provided by env variable
         match.isAvailable = true
         match.owner = null
-        options.limit = process.env.MAX_QUERY_LIMIT
+        options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
         options.sort = {
             'updatedAt': -1
         }
@@ -131,7 +134,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
             address = await Address.find(match, null, options)    
         } catch (e) {
             // TODO - email owner of network
-            console.log({error: 'Network address limit reached'})
+            console.log({warning: 'Network address limit reached, check scope'})
             options.limit = 1
             address = await Address.find(match, null, options)
         }

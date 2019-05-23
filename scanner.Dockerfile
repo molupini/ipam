@@ -1,8 +1,9 @@
 # # base
 FROM node:10-alpine as base 
 
-ENV PORT=3000
-ENV ENDPOINT=express
+ENV EXPRESS_URL=http://express:3000
+ENV TCP_PORT_ARRAY=443,80,3389,5986,53,23,22
+ENV JWT_SCANNER=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1Y2U2NWVmYmZjZjY3ODAwMTJiZTNjNGYiLCJpYXQiOjE1NTg2MDE0NzIsImV4cCI6MTU1ODc3NDI3Mn0.AmM8dEVHUdhpx2px-YhEPbC6cVL8i5mmqvSrutwUeIo
 
 ARG CREATED_DATE=not-set
 ARG SOURCE_COMMIT=not-set
@@ -21,7 +22,7 @@ RUN apk add --no-cache tini
 
 WORKDIR /node
 
-COPY package*.json ./
+COPY ./scanner/package.json ./scanner/package*.json ./
 
 RUN npm config list && npm ci && npm cache clean --force 
 
@@ -39,7 +40,7 @@ RUN npm install --only=development
 
 WORKDIR /node/app
 
-COPY . .
+# COPY ./scanner/. .
 
 CMD ["nodemon", "./src/runner.js"]
 
@@ -49,7 +50,7 @@ FROM base as source
 
 WORKDIR /node/app
 
-COPY . .
+COPY ./scanner/. .
 
 
 # # audit

@@ -2,22 +2,27 @@ const { fetchAddresses } = require("./util/fetch")
 const { doTcpCheck, doPingCheck } = require("./util/check")
 const chalk = require('chalk')
 
-const scanner = (endpoint, port, jwt, options, tcpcheckports) => {
+// scanner function
+const scanner = (endpoint, jwt, options, tcpPorts) => {
     var urlAddresses = null
+    
     if (options) {
-        urlAddresses = `${endpoint}:${port}/addresses?${options}&sort=updatedAt:acs`
+        urlAddresses = `${endpoint}/addresses?${options}&sort=updatedAt:acs`
     } else {
-        urlAddresses = `${endpoint}:${port}/addresses?sort=updatedAt:acs`
+        urlAddresses = `${endpoint}/addresses?sort=updatedAt:acs`
     }
-    const urlAddress = `${endpoint}:${port}/addresses/`
-    const ports = tcpcheckports.split(',')
+    
+    const urlAddress = `${endpoint}/addresses/`
+    const ports = tcpPorts.split(',')
 
-    // debuging only
-    console.log({
-        urlAddresses,
-        ports
-    })
+    // debugging only
+    console.log({info:'Scanner Running, Interrogate IP Address Manager'})
+    // console.log({
+    //     urlAddresses,
+    //     ports
+    // })
 
+    // fetch function, get full scope 
     fetchAddresses(urlAddresses, 'GET', jwt, (e, request) => {
         if (e) {
             console.log(e)
@@ -38,11 +43,12 @@ const scanner = (endpoint, port, jwt, options, tcpcheckports) => {
                 const trueCount = element.trueCount
                 
                 var isValid = []
+                // check function
                 doPingCheck(ip)
                     .then((r0) => {
                         // result from callback functions doPingCheck 
                         // r0 response is true active mark entry isAvailable=false
-                        // debuging only
+                        // debugging only
                         // console.log({ r0: { id, ip, r0 } })
                         if (!r0) {
                             return {
@@ -54,30 +60,34 @@ const scanner = (endpoint, port, jwt, options, tcpcheckports) => {
                             }
                         }
                         const q = '?available=false'
-                        console.log(chalk.yellow(`r0: ${ip}, ${q}`))
+                        // debugging
+                        // console.log(chalk.yellow(`r0: ${ip}, ${q}`))
+                        // fetch function, patch can ping address
                         fetchAddresses((urlAddress + id + q), 'PATCH', jwt, (e, request) => {
                             if (e) {
                                 return e
                             }
-                            // debuging only web request if output required
+                            // debugging only web request if output required
                             // console.log(request)
                         })
                     }).then((r1) => {
                         if (!r1.r0) {
-                            // debuging only
+                            // debugging only
                             // console.log({ r1: { ...r1 } })
                             ports.forEach(port => {
+                                // check function
                                 doTcpCheck(port, ip)
                                     .then((tcp) => {
                                         if (tcp) {
-                                            // TODO need to confirm testing of blocked icmp and open a port out of the checklist 
+                                            // TODO need to confirm testing of blocked ping and open a port out of the checklist 
                                             const q = '?available=false'
-                                            console.log(chalk.blue(`r1: ${q}, ${ip}, ${tcp}`))
+                                            // console.log(chalk.blue(`r1: ${q}, ${ip}, ${tcp}`))
+                                            // fetch function, patch port is active
                                             fetchAddresses((urlAddress + id + q), 'PATCH', jwt, (e, request) => {
                                                 if (e) {
                                                     return e
                                                 }
-                                                // debuging only web request if output required
+                                                // debugging only web request if output required
                                                 // console.log(request)
                                             })
                                         }
@@ -87,7 +97,7 @@ const scanner = (endpoint, port, jwt, options, tcpcheckports) => {
                                         isValid.push(inActive)
                                         // timeout catch and added to array of identical port 
                                         // const error = e1.message
-                                        // debuging only
+                                        // debugging only
                                         // console.log({
                                         //     e1: {
                                         //         id,
@@ -95,25 +105,17 @@ const scanner = (endpoint, port, jwt, options, tcpcheckports) => {
                                         //         inActive
                                         //     }
                                         // })
-
                                         if (isValid.length === ports.length) {
                                             // port check completed mark entry isAvailable=true
-                                            // debuging only array below if output required
+                                            // debugging only array below if output required
                                             // console.log(isValid)
-                                            // TODO -- verify if owner is not null that if trueCount is higher then example 1440 (checks per hour x days) update address with null owner. 
-                                            // TODO -- before updating above require a notification to owner
                                             var q = '?available=true'
-                                            if (owner !== null && trueCount > 1440) {
-                                                q = q + `&owner=${owner}`
-                                                console.log(chalk.blue(`e1: ${ip}, ${q}`))
-                                            } else {
-                                                console.log(chalk.magenta(`e1: ${ip}, ${q}`))
-                                            }
+                                            // fetch function, patch port(s) within array are all in-active, address is available
                                             fetchAddresses((urlAddress + id + q), 'PATCH', jwt, (e, request) => {
                                                 if (e) {
                                                     return e
                                                 }
-                                                // debuging only
+                                                // debugging only
                                                 // web request if output required
                                                 // console.log(request)
                                             })

@@ -45,8 +45,6 @@ RUN npm install --only=development
 
 WORKDIR /node/app
 
-# COPY ./ipam/. .
-
 CMD ["nodemon", "./src/index.js"]
 
 
@@ -56,7 +54,6 @@ FROM base as source
 WORKDIR /node/app
 
 COPY ./ipam/. .
-COPY ../scanner/src/util/check.js ./ipam/src/util/
 
 
 # # audit

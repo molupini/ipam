@@ -54,15 +54,13 @@ const auth = async (req, res, next) => {
             }
         }
         // addresses path access control, only allow userAdmin access 
-        if(req.path.match(/^\/addresses\/checkout/)){
+        if(req.path.match(/^\/addresses/)){
             if(!user.userConfirmed){
                 throw new Error()
             }
         }
-        else if(req.path.match(/^\/addresses/)){
-            if(!user.userAdmin){
-                throw new Error()
-            }
+        else if(req.path.match(/^\/addresses/) && !req.method.match(/GET/) && !user.userAdmin){
+            throw new Error()
         }
         // give the route handler the user fetched from the database
         req.token = token

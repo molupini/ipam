@@ -1,15 +1,16 @@
 const scanner = require('./scanner')
 
 // TODO logging feature verbose =true/false
-// TODO need to modularize code within scanner if possible or see if can reduce complexity 
+// TODO within scanner if possible reduce complexity 
 // TODO CRON Job of this process or While loop
 // TODO test failures
 // TODO DNS PTR Lookup in scanner
 
-// options below will reduce the fetch size from the addresses endpoint based on day of the month 
+// Options below will reduce the fetch size from the addresses endpoint based on day of the month 
 // False only check
-// check addresses in use
-// activity - rarely used 
+// check addresses in use only
+// activity - first init only
+// if run after init will only verify actual live addresses and not false positives
 // const options = `available=false`
 
 // True only check
@@ -18,32 +19,7 @@ const scanner = require('./scanner')
 // const options = `available=true&owner=null`
 
 // True / False check / Existing owner
-// activity - 30 days, need to evaluate   
+// activity - daily, provide status of false positives     
 const options = false
 
-// True / False check / Null owner
-// activity - 14 days 
-// check free addresses and used address with owner null
-// const options = `owner=null`
-
-scanner(process.env.ENDPOINT, process.env.PORT, process.env.JWT, options, process.env.TCP_CHECK_PORTS)
-
-// testing while loop - not successful 
-// var run = async function(count) {
-//     console.log(`executing scanner: ${count}`)
-//     await scanner(process.env.ENDPOINT, process.env.PORT, process.env.JWT, options, process.env.TCP_CHECK_PORTS)
-//     setTimeout(run, 5000)
-// }
-
-// var count = 0
-// while (true) {
-//     if (count >= 10) {
-//         break
-//     }
-//     count++
-//     run(count).then((r) => {
-//         console.log(r)
-//     }).catch((e) => {
-//         console.log(e)
-//     })
-// }
+scanner(process.env.EXPRESS_URL, process.env.JWT_SCANNER, options, process.env.TCP_PORT_ARRAY)
