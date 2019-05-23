@@ -143,7 +143,7 @@ userSchema.methods.generateAuthToken = async function (days = 2) {
 
         days = extension
     }
-    console.log('days =', days)
+    // console.log('days =', days)
     // jwt module use secret to generate a jwt and add to array
     const token = await jwt.sign({
         _id: user._id.toString()

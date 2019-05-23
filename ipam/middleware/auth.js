@@ -54,8 +54,13 @@ const auth = async (req, res, next) => {
             }
         }
         // addresses path access control, only allow userAdmin access 
-        if(req.path.match(/^\/addresses/)){
+        if(req.path.match(/^\/addresses\/checkout/)){
             if(!user.userConfirmed){
+                throw new Error()
+            }
+        }
+        else if(req.path.match(/^\/addresses/)){
+            if(!user.userAdmin){
                 throw new Error()
             }
         }
