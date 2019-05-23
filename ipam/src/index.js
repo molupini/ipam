@@ -10,9 +10,6 @@ const networkRouter = require('../router/network')
 const addressRouter = require('../router/address')
 const adminRouter = require('../router/admin')
 
-// port
-const port = process.env.PORT
-
 // config/middleware
 app.use(express.json()) // auto parse incoming req
 app.use(userRouter)

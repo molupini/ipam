@@ -66,8 +66,30 @@ const userModified = (email, user, id) => {
     // sendgrid.send(msg)
 }
 
+const addressTrueCount = (email, address, id) => {
+
+    const body = `<strong>We noticed your IP Address is invisible!</strong><br><br>\
+    If you wish to keep this allocated to your account and not released back into the wild, please click on the link:<br><br>\
+    <a href="http://localhost:3000/globals/ports/${id}/?number=n"><strong>/Configure</strong></a><br>
+    `
+
+    const subject = `Your Address is invisible, ${address}`
+
+    var msg = {
+        to: email,
+        from: 'no-reply@myloft.co.za',
+        subject,
+        html: body,  
+    }
+
+    console.log({date: new Date(Date.now()), sendgrid: msg.subject, action: 'configure required'})
+    // sendgrid.send(msg)
+}
+
+
 module.exports = {
     userCreated,
     userReset,
-    userModified
+    userModified, 
+    addressTrueCount
 }
