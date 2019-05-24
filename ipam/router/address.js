@@ -3,6 +3,8 @@ const express = require("express")
 const router = new express.Router()
 const auth = require('../middleware/auth')
 const Address = require("../model/address")
+const User = require('../model/user')
+const message = require('../email/message')
 const { doPingCheck } = require("../src/util/check")
 
 // CRUD
@@ -67,24 +69,62 @@ router.patch("/addresses/:id", auth, async (req, res) => {
             match.isAvailable = req.query.available === 'true'
             address.isAvailable = match.isAvailable
             // is available, true - update true count
+        
             if (match.isAvailable) {
                 address.trueCount++
+        
+                // verify if FalsePositive 
+                if(address.owner != null){
+                    // load trueCount threshold from environment variable 
+                    // create a fp FalsePositive counter
+                    var fp = parseInt(process.env.TRUE_COUNT_THRESHOLD)
+                    // evaluating if value is suitable 
+                    if(fp % 2 !== 0 && fp > 20){
+                        fp = 60
+                    }
+                    if(address.trueCount > fp){
+                        // if above threshold, release address back into the wild!
+                        // debugging 
+                        console.log({error: `Address ${address.address}, Owner ${address.owner}, trueCount ${address.trueCount}`})
+                        address.owner = null
+                        // TODO eval with scanner, below - as could change state there to
+                        address.isAvailable = true
+                    } 
+                    else if (address.trueCount > (fp/2)) {
+                        // elseif above threshold, send information to owner to verify and add port well known ports array
+                        const user = await User.findById(address.owner)
+                        // debugging 
+                        // console.log('user :', user);
+                        // console.log({warning: `Address ${address.address}, Owner ${address.owner}, trueCount ${address.trueCount}`})
+                        await message.addressTrueCount(user.emailAddress, address.address, user.id, address.trueCount)
+                    }
+                    else {
+                        // else, other
+                        // debugging 
+                        // console.log({info: `Address ${address.address} status, ${address.isAvailable}`})
+                    }
+                }
+
             }
             // is available, false - update false count
             if (!match.isAvailable) {
                 address.falseCount++
+                if (address.owner != null && address.falseCount > 0){
+                    // debugging 
+                    // console.log({info: `Address ${address.address} status, ${address.isAvailable}`})
+                }
             }
             // scanned 
             address.count++
         }
-        // used by scanner, if trueCount above threshold need to release address
+
+        // used by user to transfer ownership
         if (req.query.owner && address.owner !== null) {
-            // console.log(req.query.owner);
-            // console.log(address.owner);
             if(req.query.owner === address.owner.toString()) {
             address.owner = null
             }
         }
+
         // debugging 
         // console.log(address)
         await address.save()

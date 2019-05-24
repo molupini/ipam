@@ -19,7 +19,7 @@ const scanner = require('./scanner')
 // const options = `available=true&owner=null`
 
 // True / False check / Existing owner
-// activity - daily, provide status of false positives     
+// activity - daily, provide status of false positives, aka see address.trueCount
 const options = false
 
 scanner(process.env.EXPRESS_URL, process.env.JWT_SCANNER, options, process.env.TCP_PORT_ARRAY)

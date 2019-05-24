@@ -66,14 +66,14 @@ const userModified = (email, user, id) => {
     // sendgrid.send(msg)
 }
 
-const addressTrueCount = (email, address, id) => {
+const addressTrueCount = (email, address, id, count) => {
 
     const body = `<strong>We noticed your IP Address is invisible!</strong><br><br>\
     If you wish to keep this allocated to your account and not released back into the wild, please click on the link:<br><br>\
     <a href="http://localhost:3000/globals/ports/${id}/?number=n"><strong>/Configure</strong></a><br>
     `
 
-    const subject = `Your Address is invisible, ${address}`
+    const subject = `Your Address is invisible, ${address}, Days inactive ${count}`
 
     var msg = {
         to: email,
