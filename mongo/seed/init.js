@@ -1,4 +1,4 @@
-// ***** Mongodb Entrypoint, Creating Application User and DB *****
+// ***** Mongodb Entry point, Creating Application User and DB *****
 
 db = db.getSiblingDB('admin')
 db.auth('dbadmin', 'CoffeeTea123')

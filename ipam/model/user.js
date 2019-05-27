@@ -77,6 +77,11 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
         required: true
+    }, 
+    userNoc: {
+        type: Boolean,
+        default: false,
+        required: true
     },
     tokens: [{
         token: {
@@ -105,6 +110,7 @@ userSchema.methods.toJSON = function () {
     if (!thisObject.userAdmin){
         delete thisObject.n
         delete thisObject.userConfirmed
+        delete thisObject.userNoc
         delete thisObject.password
         delete thisObject.tokens
         delete thisObject.loginFailure
@@ -115,8 +121,8 @@ userSchema.methods.toJSON = function () {
         delete thisObject.__v
     } else if (thisObject.userAdmin){
         if(!thisObject.userAdmin){
+            delete thisObject.userNoc
             delete thisObject.userRoot
-            
         }
         delete thisObject.tokens
         delete thisObject.password
@@ -126,13 +132,13 @@ userSchema.methods.toJSON = function () {
 } 
 
 // methods are accessible on the instances - instance methods 
-userSchema.methods.generateAuthToken = async function (days = 2) {
+userSchema.methods.generateAuthToken = async function (days = process.env.MIN_JWT_TTL) {
     const user = this
     // query string, for jwt extension, will not allow greater then 365,
     // default 2 days
     var extension = parseInt(days)
-    if (isNaN(extension) || extension < 2) {
-        days = 2
+    if (isNaN(extension) || extension < process.env.MIN_JWT_TTL) {
+        days = process.env.MIN_JWT_TTL
      }
     if(extension > 1){
         if (extension >= process.env.MAX_JWT_TTL){
@@ -190,8 +196,10 @@ userSchema.statics.findByCredentials = async (email, password) => {
         await user.save()
         throw new Error('Mismatch username or password')
     }
-    // if successful reset to zero 
+    // if successful reset to zero and userNoc to false
     user.loginFailure = 0
+    user.userNoc = user.userNoc !== true
+
     await user.save()
     // return user 
     return user
@@ -219,7 +227,7 @@ userSchema.pre('save', async function (next) {
             user.userAdmin = true
         }
         // if successful save confirmation email will be sent
-        await message.userCreated(user.emailAddress, user.id)
+        await message.userCreated(user.emailAddress, user.userName, user.id)
     }
     // is a old document
     if(user.createdAt !== user.updatedAt){
@@ -233,6 +241,12 @@ userSchema.pre('save', async function (next) {
             user.userConfirmed = false
             // if successful save user modified email will be sent
             await message.userModified(user.emailAddress, user.userName, user._id)
+        }
+        if(user.isModified("tokens")){
+            // debugging
+            // console.log(user.tokens[user.tokens.length-1]);
+            const jwt = user.tokens[user.tokens.length-1].token
+            await message.userJsonWebToken(user.emailAddress, jwt, user.userName)
         }
     }
 

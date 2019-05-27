@@ -1,6 +1,8 @@
 const logging = require("../src/util/log")
 const jwt = require("jsonwebtoken")
 const User = require("../model/user")
+const moment = require('moment')
+const { userJWTExpiring } = require('../email/message')
 
 // middleware needs to be registered/used before other router calls
 const auth = async (req, res, next) => {
@@ -20,14 +22,30 @@ const auth = async (req, res, next) => {
         // replace Bearer string with '' string and verify token within header against JWT secret and decode _id within data play-load
         const token = req.header("Authorization").replace("Bearer ", "")
         const decoded = jwt.verify(token, process.env.JSON_WEB_TOKEN_SECRET)
-        
-        // TODO - message.userJWTExpiring
+        const dateNow = moment()
+        const dateExp = moment(decoded.exp*1000)
+        // const dateExp = new Date(decoded.exp*1000)
+
         // find id with token provided 
         const user = await User.findOne({ _id: decoded._id, 'tokens.token': token })
         // bearer user not found
         if (!user) {
             throw new Error()
         }
+
+        //  debugging 
+        // console.log({dateExp, dateNow})
+        if(dateExp.diff(dateNow, 'hours') < 72){
+            if(!user.userNoc && user.userConfirmed){
+                // debugging
+                // console.log('dateExp.diff():', dateExp.diff(dateNow, 'hours') );
+                await userJWTExpiring(user.emailAddress, user.userName)
+                user.userNoc = true
+                await user.save()
+            }
+
+        }
+
         // console.log(req.path);
         // admins path access control, only allow userAdmin access 
         if(req.path.match(/^\/admins/)){

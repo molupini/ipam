@@ -17,6 +17,7 @@
     "ip": "^1.1.5",
     "iprange": "^0.1.0",
     "jsonwebtoken": "^8.5.1",
+    "moment": "^2.24.0",
     "mongodb": "^3.1.13",
     "mongoose": "^5.4.19",
     "ping": "^0.2.2",
