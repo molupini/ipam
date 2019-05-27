@@ -77,6 +77,7 @@ const auth = async (req, res, next) => {
                 throw new Error()
             }
         }
+        // unauthorized access on patch addresses example user could transfer ownership without being the actual owner
         else if(req.path.match(/^\/addresses/) && !req.method.match(/GET/) && !user.userAdmin){
             throw new Error()
         }

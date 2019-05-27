@@ -91,10 +91,10 @@ router.patch("/addresses/:id", auth, async (req, res) => {
             address.count++
         }
 
-        // used by user to transfer ownership
+        // used by admin user to transfer ownership manually from specific id to null
         if (req.query.owner && address.owner !== null) {
             if(req.query.owner === address.owner.toString()) {
-            address.owner = null
+                address.owner = null
             }
         }
 

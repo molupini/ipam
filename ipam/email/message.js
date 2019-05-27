@@ -26,7 +26,7 @@ const userCreated = (email, user, id) => {
     }
     // debugging
     console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'confirm account'})
-    sendGrid.send(msg)
+    // sendGrid.send(msg)
 } 
 
 const userJsonWebToken = (email, jwt, user) => {
@@ -49,7 +49,7 @@ const userJsonWebToken = (email, jwt, user) => {
     }
     // debugging
     console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'notification'})
-    sendGrid.send(msg)   
+    // sendGrid.send(msg)   
 }
 
 const userJWTExpiring = (email, user) => {
@@ -70,7 +70,7 @@ const userJWTExpiring = (email, user) => {
     }
     // debugging
     console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'notification'})
-    sendGrid.send(msg)   
+    // sendGrid.send(msg)   
 }
 
 const userReset = (email, user, id) => {
@@ -91,7 +91,7 @@ const userReset = (email, user, id) => {
     }
     // debugging
     console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'reset'})
-    sendGrid.send(msg)
+    // sendGrid.send(msg)
 }
 
 const userModified = (email, user, id) => {
@@ -111,7 +111,7 @@ const userModified = (email, user, id) => {
     }
     // debugging
     console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'confirm changes'})
-    sendGrid.send(msg)
+    // sendGrid.send(msg)
 }
 
 const addressTrueCount = (email, address, id, count) => {
@@ -131,7 +131,7 @@ const addressTrueCount = (email, address, id, count) => {
     }
     // debugging
     console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'config required'})
-    sendGrid.send(msg)
+    // sendGrid.send(msg)
 }
 
 const addressTrueCountWarn = (email, owner, address, id, count) => {
@@ -152,7 +152,7 @@ const addressTrueCountWarn = (email, owner, address, id, count) => {
     }
     // debugging
     console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'config required'})
-    sendGrid.send(msg)
+    // sendGrid.send(msg)
 }
 
 module.exports = {

@@ -198,7 +198,9 @@ userSchema.statics.findByCredentials = async (email, password) => {
     }
     // if successful reset to zero and userNoc to false
     user.loginFailure = 0
-    user.userNoc = user.userNoc !== true
+    if(user.userNoc){
+        user.userNoc = false
+    }
 
     await user.save()
     // return user 
