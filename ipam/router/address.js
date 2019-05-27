@@ -87,8 +87,6 @@ router.patch("/addresses/:id", auth, async (req, res) => {
                         // debugging 
                         console.log({error: `Address ${address.address}, Owner ${address.owner}, trueCount ${address.trueCount}`})
                         address.owner = null
-                        // TODO eval with scanner, below - as could change state there to
-                        address.isAvailable = true
                     } 
                     else if (address.trueCount > (fp/2)) {
                         // elseif above threshold, send information to owner to verify and add port well known ports array
