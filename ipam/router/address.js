@@ -90,16 +90,16 @@ router.patch("/addresses/:id", auth, async (req, res) => {
             // scanned 
             address.count++
         }
-
         // used by admin user to transfer ownership manually from specific id to null
         if (req.query.owner && address.owner !== null) {
             if(req.query.owner === address.owner.toString()) {
                 address.owner = null
             }
         }
-
-        // debugging 
-        // console.log(address)
+        // primary port number
+        if (req.query.port){
+            address.portNumber = req.query.port
+        }
         await address.save()
         res.status(200).send(address)
     } catch (e) {
@@ -182,6 +182,10 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         if (update) {
             update.isAvailable = false
             update.owner = req.user.id
+            // primary port number
+            if (req.query.port){
+                update.portNumber = req.query.port
+            }
         }
         await update.save()
         // create a virtual between local _id and author aka network 

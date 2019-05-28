@@ -1,23 +1,12 @@
 const express = require('express')
 const router = new express.Router()
 const auth = require('../middleware/auth')
-const Port = require('../model/port')
+// const Port = require('../model/port')
 const Address = require('../model/address')
 
 
-// userConfirmed and userAdmin function
-router.post('/configs/ports', auth, async (req,res) => {
-    try {
-        const port = await new Port(req.body)
-        await port.save()
-        res.status(201).send(port)
-    } catch (e) {
-        res.status(500).send({error: e.message})
-    }
-})
-
 // user only, via email confirmation 
-router.get('/configs/ports/suggest', async (req,res) => {
+router.get('/configs/suggest', async (req,res) => {
     try {
         // mandatory fields
         if(!req.query.conf){
@@ -45,13 +34,11 @@ router.get('/configs/ports/suggest', async (req,res) => {
                 error: "Bad Request"
             })      
         }
-        // create document and verify within save method if author exists 
-        const ports = await new Port({
-            author: addressId,
-            portNumber: req.query.port
-        })
-        await ports.save()
-        res.status(200).send(ports)
+        if(req.query.port){
+            address.portNumber = req.query.port
+        }
+        await address.save()
+        res.status(200).send(address)
     } catch (e) {
         res.status(500).send({error: e.message})
     }
@@ -60,21 +47,15 @@ router.get('/configs/ports/suggest', async (req,res) => {
 // used by scanner & userAdmin
 router.get('/configs/ports', auth, async (req,res) => {
     try {
-        var ports = false
-        // query string for finding unique port number suggestions
-        if(req.query.unique === 'true'){
-            ports = await Port.find().distinct('portNumber')
-        }else{
-            ports = await Port.find()
-        }
-        if(!ports){
-            res.status(404).send({
+        const address = await Address.find().distinct('portNumber')
+        if(!address){
+            return res.status(404).send({
                 error: "Not Found"
             })    
         }        
-        res.status(200).send(ports)
+        res.status(200).send(address)
     } catch (e) {
-        res.status(500).send()
+        res.status(500).send(e)
     }
 })
 

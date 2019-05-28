@@ -40,16 +40,32 @@ const addressSchema = new mongoose.Schema({
         required: false,
         default: null,
         ref:'User'
+    },
+    portNumber:{
+       type: String, 
+       default: 80, 
+       validate(value){
+           if(!validator.isPort(value)){
+               throw new Error('Please provide valid port')
+           }
+       }
     }
 }, {
     timestamps: true
 })
 
+// virtual(s)  
 addressSchema.virtual('network', {
     ref: 'Network',
     localField: 'author',
     foreignField: '_id'
 })
+
+// addressSchema.virtual('port', {
+//     ref: 'Port',
+//     localField: '_id',
+//     foreignField: 'author'
+// })
 
 // toJSON
 addressSchema.methods.toJSON = function () {

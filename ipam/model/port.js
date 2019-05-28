@@ -1,14 +1,15 @@
+// TODO - not necessary might deprecate 
 const mongoose = require('mongoose')
 const validator = require('validator')
-const Address = require('../model/address')
 
 
 const portSchema = new mongoose.Schema({
     author:{
         type: mongoose.Schema.Types.ObjectId,
         required: true, 
-        default: null,
-        ref:'Address'
+        default: null
+        // ,
+        // ref:'Port'
     },
     portNumber:{
        type: String, 
