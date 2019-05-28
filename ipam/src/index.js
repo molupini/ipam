@@ -8,6 +8,7 @@ const { logger } = require('./util/log')
 const userRouter = require('../router/user')
 const networkRouter = require('../router/network')
 const addressRouter = require('../router/address')
+const configRouter = require('../router/port')
 const adminRouter = require('../router/admin')
 
 // config/middleware
@@ -15,6 +16,7 @@ app.use(express.json()) // auto parse incoming req
 app.use(userRouter)
 app.use(networkRouter)
 app.use(addressRouter)
+app.use(configRouter)
 app.use(adminRouter)
 
 app.use('/healthv', (req, res) => {

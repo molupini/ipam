@@ -114,11 +114,11 @@ const userModified = (email, user, id) => {
     // sendGrid.send(msg)
 }
 
-const addressTrueCount = (email, address, id, count) => {
+const addressTrueCount = (email, address, userId, addressId, count) => {
 
     const body = `<strong>We noticed your IP Address is invisible!</strong><br>\
     If you wish to keep this allocated to your account and not released back into the wild, please click on the link below:<br><br>\
-    <a href="http://localhost:3000/configs/ports/${id}/?number=n"><strong>/Configure</strong></a><br>
+    <a href="http://localhost:3000/configs/ports/suggest?conf=${userId}\:${count}\:${addressId}&port=n"><strong>/Configure</strong></a><br>
     `
 
     const subject = `Information: This address is invisible, ${address}, Days inactive ${count}`
@@ -131,28 +131,38 @@ const addressTrueCount = (email, address, id, count) => {
     }
     // debugging
     console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'config required'})
-    // sendGrid.send(msg)
+    sendGrid.send(msg)
 }
 
-const addressTrueCountWarn = (email, owner, address, id, count) => {
+const addressTrueCountWarn = (email, owner, address, userId, addressId, count, fp) => {
 
     const body = `<strong>We noticed your IP Address is invisible!</strong><br>\
     If you wish to keep this allocated to your account and not released back into the wild, please click on the link or alternatively contact the network address administrator:<br><br>\
-    <a href="http://localhost:3000/configs/ports/${id}/?number=n"><strong>/Configure</strong></a><br>
+    <a href="http://localhost:3000/configs/ports/suggest?conf=${userId}\:${count}\:${addressId}&port=n"><strong>/Configure</strong></a><br>
     `
-
-    const subject = `Warning: This address is invisible, ${address}, Removal in ${count} days`
-
-    var msg = {
-        to: email,
-        cc: owner,
-        from,
-        subject,
-        html: body,  
+    const dDay = fp - count
+    const subject = `Warning: This address is invisible, ${address}, Removal in ${dDay} days`
+    
+    if (email !== owner){
+        var msg = {
+            to: email,
+            cc: owner,
+            from,
+            subject,
+            html: body
+        }
+    }else {
+        var msg = {
+            to: email,
+            from,
+            subject,
+            html: body
+        }
     }
+
     // debugging
     console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'config required'})
-    // sendGrid.send(msg)
+    sendGrid.send(msg)
 }
 
 module.exports = {

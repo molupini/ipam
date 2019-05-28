@@ -75,7 +75,7 @@ router.patch("/addresses/:id", auth, async (req, res) => {
                 
                 if (isFalsePositive){
                     // debugging 
-                    console.log('isFalsePositive :', isFalsePositive);
+                    // console.log('isFalsePositive :', isFalsePositive);
                     address.owner = null 
                 }
             }
