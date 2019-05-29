@@ -12,6 +12,7 @@
   "dependencies": {
     "chalk": "^2.4.2",
     "cron": "^1.7.1",
+    "got": "^9.6.0",
     "ping": "^0.2.2",
     "request": "^2.88.0",
     "tcp-port-used": "^1.0.1"

@@ -18,18 +18,11 @@ var doTcpCheck = async function (port, ip) {
 var doPingCheck = async function (ip) {
     try {
         const pong = await ping.promise.probe(ip)
-        const test = pong.alive
-        // debugging 
-        // const testResult = {
-        //     host: pong.host,
-        //     alive: pong.alive
-        // }
-        // console.log('doPingCheck()');
-        // console.log(testResult)
-        if (!test) {
-            return false
+        const testResult = {
+            host: pong.host,
+            alive: pong.alive
         }
-        return true
+        return testResult
     } catch (e) {
         throw new Error(e)
     }
