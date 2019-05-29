@@ -17,8 +17,9 @@ var doTcpCheck = async function (port, ip) {
 
 var doPingCheck = async function (ip) {
     try {
-        const pong = await ping.promise.probe(ip)
+        const pong = await ping.promise.probe(ip.address)
         const testResult = {
+            id: ip._id,
             host: pong.host,
             alive: pong.alive
         }

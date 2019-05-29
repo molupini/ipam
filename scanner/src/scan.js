@@ -16,7 +16,8 @@ const client = got.extend({
     }
 })
 
-async function scan (){
+// scanAddresses function
+async function scanAddresses (){
     try {
         // fetch addresses 
         var addresses = await client.get('/addresses?sort=updatedAt:acs&limit=2', {json: true})
@@ -26,20 +27,18 @@ async function scan (){
         // debugging 
         // console.log(addresses)
     } catch (e) {
-        console.log(e)
+        throw new Error(e)
     }
 
-    // ping/array of addresses function 
+    // pingLoop function 
     const pingLoop = async (address) => {
         // debugging
         // console.log(address.length)
         let resultArray = []
         for (i = 0; i < address.length; i++) {
             // debugging
-            // const addr = address[i]
-            // debugging
             // console.log(`${address[i]._id}, ${address[i].address}, ping`)
-            await doPingCheck(address[i].address).then((pingResult) => {
+            await doPingCheck(address[i]).then((pingResult) => {
                 // console.log('doPingCheck :', pingResult);
                 resultArray.push(pingResult)
             })
@@ -51,7 +50,22 @@ async function scan (){
     // execute function 
     const pinging = await pingLoop(addresses.body)
     // debugging
-    console.log('pinging :', pinging);
+    // console.log('pinging :', pinging)
+    return pinging
 }
 
-scan()
+// main function
+scanAddresses().then((scanAddressesResult) => {
+    if(scanAddressesResult){
+        // debugging
+        console.log(scanAddressesResult)
+    }
+}).catch((scanAddressesError) => {
+    if(scanAddressesError.message){
+        // error handle
+        console.error(scanAddressesError.message)
+    }else{
+        console.error(scanAddressesError)
+    }
+
+})
