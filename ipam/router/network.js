@@ -30,10 +30,10 @@ router.get("/networks/:id/confirm", auth, async (req, res) => {
         const _id = req.params.id
         const network = await Network.findById(_id)
         if (!network) {
-            return res.status(404).send()
+            return res.status(404).send('Not Found')
         }
         if (network.networkConfirmed) {
-            return res.status(406).send({error: "Network confirmed"})
+            return res.status(406).send("Network confirmed")
         }
         network.networkConfirmed = true
         network.save()
@@ -48,7 +48,7 @@ router.get("/networks", auth, async (req, res) => {
     try {
         const network = await Network.find({})
         if (!network) {
-            return res.status(404).send()
+            return res.status(404).send('Not Found')
         }
         res.status(200).send(network)
     } catch (e) {
@@ -62,7 +62,7 @@ router.get("/networks/:id", auth, async (req, res) => {
     try {
         const network = await Network.findById({ _id })
         if (!network) {
-            return res.status(404).send()
+            return res.status(404).send('Not Found')
         }
         if (req.query.populate === 'true') {
             await network.populate({
@@ -84,21 +84,15 @@ router.patch("/networks/:id", auth, async (req, res) => {
     const exclude = ["networkAddress", "networkConfirmed", "subnetMask", "numHosts", "subnetMaskLength", "broadcastAddress", "lastAddress", "firstAddress"]
     const isValid = valid(req.body, Network.schema.obj, exclude)
     if (!isValid) {
-        return res.status(400).send({
-            error: "Please provide a valid input"
-        })
+        return res.status(400).send("Please provide a valid input")
     }
     try {
         const network = await Network.findById(req.params.id)
         if (!network) {
-            return res.status(404).send({
-                error: "Not Found"
-            })
+            return res.status(404).send('Not Found')
         }
         if (network.author !== null && network.author.toString() !== req.user.id.toString()) {
-            return res.status(403).send({
-                error: "Forbidden"
-            })
+            return res.status(403).send("Forbidden")
         }
         const body = Object.keys(req.body)
         body.forEach(value => {
@@ -118,14 +112,10 @@ router.delete("/networks/:id", auth, async (req, res) => {
     try {
         const network = await Network.findById(req.params.id)
         if (!network) {
-            return res.status(404).send({
-                error: "Not found"
-            })
+            return res.status(404).send('Not Found')
         }
         if (network.author.toString() !== req.user.id.toString()) {
-            return res.status(403).send({
-                error: "Forbidden"
-            })
+            return res.status(403).send("Forbidden")
         }
         await network.remove()
         res.status(200).send()

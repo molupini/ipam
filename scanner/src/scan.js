@@ -1,71 +1,77 @@
 // scan is based on using a http request module called got
 // https://www.npmjs.com/package/got
+// custom modules
+const { pingLoop, tcpLoop } = require("./util/network")
+const { httpFetch, addressPatchLoop } = require("./util/http")
 
-const got = require('got')
-const { doTcpCheck, doPingCheck } = require("./util/network")
+// env variables 
+// const ports = ['80','5986','3389','22']
+const ports = ['80','22']
+const urlAddress = `http://localhost:3000`
+const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1Y2YxMzQzNTllNTg4YTAwMTJmNWMyYTAiLCJpYXQiOjE1NTkzMTE0MjAsImV4cCI6MTU5MDg0NzQyMH0.tC2YkFKM12IxjF8R151ztF2uQhAbU38XXQK8CpuQVuk'
 
-const urlAddress = `http://localhost:3000/`
-const ports = ['443','80','3389','5986','53','23','22','1433']
-const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1Y2VkYTNhM2FjMjUxMjAxZDQ3NjE4YzUiLCJpYXQiOjE1NTkwNzc3OTksImV4cCI6MTU1OTY4MjU5OX0.kWQ_zxlF0t9odk1dDopm_728mkfFkl5JWf5IcjSara4'
-// config client
-const client = got.extend({
-    json: true,
-    baseUrl: urlAddress,
-    headers: {
-        Authorization: `Bearer ${jwt}`
-    }
-})
-
-// scanAddresses function
-async function scanAddresses (){
-    try {
-        // fetch addresses 
-        var addresses = await client.get('/addresses?sort=updatedAt:acs&limit=2', {json: true})
-        if(!addresses.body){
-           throw new Error('Unable to get addresses')
-        }
-        // debugging 
-        // console.log(addresses)
-    } catch (e) {
-        throw new Error(e)
-    }
-
-    // pingLoop function 
-    const pingLoop = async (address) => {
-        // debugging
-        // console.log(address.length)
-        let resultArray = []
-        for (i = 0; i < address.length; i++) {
-            // debugging
-            // console.log(`${address[i]._id}, ${address[i].address}, ping`)
-            await doPingCheck(address[i]).then((pingResult) => {
-                // console.log('doPingCheck :', pingResult);
-                resultArray.push(pingResult)
-            })
-        }
-        // debugging
-        // console.log('resultArray :', resultArray);
-        return resultArray
-    }
-    // execute function 
-    const pinging = await pingLoop(addresses.body)
-    // debugging
-    // console.log('pinging :', pinging)
-    return pinging
-}
 
 // main function
-scanAddresses().then((scanAddressesResult) => {
-    if(scanAddressesResult){
+// TODO - query string / options will be sent via run/cron function
+async function scan(){
+    try {
+        // starting
+        console.log({info:'Scanner Running, Interrogate IP Address Manager'})
+        // fetch function, get initialize addresses
+        // TODO move to own job
+        const getInit = await httpFetch(urlAddress, '/addresses/init', true, '', 'GET', jwt)
+        // nothing to initialize 
+        if(!getInit){
+            // debugging
+            // console.log(getInit)
+        }
+        // fetch function, get addresses 
+        const getAddresses = await httpFetch(urlAddress, '/addresses', true, '?sort=updatedAt:acs', 'GET', jwt)
+        if(!getAddresses.body){
+            // debugging
+            // console.log(getAddresses)
+        }
+        const body = getAddresses.body
+        // ping function
+        const resultPing = await pingLoop(body)
         // debugging
-        console.log(scanAddressesResult)
+        // console.log({result: resultPing})
+        // patch addresses 
+        const resultAddresses = await addressPatchLoop(resultPing, urlAddress, '/addresses', '?available=', jwt)
+        // console.log(resultAddresses)
+        const after = resultAddresses.filter(post => post.isAvailable === true)
+        // debugging
+        // console.log(after)
+        // tcp function, single port
+        const resultTcp = await tcpLoop(after, ports)
+        // debugging
+        // console.log(resultTcp)
+        const set = new Set(resultTcp)
+        const array = [...set]
+        // debugging
+        // console.log(array)
+        const objects = []
+        array.forEach(element => {
+            const object = {
+                id: element.split(':')[0],
+                host: element.split(':')[1],
+                alive: element.split(':')[2] === 'true'
+            }
+            objects.push(object)
+        })
+        if(objects.length > 0){
+            // PATCH ADDRESSES, FINAL CHECK UNTIL DNS TESTING
+            // debugging
+            // console.log(objects)
+            const resultAddresses = await addressPatchLoop(objects, urlAddress, '/addresses', '?available=', jwt)
+            // debugging
+            // console.log(resultAddresses)
+        }
+        // completed
+    } catch (e) {
+        console.log('scan(), catch')
+        console.error(e)
     }
-}).catch((scanAddressesError) => {
-    if(scanAddressesError.message){
-        // error handle
-        console.error(scanAddressesError.message)
-    }else{
-        console.error(scanAddressesError)
-    }
+}
 
-})
+scan()

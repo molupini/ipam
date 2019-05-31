@@ -19,7 +19,7 @@ router.get('/admins/users/:id', auth, async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if (!user) {
-           return res.status(404).send()
+           return res.status(404).send('Not Found')
         }
         // debugging
         // console.log('user :', user);
@@ -33,7 +33,7 @@ router.patch("/admins/users/:id", auth, async (req, res) => {
     const exclude = ['n', 'userName', 'password']
     const isValid = valid(req.body, User.schema.obj, exclude)
     if (!isValid) {
-       return res.status(400).send({error: "Please provide a valid input"})
+       return res.status(400).send("Please provide a valid input")
     }
     try {
         const user = await User.findById(req.params.id)
@@ -56,7 +56,7 @@ router.patch("/admins/users/:id", auth, async (req, res) => {
             const root = await User.findOne({userRoot: true}, null, options)
             // first item in array
             if(!root){
-                return res.status(404).send()
+                return res.status(404).send('Not Found')
             }
             root.userRoot = false
             await root.save()
@@ -71,7 +71,7 @@ router.delete('/admins/users/:id', auth, async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if(!user){
-            return res.status(404).send({error: "User Not Found"})
+            return res.status(404).send("User Not Found")
         }
         await user.remove()
         await res.status(200).send(user)

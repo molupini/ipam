@@ -5,6 +5,7 @@ const Filter = require("bad-words")
 const bcryptjs = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const Address = require("../model/address")
+const Schedule = require('../model/schedule')
 const message = require('../email/message')
 const random = require('randomatic')
 
@@ -227,6 +228,15 @@ userSchema.pre('save', async function (next) {
         if(user.n === 0){
             user.userRoot = true
             user.userAdmin = true
+            // create a default init address endpoint schedule, used by scanner(s)
+            const schedule = await new Schedule({
+                author: user.id,
+                // endpoint: 'address', 
+                // eventFired: false,
+                // weekdaySchedule: 6,
+                // cronSchedule: '* 1 * * * *'           
+            })
+            await schedule.save()
         }
         // if successful save confirmation email will be sent
         await message.userCreated(user.emailAddress, user.userName, user.id)

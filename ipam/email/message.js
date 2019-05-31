@@ -131,7 +131,7 @@ const addressTrueCount = (email, address, userId, addressId, count) => {
     }
     // debugging
     console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'config required'})
-    sendGrid.send(msg)
+    // sendGrid.send(msg)
 }
 
 const addressTrueCountWarn = (email, owner, address, userId, addressId, count, fp) => {
@@ -162,7 +162,7 @@ const addressTrueCountWarn = (email, owner, address, userId, addressId, count, f
 
     // debugging
     console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'config required'})
-    sendGrid.send(msg)
+    // sendGrid.send(msg)
 }
 
 module.exports = {

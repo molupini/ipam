@@ -4,6 +4,8 @@ const dns = require('dns').promises
 
 var doTcpCheck = async function (port, ip) {
     try {
+        // debugging only
+        // console.log(port, ip)
         const test = await tcp.check(port, ip)
         if (test) {
             return test === true
@@ -20,17 +22,12 @@ var doPingCheck = async function (ip) {
         const pong = await ping.promise.probe(ip)
         const test = pong.alive
         // debugging 
-        // const testResult = {
-        //     host: pong.host,
-        //     alive: pong.alive
-        // }
-        // console.log('doPingCheck()');
-        // console.log(testResult)
-        if (!test) {
-            return false
-        }
-        return true
+        // console.log('doPingCheck()')
+        // console.log(test)
+        return test
     } catch (e) {
+        // debugging
+        // console.log('doPingCheck e:', e)
         throw new Error(e)
     }
 }

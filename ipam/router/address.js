@@ -16,9 +16,7 @@ router.get("/addresses", auth, async (req, res) => {
         const sort = {}
         if (req.query.network) {
             if (!req.query.network.match(/^[0-9]{1,3}(\.[0-9]{1,3}|\.){1,2}\.0$/)) {
-                return res.status(400).send({
-                    error: 'Please provide a valid network'
-                })
+                return res.status(400).send('Please provide a valid network')
             }
             match.address = new RegExp(`^${req.query.network.replace(/0$/,'')}`)
         }
@@ -30,6 +28,8 @@ router.get("/addresses", auth, async (req, res) => {
         }
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
+        }else{
+            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
         }
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)
@@ -41,12 +41,61 @@ router.get("/addresses", auth, async (req, res) => {
         }
         // console.log({match, options})
         const address = await Address.find(match, null, options)
-        if (!address) {
-            res.status(404).send()
+        if (!address || address.length <= 0) {
+            return res.status(404).send('Not Found')
         }
-        
         res.status(200).send(address)
     } catch (e) {
+        res.status(500).send(e)
+    }
+})
+
+// TODO used by scanner only, need to auth
+router.get('/addresses/init', auth, async (req, res) => {
+    try {
+        const options = {}
+        const sort = {}
+
+        if(req.query.count === 'true'){
+            const count = await Address.countDocuments({
+                isInit: false
+            })
+
+            
+            // debugging
+            // console.log('count :', count)
+            if(count > 0){
+                return res.status(200).send({count:true})
+            }
+            return res.status(200).send({count:false})
+        }
+
+
+        if (req.query.limit) { 
+            options.limit = parseInt(req.query.limit)
+        }else{
+            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+        }
+        if (req.query.sort) {
+            const parts = req.query.sort.split(':')
+            sort[parts[0]] = parts[1] === 'desc' ? -1 : 1 
+            options.sort = sort
+        }
+        const address = await Address.find({
+            isInit: false
+        }, null, options)
+
+        if(!address){
+            return res.status(204).send('No Content')
+        }
+
+        address.forEach(addr => {
+            addr.isInit = true
+            addr.save()
+        })
+
+        res.status(201).send(address)
+    }catch(e){
         res.status(500).send(e)
     }
 })
@@ -55,15 +104,14 @@ router.get("/addresses", auth, async (req, res) => {
 // used by scanner to patch specific attributes within query string 
 router.patch("/addresses/:id", auth, async (req, res) => {
     try {
+        // debugging
+        // console.log(req.query)
         const match = {}
         const address = await Address.findById(req.params.id)
         if (!address) {
-            return res.status(404).send({
-                error: "Not Found"
-            })
+            return res.status(404).send("Not Found")
         }
         // used by scanner 
-        // debugging
         if (req.query.available) {
             match.isAvailable = req.query.available === 'true'
             address.isAvailable = match.isAvailable
@@ -100,6 +148,12 @@ router.patch("/addresses/:id", auth, async (req, res) => {
         if (req.query.port){
             address.portNumber = req.query.port
         }
+        // fully qualified domain name
+        if (req.query.fqdn){
+            update.portNumber = req.query.fqdn
+        }
+        // debugging
+        // console.log(address)
         await address.save()
         res.status(200).send(address)
     } catch (e) {
@@ -124,9 +178,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         // query by network 
         if (req.query.network) {
             if (!req.query.network.match(/^[0-9]{1,3}(\.[0-9]{1,3}|\.){1,2}\.0$/)) {
-                return res.status(400).send({
-                    error: 'Please provide a valid network'
-                })
+                return res.status(400).send('Please provide a valid network')
             }
             match.address = new RegExp(`^${req.query.network.replace(/0$/,'')}`)
         }
@@ -135,9 +187,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
             match.author = req.query.author
         }
         else { 
-            return res.status(400).send({
-                error: 'Please provide a valid network address or author'
-            })
+            return res.status(400).send('Please provide a valid network address or author')
         }
         // find based on match
         // debugging 
@@ -148,12 +198,13 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         } catch (e) {
             // TODO - email owner of network
             console.log({warning: 'Network address limit reached, check scope'})
+            // changing limit to 1 if address range is less then limit
             options.limit = 1
             address = await Address.find(match, null, options)
         }
         // 404 if null or array length zero
         if (!address || address.length === 0) {
-            return res.status(404).send()
+            return res.status(404).send('Not Found')
         }
         // ping/array of addresses function 
         const pingLoop = async () => {
@@ -185,6 +236,9 @@ router.get('/addresses/checkout', auth, async (req, res) => {
             // primary port number
             if (req.query.port){
                 update.portNumber = req.query.port
+            }
+            if (req.query.fqdn){
+                update.portNumber = req.query.fqdn
             }
         }
         await update.save()

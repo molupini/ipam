@@ -14,6 +14,10 @@ const addressSchema = new mongoose.Schema({
         },
         unique: true
     },
+    isInit:{
+        type: Boolean,
+        default: false
+    },
     isAvailable: {
         type: Boolean, 
         default: false
@@ -47,6 +51,16 @@ const addressSchema = new mongoose.Schema({
        validate(value){
            if(!validator.isPort(value)){
                throw new Error('Please provide valid port')
+           }
+       }
+    },
+    fqdn:{
+       type: String, 
+       default: 'host.unknown',
+       trim: true,
+       validate(value){
+           if(!validator.isFQDN(value)){
+               throw new Error('Please provide valid Full Qualified Domain Name')
            }
        }
     }

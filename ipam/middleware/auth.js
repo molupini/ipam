@@ -15,9 +15,7 @@ const auth = async (req, res, next) => {
     try {
         // valid methods
         if (!req.method.match(/(GET|POST|PATCH|DELETE)/)) {
-            return res.status(400).send({
-                error: "Invalid method"
-            })
+            return res.status(400).send("Invalid method")
         }
         // replace Bearer string with '' string and verify token within header against JWT secret and decode _id within data play-load
         const token = req.header("Authorization").replace("Bearer ", "")
@@ -86,7 +84,7 @@ const auth = async (req, res, next) => {
         req.user = user
         next()
     } catch (e) {
-        res.status(401).send({error:'Please authenticate'})
+        res.status(401).send('Please authenticate')
     }
 }
 

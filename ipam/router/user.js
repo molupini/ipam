@@ -27,11 +27,11 @@ router.get("/users/:id/confirm", async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if (!user) {
-            return res.status(404).send({error: "User Not Found"})
+            return res.status(404).send("User Not Found")
         }
         // already confirmed
         if(user.userConfirmed === true){
-            return res.status(400).send({error:'User confirmed'})
+            return res.status(400).send('User confirmed')
         }
         // confirm user account 
         user.userConfirmed = true
@@ -74,11 +74,11 @@ router.get("/users/:id/reset", auth, async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if (!user) {
-            return res.status(404).send({error: "User Not Found"})
+            return res.status(404).send("User Not Found")
         }
         // already reset
         if(user.loginFailure === 0){
-            return res.status(400).send({error: "Account unlocked"})
+            return res.status(400).send("Account unlocked")
         }
         const pass = await user.restPassword()
         await user.save()
@@ -161,9 +161,7 @@ router.patch("/users/me", auth, async (req, res) => {
     const exclude = ['n','loginFailure','userAdmin','userRoot']
     const isValid = valid(req.body, User.schema.obj, exclude)
     if (!isValid) {
-        return res.status(400).send({
-            error: "Please provide valid data"
-        })
+        return res.status(400).send("Please provide valid data")
     }
     try {
         const body = Object.keys(req.body)
