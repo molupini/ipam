@@ -6,16 +6,14 @@ const { userJWTExpiring } = require('../email/message')
 
 // middleware needs to be registered/used before other router calls
 const auth = async (req, res, next) => {
-    // maintenance 
-    // return res.status(503).send({ error: "Currently under maintenance" })
-    
+
     // logging
     // logging(req, process.env.LOG_USER_REQUEST)
 
     try {
         // valid methods
         if (!req.method.match(/(GET|POST|PATCH|DELETE)/)) {
-            return res.status(400).send("Invalid method")
+            return res.status(400).send({message:'Invalid method'})
         }
         // replace Bearer string with '' string and verify token within header against JWT secret and decode _id within data play-load
         const token = req.header("Authorization").replace("Bearer ", "")
@@ -84,7 +82,7 @@ const auth = async (req, res, next) => {
         req.user = user
         next()
     } catch (e) {
-        res.status(401).send('Please authenticate')
+        res.status(401).send({message:'Please authenticate'})
     }
 }
 

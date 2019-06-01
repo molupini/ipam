@@ -41,7 +41,7 @@ async function run(baseUrl, jwt){
             console.log(addressInit.body)
     
             // run cronJob
-            if(addressInit.body.count === true){
+            if(addressInit.body.addresses > 0){
                 delta = `/init?sort=updatedAt:acs&limit=${limit}`
             }
     

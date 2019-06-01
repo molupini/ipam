@@ -19,14 +19,20 @@ async function scan(){
         console.log({info:'Scanner Running, Interrogate IP Address Manager'})
         // fetch function, get initialize addresses
         // TODO move to own job
-        const getInit = await httpFetch(urlAddress, '/addresses/init', true, '', 'GET', jwt)
+        var getAddresses = null
+        getAddresses = await httpFetch(urlAddress, '/addresses/init', true, '', 'GET', jwt)
         // nothing to initialize 
-        if(!getInit){
+        // debugging
+        // console.log('/addresses/init')
+        // console.log(getAddresses.body)
+
+        if(!getAddresses.body.length > 0){
             // debugging
-            // console.log(getInit)
+            // console.log(getAddresses)
+            // fetch function, get addresses 
+            getAddresses = await httpFetch(urlAddress, '/addresses', true, '?sort=updatedAt:acs', 'GET', jwt)
         }
-        // fetch function, get addresses 
-        const getAddresses = await httpFetch(urlAddress, '/addresses', true, '?sort=updatedAt:acs', 'GET', jwt)
+
         if(!getAddresses.body){
             // debugging
             // console.log(getAddresses)

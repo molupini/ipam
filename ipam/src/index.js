@@ -12,6 +12,9 @@ const configRouter = require('../router/config')
 const adminRouter = require('../router/admin')
 
 // config/middleware
+// maintenance 
+// return res.status(503).send({ message: "Currently under maintenance" })
+
 app.use(express.json()) // auto parse incoming req
 app.use(userRouter)
 app.use(networkRouter)

@@ -21,18 +21,19 @@ const scanner = (endpoint, path, query, jwt, tcpPorts) => {
             console.error(e)
             return e
         }
-        if(request === 'Please authenticate'){
+        if(request.message === 'Please authenticate'){
             console.error('fetchAddresses','Please authenticate 1 Return')
             return 1
         }
 
-        if(request === 'Not Found' || request === undefined){
+        if(request.message === 'Not Found'){
             // debugging 
             console.log('fetchAddresses','Not Found 0 Return')
             return 0
         }
         if (request) {
             if(request.error){
+                // debugging 
                 console.log(request)
                 return request
             }
@@ -66,6 +67,7 @@ const scanner = (endpoint, path, query, jwt, tcpPorts) => {
                         // result from callback functions doPingCheck 
                         // resultPing response is true active mark entry isAvailable=false by next function within promise
                         if (!resultPing) {
+                            // debugging only
                             // console.log('resultPing false', id, ip, resultPing)
                             return {
                                 id,
@@ -78,7 +80,8 @@ const scanner = (endpoint, path, query, jwt, tcpPorts) => {
                         // * resultPing response is false reverse condition and return to next promise 
                         // console.log('doPingCheck resultPing :', resultPing)
                         if(resultPing){
-                            // console.log('resultPing true', id, ip, resultPing)
+                            // debugging only
+                            console.log('resultPing true', id, ip, resultPing)
                             // FETCH FUNCTION
                             // patch ping result address is alive, undefined or true
                             // instance variable
@@ -113,7 +116,7 @@ const scanner = (endpoint, path, query, jwt, tcpPorts) => {
                                 // if unsuccessful throw error and continue with catch promise 
                                 doTcpCheck(parseInt(port), ip)
                                     .then((tcpResult) => {
-                                   
+                                        
                                         // LOGIC 
                                         if (tcpResult) {
                                             // TODO - verify ping blocked and common port open
@@ -136,6 +139,7 @@ const scanner = (endpoint, path, query, jwt, tcpPorts) => {
 
                                     })
                                     .catch((tcpError) => {
+                                        // TODO enclose below in try/catch uncomment below #
                                         // debugging only
                                         // console.log('doTcpCheck, tcpError :', tcpError)
 
@@ -147,6 +151,7 @@ const scanner = (endpoint, path, query, jwt, tcpPorts) => {
                                         // debugging 
                                         // timeout catch and added to array of identical port 
                                         // debugging only
+                                        // # uncomment below #
                                         // const error = tcpError.message
                                         // console.log({
                                         //     tcpError: {

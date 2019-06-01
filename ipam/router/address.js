@@ -16,7 +16,7 @@ router.get("/addresses", auth, async (req, res) => {
         const sort = {}
         if (req.query.network) {
             if (!req.query.network.match(/^[0-9]{1,3}(\.[0-9]{1,3}|\.){1,2}\.0$/)) {
-                return res.status(400).send('Please provide a valid network')
+                return res.status(400).send({message:'Please provide a valid network'})
             }
             match.address = new RegExp(`^${req.query.network.replace(/0$/,'')}`)
         }
@@ -42,7 +42,7 @@ router.get("/addresses", auth, async (req, res) => {
         // console.log({match, options})
         const address = await Address.find(match, null, options)
         if (!address || address.length <= 0) {
-            return res.status(404).send('Not Found')
+            return res.status(404).send({message:'Not Found'})
         }
         res.status(200).send(address)
     } catch (e) {
@@ -65,9 +65,9 @@ router.get('/addresses/init', auth, async (req, res) => {
             // debugging
             // console.log('count :', count)
             if(count > 0){
-                return res.status(200).send({count:true})
+                return res.status(200).send({message:count})
             }
-            return res.status(200).send({count:false})
+            return res.status(200).send({message:count})
         }
 
 
@@ -76,6 +76,7 @@ router.get('/addresses/init', auth, async (req, res) => {
         }else{
             options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
         }
+
         if (req.query.sort) {
             const parts = req.query.sort.split(':')
             sort[parts[0]] = parts[1] === 'desc' ? -1 : 1 
@@ -86,7 +87,7 @@ router.get('/addresses/init', auth, async (req, res) => {
         }, null, options)
 
         if(!address){
-            return res.status(204).send('No Content')
+            return res.status(204).send({message:'No Content'})
         }
 
         address.forEach(addr => {
@@ -109,7 +110,7 @@ router.patch("/addresses/:id", auth, async (req, res) => {
         const match = {}
         const address = await Address.findById(req.params.id)
         if (!address) {
-            return res.status(404).send("Not Found")
+            return res.status(404).send({message:'Not Found'})
         }
         // used by scanner 
         if (req.query.available) {
@@ -178,7 +179,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         // query by network 
         if (req.query.network) {
             if (!req.query.network.match(/^[0-9]{1,3}(\.[0-9]{1,3}|\.){1,2}\.0$/)) {
-                return res.status(400).send('Please provide a valid network')
+                return res.status(400).send({message:'Please provide a valid network'})
             }
             match.address = new RegExp(`^${req.query.network.replace(/0$/,'')}`)
         }
@@ -187,7 +188,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
             match.author = req.query.author
         }
         else { 
-            return res.status(400).send('Please provide a valid network address or author')
+            return res.status(400).send({message:'Please provide a valid network address or author'})
         }
         // find based on match
         // debugging 
@@ -204,7 +205,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         }
         // 404 if null or array length zero
         if (!address || address.length === 0) {
-            return res.status(404).send('Not Found')
+            return res.status(404).send({message:'Not Found'})
         }
         // ping/array of addresses function 
         const pingLoop = async () => {

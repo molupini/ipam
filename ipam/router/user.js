@@ -16,7 +16,7 @@ router.post("/users/create", async (req, res) => {
         await user.save()
         res.status(201).send(user)
     } catch (e) {
-        res.status(500).send({error: e.message})
+        res.status(500).send(e)
     }
 })
 
@@ -27,11 +27,11 @@ router.get("/users/:id/confirm", async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if (!user) {
-            return res.status(404).send("User Not Found")
+            return res.status(404).send({message:"User Not Found"})
         }
         // already confirmed
         if(user.userConfirmed === true){
-            return res.status(400).send('User confirmed')
+            return res.status(400).send({message:'User confirmed'})
         }
         // confirm user account 
         user.userConfirmed = true
@@ -46,7 +46,7 @@ router.get("/users/:id/confirm", async (req, res) => {
         const token = await user.generateAuthToken(req.query.extendToken)
         res.status(202).send({user, token})
     } catch (e) {
-        res.status(500).send({error: e.message})
+        res.status(500).send(e)
     }
 })
 
@@ -62,9 +62,7 @@ router.patch("/users/login", async (req, res) => {
         const token = await user.generateAuthToken(req.query.extendToken)
         res.status(202).send({user, token})
     } catch (e) {
-        res.status(500).send({
-            error: e.message
-        })
+        res.status(500).send(e)
     }    
 })
 
@@ -74,20 +72,18 @@ router.get("/users/:id/reset", auth, async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if (!user) {
-            return res.status(404).send("User Not Found")
+            return res.status(404).send({message:"User Not Found"})
         }
         // already reset
         if(user.loginFailure === 0){
-            return res.status(400).send("Account unlocked")
+            return res.status(400).send({message:"Account unlocked"})
         }
         const pass = await user.restPassword()
         await user.save()
         // res.redirect(`/users/${req.params.id}/confirm?userModified=true`)
         res.status(202).send({user, pass})
     } catch (e) {
-        res.status(500).send({
-            error: e.message
-        })
+        res.status(500).send(e)
     }    
 })
 
@@ -101,9 +97,7 @@ router.post("/users/logout", auth, async (req, res) => {
         await req.user.save()
         res.status(200).send()
     } catch (e) {
-        res.status(500).send({
-            error: e.message
-        })
+        res.status(500).send(e)
     }
 })
 
@@ -115,9 +109,7 @@ router.post("/users/logoutAll", auth, async (req, res) => {
         await req.user.save()
         res.status(200).send()
     } catch (e) {
-        res.status(500).send({
-            error: e.message
-        })
+        res.status(500).send(e)
     }
 })
 
@@ -134,7 +126,7 @@ router.get("/users/my/networks", auth, async(req, res) => {
         await user.populate('network').execPopulate()
         res.status(200).send(user.network)
     } catch (e) {
-        res.status(500).send({error: e.message})
+        res.status(500).send(e)
     }
 })
 
@@ -151,7 +143,7 @@ router.get("/users/my/addresses", auth, async (req, res) => {
         await user.populate({ path:'address', options }).execPopulate()
         res.status(200).send(user.address)
     } catch (e) {
-        res.status(500).send({error: e.message})
+        res.status(500).send(e)
     }
 })
 
@@ -161,7 +153,7 @@ router.patch("/users/me", auth, async (req, res) => {
     const exclude = ['n','loginFailure','userAdmin','userRoot']
     const isValid = valid(req.body, User.schema.obj, exclude)
     if (!isValid) {
-        return res.status(400).send("Please provide valid data")
+        return res.status(400).send({message:"Please provide valid data"})
     }
     try {
         const body = Object.keys(req.body)
@@ -172,7 +164,7 @@ router.patch("/users/me", auth, async (req, res) => {
         await req.user.save()
         res.status(202).send(req.user)
     } catch (e) {
-        res.status(500).send({error: e.message})
+        res.status(500).send(e)
     }
 })
 
@@ -182,7 +174,7 @@ router.delete("/users/me", auth, async (req, res) => {
         await req.user.remove()
         res.status(200).send(req.user)
     } catch (e) {
-        res.status(500).send({error: e.message})
+        res.status(500).send(e)
     }
 })
 

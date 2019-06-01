@@ -11,7 +11,7 @@ router.get('/configs/suggest', async (req,res) => {
     try {
         // mandatory fields
         if(!req.query.conf){
-            return res.status(400).send("Missing element in query string")
+            return res.status(400).send({message:"Missing element in query string"})
         }
         // splitting string
         const userId = req.query.conf.split(':')[0]
@@ -21,13 +21,13 @@ router.get('/configs/suggest', async (req,res) => {
         // address lookup
         const address = await Address.findById(addressId)
         if(!address){
-            return res.status(404).send("Not Found")    
+            return res.status(404).send({message:"Not Found"})    
         }
         // compare fields
         // debugging
         // console.log({userId, count, addressId});
         if(userId !== address.owner.toString() || addressId !== address.id.toString() || parseInt(count) !== address.count){
-            return res.status(400).send("Bad Request")      
+            return res.status(400).send({message:"Bad Request"})      
         }
         if(req.query.port){
             address.portNumber = req.query.port
@@ -35,7 +35,7 @@ router.get('/configs/suggest', async (req,res) => {
         await address.save()
         res.status(200).send(address)
     } catch (e) {
-        res.status(500).send({error: e.message})
+        res.status(500).send(e)
     }
 })
 
@@ -44,7 +44,7 @@ router.get('/configs/ports', auth, async (req,res) => {
     try {
         const address = await Address.find().distinct('portNumber')
         if(!address){
-            return res.status(404).send("Not Found")    
+            return res.status(404).send({message:"Not Found"})    
         }        
         res.status(200).send(address)
     } catch (e) {
@@ -66,7 +66,7 @@ router.get('/configs/schedules', auth, async (req,res) => {
             schedule = await Schedule.find({})
         }
         if(!schedule){
-            return res.status(404).send("Not Found")    
+            return res.status(404).send({message:"Not Found"})    
         }        
 
         res.status(200).send(schedule)
@@ -84,7 +84,7 @@ router.post('/configs/schedules', auth, async (req,res) => {
             ...req.body
         })
         if(!schedule){
-            return res.status(404).send("Not Found")    
+            return res.status(404).send({message:"Not Found"})    
         }        
         await schedule.save()
         res.status(200).send(schedule)
@@ -98,17 +98,17 @@ router.patch("/configs/schedules/:id", auth, async (req, res) => {
     const exclude = ["author", "eventFired"]
     const isValid = valid(req.body, Schedule.schema.obj, exclude)
     if (!isValid) {
-        return res.status(400).send("Please provide a valid input")
+        return res.status(400).send({message:"Please provide a valid input"})
     }
     try {
         const schedule = await Schedule.findById(req.params.id)
         // debugging
         // console.log(schedule)
         if (!schedule) {
-            return res.status(404).send("Not Found")
+            return res.status(404).send({message:"Not Found"})
         }
         if (schedule.author.toString() !== req.user.id.toString()) {
-            return res.status(403).send("Forbidden")
+            return res.status(403).send({message:"Forbidden"})
         }
         const body = Object.keys(req.body)
         body.forEach(value => {
@@ -119,9 +119,7 @@ router.patch("/configs/schedules/:id", auth, async (req, res) => {
         await schedule.save()
         res.status(201).send(schedule)
     } catch (e) {
-        res.status(500).send({
-            error: e
-        })
+        res.status(500).send(e)
     }
 })
 
