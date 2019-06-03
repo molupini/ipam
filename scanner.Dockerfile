@@ -42,7 +42,7 @@ WORKDIR /node/app
 
 # COPY ./scanner/. .
 
-CMD ["nodemon", "./src/runner.js"]
+CMD ["nodemon", "./src/run.js"]
 
 
 # # source 
@@ -69,4 +69,4 @@ RUN rm ./package*.json
 
 USER node
 
-CMD ["node", "./src/runner.js"]
+CMD ["node", "./src/run.js"]

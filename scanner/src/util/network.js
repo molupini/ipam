@@ -2,11 +2,11 @@ const tcp = require("tcp-port-used")
 const ping = require('ping') 
 const dns = require('dns').promises
 
-var doTcpCheck = async function (ip) {
+var doTcpCheck = async function (ip, port) {
     try {
         // debugging
-        // console.log(ip)
-        const test = await tcp.check(parseInt(ip.portNumber), ip.address)
+        // console.log(ip, port)
+        const test = await tcp.check(parseInt(port), ip)
         // debugging
         // console.log('doTcpCHeck() :', test)
         if (test) {
@@ -25,7 +25,8 @@ var doPingCheck = async function (ip) {
         const testResult = {
             id: ip._id,
             host: pong.host,
-            alive: pong.alive
+            alive: pong.alive,
+            port: ip.portNumber
         }
         return testResult
     } catch (e) {
@@ -53,6 +54,7 @@ var pingLoop = async function (addresses){
         for (i = 0; i < addresses.length; i++) {
             // debugging
             console.log(`${addresses[i]._id}, ${addresses[i].address}, ping`)
+            // can't remove await below, 
             await doPingCheck(addresses[i]).then((pingResult) => {
                 // console.log('doPingCheck :', pingResult);
                 resultArray.push(pingResult)
@@ -75,7 +77,7 @@ var tcpLoop = async function (addresses, ports){
     let resultArray = []
     try {
         for (i = 0; i < addresses.length; i++) {
-
+            // UNION PORTS WITH SUGGESTED 
             let copyPorts = ports.slice()
             const index = copyPorts.indexOf(addresses[i].portNumber)
             if(index !== -1){
@@ -95,7 +97,8 @@ var tcpLoop = async function (addresses, ports){
             for (x = 0; x < array.length; x++){
                 // debugging
                 console.log(`${x}, ${addresses[i].address}, ${array[x]}`)
-                await doTcpCheck(addresses[i]).then((tcpResult) => {
+                // TODO REMOVED await from below function testing async from calling function
+                await doTcpCheck(addresses[i].address, array[x]).then(() => {
                     const testResult = `${addresses[i]._id}:${addresses[i].address}:true`
                     resultArray.push(testResult)
                     // alive address

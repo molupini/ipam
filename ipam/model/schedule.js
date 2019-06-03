@@ -1,5 +1,6 @@
 // TODO - not necessary might deprecate 
 const mongoose = require('mongoose')
+const validator = require('validator')
 
 const scheduleSchema = new mongoose.Schema({
     author: {
@@ -24,6 +25,34 @@ const scheduleSchema = new mongoose.Schema({
     eventFired:{
         type: Boolean,
         default: false
+    },
+    scannerSync:{
+        type: Boolean,
+        default: true
+    },
+    scanLimit:{
+        type: Number,
+        default: 5,
+        minlength: 5, 
+        maxlength: 240
+    },
+    portList:{
+        type: Array,
+        default: ['3389','80','5986','22'],
+        trim: true, 
+        validate(value){
+            let array = []
+            value.forEach(element => {
+                if(validator.isPort(element)){
+                    array.push(true)                    
+                }
+            })
+            // debugging 
+            console.log('portList array :', array)
+            if(array.length !== value.length){
+                throw new Error('Please provide valid tcp port array')
+            }
+         }
     },
     weekdaySchedule:{
         type: Number, 

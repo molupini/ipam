@@ -4,6 +4,8 @@ const got = require('got')
 // httpFetch function
 var httpFetch = async function (baseUrl, path, json = true, queryStr = '', method = 'GET', jwt){
     const url = `${path}${queryStr}`
+    // debugging 
+    // console.log('http httpFetch:',`${baseUrl}${url}`)
     // config client
     const client = got.extend({
         json,
@@ -21,7 +23,7 @@ var httpFetch = async function (baseUrl, path, json = true, queryStr = '', metho
             throw new Error('Unable to connect')
         }
         // debugging 
-        // console.log(addresses)
+        // console.log(http)
         return http
     } catch (e) {
         throw new Error(e)
@@ -60,8 +62,44 @@ var addressPatchLoop = async function (entries, baseUrl, path, queryStr, jwt){
     }
 }
 
+var httpSuccess = function(log, baseUrl, id, jwt){
+    httpFetch(baseUrl, `/addresses/${id}`, true, `?available=false`, 'PATCH', jwt)
+    .then((httpResult) => {
+        if(!httpResult){
+            return 1
+        }
+        if(log){
+            console.log(httpResult.body)
+        }
+        return 0 
+    }).catch((httpError) => {
+        // debugging
+        // console.log(httpError)
+        throw new Error(httpError)
+    })
+}
+
+var httpFailure = async function(log, baseUrl, id, jwt){
+    await httpFetch(baseUrl, `/addresses/${id}`, true, `?available=true`, 'PATCH', jwt)
+    .then((httpResult) => {
+        if(!httpResult){
+            return 1
+        }
+        if(log){
+            console.log(httpResult.body)
+        }
+        return 0 
+    }).catch((httpError) => {
+        // debugging
+        // console.log(httpError)
+        throw new Error(httpError)
+    })
+}
+
 
 module.exports = {
     httpFetch, 
-    addressPatchLoop
+    addressPatchLoop,
+    httpSuccess,
+    httpFailure
 }

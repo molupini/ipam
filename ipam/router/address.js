@@ -215,7 +215,8 @@ router.get('/addresses/checkout', auth, async (req, res) => {
                 // const result = await address[i]
                 // console.log(`${address[i].id}, ${address[i].address}, ping`)
                 await doPingCheck(address[i].address).then((result) => {
-                    // 
+                    // debugging
+                    // console.log(result)
                     if (!result) {
                         result = address[i].id
                         array.push(result)

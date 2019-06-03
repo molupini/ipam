@@ -1,4 +1,4 @@
-const scanner = require('./scanner')
+const scanner = require('./util/scanner')
 
 // TODO logging feature verbose =true/false
 // TODO within scanner if possible reduce complexity 
@@ -28,7 +28,7 @@ if (fullScan) {
 } 
 else if (!fullScan) {
     // TODO - if any addresses to init will bypass query
-    query = `?sort=updatedAt:acs&limit=2` // if limit excluded default will apply in endpoint
+    query = `?sort=updatedAt:acs&limit=50` // if limit excluded default will apply in endpoint
     // urlAddresses = `${endpoint}/addresses/init`
 }else{
     query = `/init`

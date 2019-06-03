@@ -1,5 +1,5 @@
-const { fetchAddresses } = require("./util/fetch")
-const { doTcpCheck, doPingCheck } = require("./util/check")
+const { fetchAddresses } = require("./fetch")
+const { doTcpCheck, doPingCheck } = require("./check")
 
 // SCANNER FUNCTION
 // note query will be parameter, and provided by the caller
@@ -141,12 +141,12 @@ const scanner = (endpoint, path, query, jwt, tcpPorts) => {
                                     .catch((tcpError) => {
                                         // TODO enclose below in try/catch uncomment below #
                                         // debugging only
-                                        // console.log('doTcpCheck, tcpError :', tcpError)
+                                        // console.log('doTcpCheck, tcpError :', tcpError.message)
 
                                         // error catch from function 'doTcpCheck' 
                                         // error string contains port checked verify port with port parameter from 'doTcpCheck' 
                                         // add to array 
-                                        const inActive = parseInt(tcpError.message.split(':')[1]) === port
+                                        const inActive = tcpError.message.split(':')[1]
                                         isValid.push(inActive)
                                         // debugging 
                                         // timeout catch and added to array of identical port 
