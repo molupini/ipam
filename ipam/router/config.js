@@ -123,5 +123,26 @@ router.patch("/configs/schedules/:id", auth, async (req, res) => {
     }
 })
 
+// patch, event
+router.patch("/configs/schedules/event/:id", auth, async (req, res) => {
+    try {
+        const schedule = await Schedule.findByIdAndUpdate(req.params.id, {
+            eventFired: req.query.event === 'true'
+        })
+        // debugging
+        // console.log(schedule)
+        if (!schedule) {
+            return res.status(404).send({message:"Not Found"})
+        }
+        if (schedule.author.toString() !== req.user.id.toString()) {
+            return res.status(403).send({message:"Forbidden"})
+        }
+        await schedule.save()
+        res.status(201).send(schedule)
+    } catch (e) {
+        res.status(500).send(e)
+    }
+})
+
 
 module.exports = router

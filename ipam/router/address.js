@@ -41,6 +41,8 @@ router.get("/addresses", auth, async (req, res) => {
         }
         // console.log({match, options})
         const address = await Address.find(match, null, options)
+        // debugging
+        // console.log('address :', address);
         if (!address || address.length <= 0) {
             return res.status(404).send({message:'Not Found'})
         }

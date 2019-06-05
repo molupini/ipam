@@ -15,17 +15,18 @@ var httpFetch = async function (baseUrl, path, json = true, queryStr = '', metho
             Authorization: `Bearer ${jwt}`
         }
     })
-
     try {
         // fetch addresses 
         var http = await client(url)
         if(!http.body){
-            throw new Error('Unable to connect')
+            throw new Error('No Body')
         }
         // debugging 
-        // console.log(http)
+        // console.log(http.requestUrl)
         return http
     } catch (e) {
+        // debugging 
+        // console.error(e.path)
         throw new Error(e)
     } 
 }

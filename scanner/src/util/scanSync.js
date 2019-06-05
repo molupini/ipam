@@ -7,10 +7,12 @@ const { httpFetch, httpFailure, httpSuccess } = require("./http")
 var scanSync = async function (baseUrl, path, query, jwt, ports){
     try {
         // FETCH FUNCTION
+        // debugging
+        console.log(`httpFetch : ${baseUrl}${path}${query}`)
         const    getAddresses = await httpFetch(baseUrl, path, true, query, 'GET', jwt)
         const body = getAddresses.body
         // debugging 
-        // console.log('httpFetch body:', body);
+        console.log('httpFetch body:', getAddresses.statusCode);
         
         // NETWORK LOOP
         var networkLoop = async function (addresses){

@@ -48,13 +48,22 @@ const scheduleSchema = new mongoose.Schema({
                 }
             })
             // debugging 
-            console.log('portList array :', array)
+            // console.log('portList array :', array)
             if(array.length !== value.length){
                 throw new Error('Please provide valid tcp port array')
             }
          }
     },
-    weekdaySchedule:{
+    minuteInterval:{
+        type: Number,
+        default: 1,
+        validate(value){
+            if(!value > 0 && !value <= 1380){
+                throw new Error('Please provide valid data, in minutes')
+            }
+         }
+    },
+    weekdayInterval:{
         type: Number, 
         // required: true,
         default: 6, 
@@ -63,20 +72,8 @@ const scheduleSchema = new mongoose.Schema({
                 throw new Error('Please provide valid ISO Day of Week')
             }
          }
-     },
-    cronScheduleFull: {
-        type: String, 
-        // required: true,
-        trim: true,
-        default: '0 0 */23 * * *',
-        validate(value){
-            if(!value.match(/^(\d{0,59}|\*|\*\/\d{0,59})\s(\d{0,59}|\*|\*\/\d{0,59})\s(\d{0,23}|\*|\*\/\d{0,23})\s(\d{1,31}|\*|\*\/\d{1,31})\s(\d{1,11}|\*|\*\/\d{1,11})\s(\d{0,6}|\*\/\d{0,6})\*$/)){
-                // https://www.npmjs.com/package/cron
-                throw new Error('Please provide a simple cron style schedule')
-            }
-         }
     },
-    cronScheduleDelta: {
+    cronSchedule: {
         type: String, 
         // required: true,
         trim: true,

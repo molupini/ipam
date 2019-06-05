@@ -3,15 +3,17 @@ const { pingLoop, tcpLoop } = require("./network")
 const { httpFetch, addressPatchLoop } = require("./http")
 
 
-// SCAN 'SYNC' FUNCTION
+// SCAN 'ASYNC' FUNCTION 1-BY-1
 var scanAsync = async function (baseUrl, path, query, jwt, ports){
     try {
         // FETCH FUNCTION
+        // debugging
+        console.log(`httpFetch : ${baseUrl}${path}${query}`)
         const getAddresses = await httpFetch(baseUrl, path, true, query, 'GET', jwt)
         const body = getAddresses.body
         // debugging 
-        // console.log('httpFetch body:', body);
-        
+        console.log('httpFetch body:', getAddresses.statusCode);
+       
         // PING FUNCTION 
         const resultPing = await pingLoop(body)
         // debugging
@@ -48,14 +50,11 @@ var scanAsync = async function (baseUrl, path, query, jwt, ports){
             // debugging
             // console.log(resultAddresses)
         }
-
+        // COMPLETED
+        console.log({info:'Scanner Completed'})
     } catch (e) {
         console.log('scan(), catch')
         console.error(e)
-    } finally {
-
-        // COMPLETED
-        console.log({info:'Scanner Completed'})
     }
 }
 
