@@ -53,7 +53,7 @@ var pingLoop = async function (addresses){
         let resultArray = []
         for (i = 0; i < addresses.length; i++) {
             // debugging
-            console.log(`${addresses[i]._id}, ${addresses[i].address}, ping`)
+            // console.log(`${addresses[i]._id}, ${addresses[i].address}, ping`)
             // can't remove await below, 
             await doPingCheck(addresses[i]).then((pingResult) => {
                 // console.log('doPingCheck :', pingResult);
@@ -65,7 +65,7 @@ var pingLoop = async function (addresses){
         // console.log('resultArray :', resultArray);
         return resultArray
     } catch (e) {
-        console.log('pingLoop(), catch')
+        // console.log('pingLoop(), catch')
         console.error(e)
     }
 }
@@ -96,7 +96,8 @@ var tcpLoop = async function (addresses, ports){
 
             for (x = 0; x < array.length; x++){
                 // debugging
-                console.log(`${x}, ${addresses[i].address}, ${array[x]}`)
+                // console.log('addresses[i] :', addresses[i]);
+                // console.log(`${x}, ${addresses[i].address}, ${array[x]}`)
                 // TODO REMOVED await from below function testing async from calling function
                 await doTcpCheck(addresses[i].address, array[x]).then(() => {
                     const testResult = `${addresses[i]._id}:${addresses[i].address}:true`

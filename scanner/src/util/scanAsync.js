@@ -8,12 +8,19 @@ var scanAsync = async function (baseUrl, path, query, jwt, ports){
     try {
         // FETCH FUNCTION
         // debugging
-        console.log(`httpFetch : ${baseUrl}${path}${query}`)
+        // console.log(`httpFetch : ${baseUrl}${path}${query}`)
         const getAddresses = await httpFetch(baseUrl, path, true, query, 'GET', jwt)
         const body = getAddresses.body
         // debugging 
-        console.log('httpFetch body:', getAddresses.statusCode);
-       
+        // console.log('httpFetch body statusCode:', getAddresses.statusCode)
+        
+        // not required for scanAsync
+        //    if(getAddresses.statusCode === 201 || getAddresses.statusCode === 200){
+        //         // LOCK SCHEDULE 
+        //         // UPDATE EVENT FIRED TO TRUE
+        //         await httpFetch(baseUrl, `/configs/schedules/progress/${schedule}`, true, '?lock=true', 'PATCH', jwt)
+        //    }
+
         // PING FUNCTION 
         const resultPing = await pingLoop(body)
         // debugging
@@ -34,7 +41,7 @@ var scanAsync = async function (baseUrl, path, query, jwt, ports){
         // debugging
         // console.log(array)
         const objects = []
-        array.forEach(element => {
+        await array.forEach(element => {
             const object = {
                 id: element.split(':')[0],
                 host: element.split(':')[1],
@@ -45,13 +52,15 @@ var scanAsync = async function (baseUrl, path, query, jwt, ports){
         if(objects.length > 0){
             // PATCH ADDRESSES, FINAL CHECK UNTIL DNS TESTING
             // debugging
-            console.log(objects)
-            const resultAddresses = await addressPatchLoop(objects, baseUrl, path, '?available=', jwt)
-            // debugging
-            // console.log(resultAddresses)
+            // console.log(objects)
+            await addressPatchLoop(objects, baseUrl, path, '?available=', jwt)
         }
+        // not required for scanAsync
+        // UNLOCK SCHEDULE
+        // await httpFetch(baseUrl, `/configs/schedules/progress/${schedule}`, true, '?lock=false', 'PATCH', jwt)
+
         // COMPLETED
-        console.log({info:'Scanner Completed'})
+        console.log({info:'>>> Scanner Completed <<<'})
     } catch (e) {
         console.log('scan(), catch')
         console.error(e)

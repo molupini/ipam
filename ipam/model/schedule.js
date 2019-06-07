@@ -26,11 +26,16 @@ const scheduleSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    scannerSync:{
+    scanSynchronous:{
         type: Boolean,
-        default: true
-    },
-    scanLimit:{
+        default: false
+    }
+    // ,scanInProgress:{
+    //     type: Boolean,
+    //     default: false
+    // }
+    ,
+    limit:{
         type: Number,
         default: 5,
         minlength: 5, 
@@ -50,7 +55,7 @@ const scheduleSchema = new mongoose.Schema({
             // debugging 
             // console.log('portList array :', array)
             if(array.length !== value.length){
-                throw new Error('Please provide valid tcp port array')
+                throw new Error('Please provide valid tcp port string array')
             }
          }
     },
@@ -96,9 +101,9 @@ scheduleSchema.methods.toJSON = function(){
 }
 
 // for future use. 
-scheduleSchema.pre('save', async function (next) {
-    next()    
-})
+// scheduleSchema.pre('save', async function (next) {
+//     next()    
+// })
 
 const Schedule = mongoose.model('Schedule', scheduleSchema)
 

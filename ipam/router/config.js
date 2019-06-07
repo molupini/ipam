@@ -78,7 +78,8 @@ router.get('/configs/schedules', auth, async (req,res) => {
 // used by admins
 router.post('/configs/schedules', auth, async (req,res) => {
     try {
-        console.log('req.user :', req.user)
+        // debugging
+        // console.log('req.user :', req.user)
         const schedule = await new Schedule({
             author: req.user,
             ...req.body
@@ -123,26 +124,54 @@ router.patch("/configs/schedules/:id", auth, async (req, res) => {
     }
 })
 
-// patch, event
+// patch, event scanner only
 router.patch("/configs/schedules/event/:id", auth, async (req, res) => {
     try {
-        const schedule = await Schedule.findByIdAndUpdate(req.params.id, {
-            eventFired: req.query.event === 'true'
-        })
+        const schedule = await Schedule.findById(req.params.id)
         // debugging
-        // console.log(schedule)
+        // console.log(schedule, req.query.event)
         if (!schedule) {
             return res.status(404).send({message:"Not Found"})
         }
         if (schedule.author.toString() !== req.user.id.toString()) {
             return res.status(403).send({message:"Forbidden"})
         }
+        schedule.eventFired = req.query.event === 'true'
         await schedule.save()
         res.status(201).send(schedule)
     } catch (e) {
         res.status(500).send(e)
     }
 })
+
+// patch, progress scanner only
+// router.patch("/configs/schedules/progress/:id", auth, async (req, res) => {
+//     try {
+//         const schedule = await Schedule.findById(req.params.id)
+//         // debugging
+//         // console.log(schedule, req.query)
+//         if (!schedule) {
+//             return res.status(404).send({message:"Not Found"})
+//         }
+//         if (schedule.author.toString() !== req.user.id.toString()) {
+//             return res.status(403).send({message:"Forbidden"})
+//         }
+//         if(req.query.lock){
+//             schedule.scanInProgress = req.query.lock === 'true'
+//         }
+//         if(req.query.interval){
+//             if(schedule.minuteInterval === parseInt(req.query.interval)){
+//                 var n = parseInt(req.query.interval)
+//                 n+=1
+//                 schedule.minuteInterval = n
+//             }
+//         }
+//         await schedule.save()
+//         res.status(201).send(schedule)
+//     } catch (e) {
+//         res.status(500).send(e)
+//     }
+// })
 
 
 module.exports = router

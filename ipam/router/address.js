@@ -156,7 +156,7 @@ router.patch("/addresses/:id", auth, async (req, res) => {
             update.portNumber = req.query.fqdn
         }
         // debugging
-        // console.log(address)
+        // console.log(address.address)
         await address.save()
         res.status(200).send(address)
     } catch (e) {

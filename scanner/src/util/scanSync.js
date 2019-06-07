@@ -8,19 +8,24 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
     try {
         // FETCH FUNCTION
         // debugging
-        console.log(`httpFetch : ${baseUrl}${path}${query}`)
+        // console.log(`httpFetch : ${baseUrl}${path}${query}`)
         const    getAddresses = await httpFetch(baseUrl, path, true, query, 'GET', jwt)
         const body = getAddresses.body
         // debugging 
-        console.log('httpFetch body:', getAddresses.statusCode);
-        
+        // console.log('httpFetch body statusCode:', getAddresses.statusCode);
+        //    if(getAddresses.statusCode === 201 || getAddresses.statusCode === 200){
+        //         // LOCK SCHEDULE 
+        //         // UPDATE EVENT FIRED TO TRUE
+        //         await httpFetch(baseUrl, `/configs/schedules/progress/${schedule}`, true, '?lock=true', 'PATCH', jwt)
+        //    } 
+
         // NETWORK LOOP
         var networkLoop = async function (addresses){
             // debugging
             // console.log(addresses)
             for (i = 0; i < addresses.length; i++) {
                 // debugging
-                console.log(`${addresses[i]._id}, ${addresses[i].address}, ping`)
+                // console.log(`${addresses[i]._id}, ${addresses[i].address}, ping`)
 
                 // PING FUNCTION 
                 doPingCheck(addresses[i])
@@ -28,6 +33,8 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
                     // debugging 
                     // console.log('doPingCheck result :', result)
                     if(result.alive){
+                        // debugging 
+                        // console.log('doPingCheck result :', result)
                         httpSuccess(false, baseUrl, result.id, jwt)
                         // debugging
                         // console.log('doPingCheck httpSuccess')
@@ -51,15 +58,13 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
                         var isValid = []
                         for (x = 0; x < array.length; x++){
                             // debugging 
-                            console.log(`${x}, ${result.host}, ${array[x]}`)
+                            // console.log(`${x}, ${result.host}, ${array[x]}`)
                             // TCP FUNCTION CHECK 
                             doTcpCheck(result.host, array[x]).then((tcpResult) => {
                                 // debugging
-                                // console.log('doTcpCheck tcpResult :', tcpResult)
+                                console.log('doTcpCheck tcpResult :', tcpResult)
                                 if(tcpResult){
                                     httpSuccess(true, baseUrl, result.id, jwt)
-                                    // debugging
-                                    // console.log('doTcpCheck httpSuccess')
                                     return 0
                                 }
                             }).catch((tcpError)=> {
@@ -71,8 +76,6 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
                                 if (isValid.length === array.length) {
                                     // console.log('isValid :', isValid)
                                     httpFailure(false, baseUrl, result.id, jwt)
-                                    // debugging
-                                    // console.log('doTcpCheck httpFailure')
                                     return 0
                                 }
                             })
@@ -85,8 +88,9 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
             }
         }
 
-        networkLoop(body)
-
+        await networkLoop(body)
+        // UNLOCK SCHEDULE 
+        // await httpFetch(baseUrl, `/configs/schedules/progress/${schedule}`, true, '?lock=false', 'PATCH', jwt)
     } catch (e) {
         console.log('scan(), catch')
         console.error(e)
