@@ -7,19 +7,8 @@ const { httpFetch, addressPatchLoop } = require("./http")
 var scanAsync = async function (baseUrl, path, query, jwt, ports){
     try {
         // FETCH FUNCTION
-        // debugging
-        // console.log(`httpFetch : ${baseUrl}${path}${query}`)
         const getAddresses = await httpFetch(baseUrl, path, true, query, 'GET', jwt)
         const body = getAddresses.body
-        // debugging 
-        // console.log('httpFetch body statusCode:', getAddresses.statusCode)
-        
-        // not required for scanAsync
-        //    if(getAddresses.statusCode === 201 || getAddresses.statusCode === 200){
-        //         // LOCK SCHEDULE 
-        //         // UPDATE EVENT FIRED TO TRUE
-        //         await httpFetch(baseUrl, `/configs/schedules/progress/${schedule}`, true, '?lock=true', 'PATCH', jwt)
-        //    }
 
         // PING FUNCTION 
         const resultPing = await pingLoop(body)
@@ -27,7 +16,9 @@ var scanAsync = async function (baseUrl, path, query, jwt, ports){
         // console.log({result: resultPing})
         
         // PATCH FUNCTION
+        // UPDATE OF BOTH TRUE / FALSE ALIVE STATUS 
         const resultAddresses = await addressPatchLoop(resultPing, baseUrl, path, '?available=', jwt)
+        // FILTER RETURN OF FALSE ALIVE STATUS, INVERSE OF BELOW 
         const after = resultAddresses.filter(post => post.isAvailable === true)
         // debugging
         // console.log(after)
@@ -36,6 +27,8 @@ var scanAsync = async function (baseUrl, path, query, jwt, ports){
         const resultTcp = await tcpLoop(after, ports)
         // debugging
         // console.log(resultTcp)
+
+        // UNION RESULT & PATCH ADDRESSES 
         const set = new Set(resultTcp)
         const array = [...set]
         // debugging
@@ -50,17 +43,11 @@ var scanAsync = async function (baseUrl, path, query, jwt, ports){
             objects.push(object)
         })
         if(objects.length > 0){
-            // PATCH ADDRESSES, FINAL CHECK UNTIL DNS TESTING
-            // debugging
-            // console.log(objects)
-            await addressPatchLoop(objects, baseUrl, path, '?available=', jwt)
+            const resultAddresses = await addressPatchLoop(objects, baseUrl, path, '?available=', jwt)
         }
-        // not required for scanAsync
-        // UNLOCK SCHEDULE
-        // await httpFetch(baseUrl, `/configs/schedules/progress/${schedule}`, true, '?lock=false', 'PATCH', jwt)
-
         // COMPLETED
-        console.log({info:'>>> Scanner Completed <<<'})
+        console.log({info:'--- Scanner Completed ---'})
+        return 0
     } catch (e) {
         console.log('scan(), catch')
         console.error(e)

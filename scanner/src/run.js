@@ -8,6 +8,7 @@ const moment = require('moment')
 const baseUrl = process.env.EXPRESS_URL
 const jwt = process.env.JWT_SCANNER
 var delay = 1
+var by = 60000
 var loopCount = 0
 var runCount = 0
 // var finished = false
@@ -62,12 +63,14 @@ var run = async function (baseUrl, path, query, jwt, conf, runCount){
 
             // SCAN FUNCTION 
             if(conf.scanSynchronous){
-                // ISSUES COMPLETING ALL FUNCTION 
+                console.log('* running : synchronously')
                 await scanSync(baseUrl, path, query, jwt, ports)
             }
             else {
+                console.log('* running : asynchronously')
                 await scanAsync(baseUrl, path, query, jwt, ports)
             }
+            return true
         } catch (e) {
             console.error(e)
             throw new Error(e)
@@ -83,79 +86,41 @@ const runLoop = async function () {
     while (true) {
 
         try {
+            // FETCH CONFIG
             conf = await httpFetch(baseUrl, '/configs/schedules?endpoint=address', true, '', 'GET', jwt)
-                            .then((conf) => {
-                            if(!conf.body){
-                                throw new Error('No Config')
-                            }
-                            // debugging
-                            // console.log(conf.body)
-                            return conf.body
-                            })
-                            // .then((result0) => {
-                                
-                            // })
-                            .catch((err) => {
-                                throw new Error(err)
-                            })
-            delay = conf.minuteInterval
-            console.log(`\nStarting runLoop`)
-            console.log({info:`--- ${loopCount} : delay : ${delay} minute(s), loading ---`})
-            await new Promise(resolve => setTimeout(resolve, delay*60000)) 
-            // not required for scanAsync, can be used to adjust delay more accurately based on moment start and finished
-            // if (conf.scanInProgress){
-            //     await httpFetch(baseUrl, `/configs/schedules/progress/${conf._id}`, true, `?interval=${delay}`, 'PATCH', jwt)
-            //     throw new Error('Interval being adjusted')
-            // }
-            if(loopCount++ === runCount){
-                await run(baseUrl, '/addresses', `?available=true&owner=null&sort=updatedAt:acs`, jwt, conf, (runCount++))
-            }else if (loopCount > runCount){
-                // TODO 
-                // increase minute interval
-                // decrease loopCount
+            if(!conf.body){
+                throw new Error('No Config')
             }
-            console.log('loopCount :', loopCount)
-            console.log('runCount :', runCount)
+            // debugging 
+            // console.log(conf.body)
+            // SET DELAY
+            delay = conf.body.minuteInterval
+            console.log(`\nStarting runLoop`)
+            console.log({info:`--- ${loopCount++} : delay : ${delay} minute(s), loading ---`})
+            const now = await moment()
+            await new Promise(resolve => setTimeout(resolve, delay*by)) 
+            
+            // RUN MAIN 
+            await run(baseUrl, '/addresses', `?available=true&owner=null&sort=updatedAt:acs`, jwt, conf.body, (runCount++))
+            
+            // MEASURE EXPECUTION 
+            const then = await moment()
+            const thenNow = await then.diff(now, 'milliseconds')
+            console.log(`moments in drift thenNow, ${thenNow}, delay configured ${(delay*by)}`)
+            
+            if (thenNow > delay*by){
+                // await httpFetch(baseUrl, `/configs/schedules/progress/${conf.body._id}`, true, `?interval=${delay}`, 'PATCH', jwt)
+                // console.log(`Interval being adjusted, suggest ${thenNow/(delay*by)}`)
+            }
+
         } catch (e) {
             console.error(e)
-            await new Promise(resolve => setTimeout(resolve, (delay*60000)*2))
+            await new Promise(resolve => setTimeout(resolve, (delay*by)*2))
         }
 
     }
 }
 runLoop()
-
-
-// TIMERS FUNCTION
-// ISSUE: TIMER IS NON BLOCKING, OUTER TIMER WILL NOT WAIT
-// Nested setTimeout calls is a more flexible alternative to setInterval
-// see https://javascript.info/settimeout-setinterval#setinterval
-// note 1 min to ms 60000 ms 
-// let timeId = setTimeout(async function configTimer() {
-//     // debugging
-//     console.log(`\n* * * ${countTimer++} : timer : ${timer/60000} minutes  * * *\n`)
-//     const conf = await httpFetch(baseUrl, '/configs/schedules?endpoint=address', true, '', 'GET', jwt)
-//     .then((conf) => {
-//         if(conf.body){
-//             // MINUTE INTERVAL ADJUST TIMER OF DELAY, FREQUENCY OF SCAN 
-//             timer = conf.body.minuteInterval*60000
-//             timeId = setTimeout(configTimer, timer)
-//             // debugging
-//             // console.log({
-//             //     timer: timer, 
-//             //     timeId: timeId
-//             // })
-//             return conf
-//         }
-//     })
-//     .catch((err) => {
-//         console.error(err)
-//     })
-//     configuration = conf.body
-//     // debugging
-//     // console.log(timeId, configuration, timer)
-//     // await setTimeout(run, timer, baseUrl, '/addresses', `?available=true&owner=null&sort=updatedAt:acs`, jwt, configuration, timer)
-// }, timer)
 
 
 // NORMAL EXECUTION
@@ -166,7 +131,7 @@ runLoop()
 //         }
 //     // debugging
 //     // console.log(conf.body)
-//     run(baseUrl, '/addresses', `?available=true&owner=null&sort=updatedAt:acs`, jwt, conf.body, runCount)
+//     run(baseUrl, '/addresses', `?available=true&owner=null&sort=updatedAt:acs`, jwt, conf.body, runCount++)
 //     })
 //     .catch((err) => {
 //         console.error(err)

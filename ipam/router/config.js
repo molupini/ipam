@@ -144,34 +144,5 @@ router.patch("/configs/schedules/event/:id", auth, async (req, res) => {
     }
 })
 
-// patch, progress scanner only
-// router.patch("/configs/schedules/progress/:id", auth, async (req, res) => {
-//     try {
-//         const schedule = await Schedule.findById(req.params.id)
-//         // debugging
-//         // console.log(schedule, req.query)
-//         if (!schedule) {
-//             return res.status(404).send({message:"Not Found"})
-//         }
-//         if (schedule.author.toString() !== req.user.id.toString()) {
-//             return res.status(403).send({message:"Forbidden"})
-//         }
-//         if(req.query.lock){
-//             schedule.scanInProgress = req.query.lock === 'true'
-//         }
-//         if(req.query.interval){
-//             if(schedule.minuteInterval === parseInt(req.query.interval)){
-//                 var n = parseInt(req.query.interval)
-//                 n+=1
-//                 schedule.minuteInterval = n
-//             }
-//         }
-//         await schedule.save()
-//         res.status(201).send(schedule)
-//     } catch (e) {
-//         res.status(500).send(e)
-//     }
-// })
-
 
 module.exports = router

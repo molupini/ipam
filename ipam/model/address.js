@@ -2,7 +2,6 @@
 const mongoose = require("mongoose")
 const validator = require("validator")
 
-// TODO add FQDN field 
 const addressSchema = new mongoose.Schema({
     address: {
         // type: []
@@ -14,7 +13,7 @@ const addressSchema = new mongoose.Schema({
         },
         unique: true
     },
-    isInit:{
+    isInitialized:{
         type: Boolean,
         default: false
     },
@@ -74,12 +73,6 @@ addressSchema.virtual('network', {
     localField: 'author',
     foreignField: '_id'
 })
-
-// addressSchema.virtual('port', {
-//     ref: 'Port',
-//     localField: '_id',
-//     foreignField: 'author'
-// })
 
 // toJSON
 addressSchema.methods.toJSON = function () {

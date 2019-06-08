@@ -17,7 +17,7 @@ const FalsePositive = async (address) => {
             // console.log({error: `Address ${address.address}, Owner ${address.owner}, trueCount ${address.trueCount}, fp ${fp}`})
             return true
         } 
-        else if ((fp - address.trueCount) <= 3 ) {
+        else if ((fp - address.trueCount) <= 2 ) {
             const user = await User.findById(address.owner)
             const network = await Network.findById(address.author)
             const author = await User.findById(network.author)
@@ -25,18 +25,13 @@ const FalsePositive = async (address) => {
             // console.log({warning: `Address ${address.address}, Owner ${address.owner}, Network Author ${author.id}, trueCount ${address.trueCount}, fp ${fp}`})
             await message.addressTrueCountWarn(user.emailAddress, author.emailAddress, address.address, address.owner, address.id, address.trueCount, fp)
         }
-        else if (address.trueCount > (fp/2)) {
+        else {
             // elseif above threshold, send information to owner to verify and add port well known ports array
             const user = await User.findById(address.owner)
             // debugging 
             // console.log('user :', user);
             // console.log({info: `Address ${address.address}, Owner ${address.owner}, trueCount ${address.trueCount}, fp ${fp}`})
             await message.addressTrueCount(user.emailAddress, address.address, address.owner, address.id, address.trueCount)
-        }
-        else {
-            // else, other
-            // debugging 
-            // console.log({info: `Address ${address.address} status, ${address.isAvailable}`})
         }
         return false
     }

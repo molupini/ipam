@@ -57,13 +57,10 @@ router.get('/addresses/init', auth, async (req, res) => {
     try {
         const options = {}
         const sort = {}
-
         if(req.query.count === 'true'){
             const count = await Address.countDocuments({
-                isInit: false
+                isInitialized: false
             })
-
-            
             // debugging
             // console.log('count :', count)
             if(count > 0){
@@ -71,8 +68,6 @@ router.get('/addresses/init', auth, async (req, res) => {
             }
             return res.status(200).send({message:count})
         }
-
-
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
@@ -85,7 +80,7 @@ router.get('/addresses/init', auth, async (req, res) => {
             options.sort = sort
         }
         const address = await Address.find({
-            isInit: false
+            isInitialized: false
         }, null, options)
 
         if(!address){
@@ -93,7 +88,7 @@ router.get('/addresses/init', auth, async (req, res) => {
         }
 
         address.forEach(addr => {
-            addr.isInit = true
+            addr.isInitialized = true
             addr.save()
         })
 
@@ -156,7 +151,7 @@ router.patch("/addresses/:id", auth, async (req, res) => {
             update.portNumber = req.query.fqdn
         }
         // debugging
-        // console.log(address.address)
+        // console.log({info:`ip ${address.address}, available ${address.isAvailable}`})
         await address.save()
         res.status(200).send(address)
     } catch (e) {
@@ -242,7 +237,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
                 update.portNumber = req.query.port
             }
             if (req.query.fqdn){
-                update.portNumber = req.query.fqdn
+                update.fqdn = req.query.fqdn
             }
         }
         await update.save()

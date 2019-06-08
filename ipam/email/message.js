@@ -121,7 +121,7 @@ const addressTrueCount = (email, address, userId, addressId, count) => {
     <a href="http://localhost:3000/configs/ports/suggest?conf=${userId}\:${count}\:${addressId}&port=n"><strong>/Configure</strong></a><br>
     `
 
-    const subject = `Information: This address is invisible, ${address}, Days inactive ${count}`
+    const subject = `Information: This address is invisible, ${address}, weeks inactive ${count}`
 
     var msg = {
         to: email,
@@ -141,7 +141,7 @@ const addressTrueCountWarn = (email, owner, address, userId, addressId, count, f
     <a href="http://localhost:3000/configs/ports/suggest?conf=${userId}\:${count}\:${addressId}&port=n"><strong>/Configure</strong></a><br>
     `
     const dDay = fp - count
-    const subject = `Warning: This address is invisible, ${address}, Removal in ${dDay} days`
+    const subject = `Warning: This address is invisible, ${address}, Removal in ${dDay} weeks`
     
     if (email !== owner){
         var msg = {

@@ -38,8 +38,11 @@ const scheduleSchema = new mongoose.Schema({
     limit:{
         type: Number,
         default: 5,
-        minlength: 5, 
-        maxlength: 240
+        validate(value){
+            if(value > 100 || value < 1){
+                throw new Error('Please provide valid data')
+            }
+        }
     },
     portList:{
         type: Array,
@@ -77,19 +80,20 @@ const scheduleSchema = new mongoose.Schema({
                 throw new Error('Please provide valid ISO Day of Week')
             }
          }
-    },
-    cronSchedule: {
-        type: String, 
-        // required: true,
-        trim: true,
-        default: '0 */1 * * * *',
-        validate(value){
-            if(!value.match(/^(\d{0,59}|\*|\*\/\d{0,59})\s(\d{0,59}|\*|\*\/\d{0,59})\s(\d{0,23}|\*|\*\/\d{0,23})\s(\d{1,31}|\*|\*\/\d{1,31})\s(\d{1,11}|\*|\*\/\d{1,11})\s(\d{0,6}|\*\/\d{0,6})\*$/)){
-                // https://www.npmjs.com/package/cron
-                throw new Error('Please provide a simple cron style schedule')
-            }
-         }
     }
+    // ,
+    // cronSchedule: {
+    //     type: String, 
+    //     // required: true,
+    //     trim: true,
+    //     default: '0 */1 * * * *',
+    //     validate(value){
+    //         if(!value.match(/^(\d{0,59}|\*|\*\/\d{0,59})\s(\d{0,59}|\*|\*\/\d{0,59})\s(\d{0,23}|\*|\*\/\d{0,23})\s(\d{1,31}|\*|\*\/\d{1,31})\s(\d{1,11}|\*|\*\/\d{1,11})\s(\d{0,6}|\*\/\d{0,6})\*$/)){
+    //             // https://www.npmjs.com/package/cron
+    //             throw new Error('Please provide a simple cron style schedule')
+    //         }
+    //      }
+    // }
 }, {
     timestamps: true
 })
@@ -100,7 +104,6 @@ scheduleSchema.methods.toJSON = function(){
     return this.toObject()
 }
 
-// for future use. 
 // scheduleSchema.pre('save', async function (next) {
 //     next()    
 // })
