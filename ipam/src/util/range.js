@@ -5,7 +5,6 @@ const ip = require("ip")
 // function
 const ipScope = (cidrSubnet, cidrExclusion) => {
         const iprangeArray = iprange(cidrSubnet)
-
         addressesArray = []
         for (i = 0; i < cidrExclusion.length; i++) {
             for (x = 0; x < iprangeArray.length; x++) {
@@ -17,7 +16,6 @@ const ipScope = (cidrSubnet, cidrExclusion) => {
                 }
             }
         }
-
         addressesObject = []
         for (i = 0; i < iprangeArray.length; i++) {
             const address = iprangeArray[i]
@@ -27,7 +25,6 @@ const ipScope = (cidrSubnet, cidrExclusion) => {
                 })
             }
         }
-
         return addressesObject
 }
 

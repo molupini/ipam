@@ -4,7 +4,7 @@ const router = new express.Router()
 const auth = require("../middleware/auth")
 const Network = require("../model/network")
 const valid = require("../src/util/compare")
-// const { ipV4 } = require("../src/util/range")
+const message = require('../email/message')
 
 // endpoints 
 // CRUD operations below
@@ -17,6 +17,7 @@ router.post('/networks', auth, async (req, res) => {
             author: req.user._id
         })
         await network.save()
+        message.networkConfirm(req.user.emailAddress, network._id, network.networkAddress)
         res.status(201).send(network)
     } catch (e) {
         res.status(500).send(e)
@@ -24,7 +25,6 @@ router.post('/networks', auth, async (req, res) => {
 })
 
 // get, confirm network and build addresses
-// TODO might deprecate
 router.get("/networks/:id/confirm", auth, async (req, res) => {
     try {
         const _id = req.params.id
@@ -64,6 +64,7 @@ router.get("/networks/:id", auth, async (req, res) => {
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
+        await network.updateNumHosts(network._id)
         if (req.query.populate === 'true') {
             await network.populate({
                 path: 'address'
@@ -81,7 +82,8 @@ router.get("/networks/:id", auth, async (req, res) => {
 // patch network, with validation and key exclusion
 // findByIdAndUpdate() will bypass the middleware which is what we require when posting the changes below
 router.patch("/networks/:id", auth, async (req, res) => {
-    const exclude = ["networkAddress", "networkConfirmed", "subnetMask", "numHosts", "subnetMaskLength", "broadcastAddress", "lastAddress", "firstAddress"]
+    // "networkConfirmed", excluded 
+    const exclude = ["networkAddress", "subnetMask", "numHosts", "subnetMaskLength", "broadcastAddress", "lastAddress", "firstAddress"]
     const isValid = valid(req.body, Network.schema.obj, exclude)
     if (!isValid) {
         return res.status(400).send({message:"Please provide a valid input"})

@@ -86,8 +86,23 @@ networkSchema.methods.toJSON = function () {
     return networkObject
 }
 
+networkSchema.methods.updateNumHosts = async function (id) {
+    const network = this
+    const total = await Address.countDocuments({
+    author: id
+    })
+    const less = await Address.countDocuments({
+        author: id,
+        isInitialized: true,
+        isAvailable: false
+    })
+    // debugging
+    // console.log(total,less)
+    network.numHosts = total-less
+    await network.save()
+}
+
 // pre Save
-// TODO should evaluate if the below should be moved to individual methods similar to user class to reduce complicity 
 networkSchema.pre("save", async function (next) {
     const network = this
     const subnet = await ip.subnet(network.networkAddress, network.subnetMask)
@@ -107,15 +122,24 @@ networkSchema.pre("save", async function (next) {
         const addresses = await ipScope(cidrSubnet, network.cidrExclusion)
         for (i = 0; i < addresses.length; i++) {
             const ip = addresses[i].ip
-            if (ip === network.networkAddress || ip === network.firstAddress || ip === network.lastAddress || ip === network.broadcastAddress || ip === network.defaultGateway) {
+            if (ip !== network.networkAddress || ip !== network.firstAddress || ip !== network.lastAddress || ip !== network.broadcastAddress || ip !== network.defaultGateway) {
                 // match found and skipped
-                continue
-            } else {
-                const address = await Address({
-                    address: ip,
-                    author: network._id
+                const address = await Address.findOne({
+                    address: ip
+                    // ,
+                    // author: network._id
                 })
-                await address.save()
+                if(address){
+                    // TODO IF CIDR CHANGED UPDATE
+                    console.log('address :', address.address);
+                }
+                if(!address){
+                    const address = await new Address({
+                        address: ip,
+                        author: network._id
+                    })
+                    await address.save()
+                }
             }
         }
     }

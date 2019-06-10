@@ -98,7 +98,6 @@ var tcpLoop = async function (addresses, ports){
                 // debugging
                 // console.log('addresses[i] :', addresses[i]);
                 // console.log(`${x}, ${addresses[i].address}, ${array[x]}`)
-                // TODO REMOVED await from below function testing async from calling function
                 await doTcpCheck(addresses[i].address, array[x]).then(() => {
                     const testResult = `${addresses[i]._id}:${addresses[i].address}:true`
                     resultArray.push(testResult)
@@ -121,6 +120,7 @@ var tcpLoop = async function (addresses, ports){
         console.error(e)
     }
 }
+
 
 module.exports = {
     doTcpCheck,

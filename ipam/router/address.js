@@ -52,7 +52,7 @@ router.get("/addresses", auth, async (req, res) => {
     }
 })
 
-// TODO used by scanner only, need to auth
+
 router.get('/addresses/init', auth, async (req, res) => {
     try {
         const options = {}
@@ -194,7 +194,6 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         try {
             address = await Address.find(match, null, options)    
         } catch (e) {
-            // TODO - email owner of network
             console.log({warning: 'Network address limit reached, check scope'})
             // changing limit to 1 if address range is less then limit
             options.limit = 1

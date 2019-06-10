@@ -20,7 +20,6 @@ app.use(userRouter)
 app.use(networkRouter)
 app.use(addressRouter)
 app.use(adminRouter)
-// TODO - not necessary might deprecate 
 app.use(configRouter)
 
 app.use('/healthv', (req, res) => {

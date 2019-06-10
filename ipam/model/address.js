@@ -86,7 +86,6 @@ addressSchema.methods.toJSON = function () {
 // pre save
 addressSchema.pre("save", async function (next) {
     const address = this
-    // TODO - eval with scanner, address endpoint based on mongoose pre save function - as could change state there to 
     if (address.isModified('isAvailable') || address.isModified('owner')) {
         address.trueCount = 0
         address.falseCount = 0

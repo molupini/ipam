@@ -6,7 +6,7 @@ const User = require("../model/user")
 const auth = require("../middleware/auth")
 const router = new express.Router()
 const valid = require("../src/util/compare")
-// const message = require('../email/message')
+const message = require('../email/message')
 
 
 // create user
@@ -14,6 +14,7 @@ router.post("/users/create", async (req, res) => {
     try {
         const user = await new User(req.body)
         await user.save()
+        await message.userCreated(user.emailAddress, user.userName, user.id)
         res.status(201).send(user)
     } catch (e) {
         res.status(500).send(e)
@@ -21,7 +22,6 @@ router.post("/users/create", async (req, res) => {
 })
 
 // get, confirm user
-// TODO - send JWT via email
 // 1 endpoint used to retrieve your credentials
 router.get("/users/:id/confirm", async (req, res) => {
     try {
@@ -51,7 +51,6 @@ router.get("/users/:id/confirm", async (req, res) => {
 })
 
 // post, login
-// TODO - send JWT via email
 // 2 endpoint used to retrieve your credentials
 // different default for JWT 
 router.patch("/users/login", async (req, res) => {
@@ -67,7 +66,6 @@ router.patch("/users/login", async (req, res) => {
 })
 
 // post, reset
-// TODO - send password
 router.get("/users/:id/reset", auth, async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
@@ -124,6 +122,9 @@ router.get("/users/my/networks", auth, async(req, res) => {
         const user = await User.findById(req.user.id)
         // create a virtual between local _id and author
         await user.populate('network').execPopulate()
+        user.network.forEach(network => {
+            network.updateNumHosts(network._id)
+        })
         res.status(200).send(user.network)
     } catch (e) {
         res.status(500).send(e)

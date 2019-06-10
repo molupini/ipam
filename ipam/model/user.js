@@ -218,13 +218,10 @@ userSchema.pre('save', async function (next) {
     if(user.createdAt === user.updatedAt){
         // user creation count, userRoot, userAdmin role assigned to count 'n' 0
         const num = await User.countDocuments()
-
         if (user.isModified("password")) {
             user.password = await bcryptjs.hash(user.password, 8)
         }
-
         user.n = num 
-
         if(user.n === 0){
             user.userRoot = true
             user.userAdmin = true
@@ -239,7 +236,7 @@ userSchema.pre('save', async function (next) {
             await schedule.save()
         }
         // if successful save confirmation email will be sent
-        await message.userCreated(user.emailAddress, user.userName, user.id)
+        // await message.userCreated(user.emailAddress, user.userName, user.id)
     }
     // is a old document
     if(user.createdAt !== user.updatedAt){

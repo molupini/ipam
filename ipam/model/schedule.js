@@ -1,4 +1,3 @@
-// TODO - not necessary might deprecate 
 const mongoose = require('mongoose')
 const validator = require('validator')
 
@@ -11,7 +10,6 @@ const scheduleSchema = new mongoose.Schema({
     endpoint:{
         type: String,
         // required: true, 
-
         default: 'address', 
         trim: true,
         lowercase: true,
@@ -29,12 +27,7 @@ const scheduleSchema = new mongoose.Schema({
     scanSynchronous:{
         type: Boolean,
         default: false
-    }
-    // ,scanInProgress:{
-    //     type: Boolean,
-    //     default: false
-    // }
-    ,
+    },
     limit:{
         type: Number,
         default: 5,
@@ -81,6 +74,7 @@ const scheduleSchema = new mongoose.Schema({
             }
          }
     }
+    // useful document type, review for future use for cron style patterns 
     // ,
     // cronSchedule: {
     //     type: String, 
@@ -98,6 +92,7 @@ const scheduleSchema = new mongoose.Schema({
     timestamps: true
 })
 
+// multi unique fields 
 // scheduleSchema.index({author: 1, endpoint: 1}, {unique: true})
 
 scheduleSchema.methods.toJSON = function(){

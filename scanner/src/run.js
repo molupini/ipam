@@ -103,7 +103,7 @@ const runLoop = async function () {
             // RUN MAIN 
             await run(baseUrl, '/addresses', `?available=true&owner=null&sort=updatedAt:acs`, jwt, conf.body, (runCount++))
             
-            // MEASURE EXPECUTION 
+            // MEASURE TIME BETWEEN MOMENTS 
             const then = await moment()
             const thenNow = await then.diff(now, 'milliseconds')
             console.log(`moments in drift thenNow, ${thenNow}, delay configured ${(delay*by)}`)
