@@ -5,6 +5,7 @@ const auth = require('../middleware/auth')
 const Address = require("../model/address")
 const { FalsePositive } = require('../src/util/counter')
 const { doPingCheck } = require("../src/util/check")
+const { logger } = require('../src/util/log')
 
 // CRUD
 // get addresses, query strings optional 
@@ -39,16 +40,13 @@ router.get("/addresses", auth, async (req, res) => {
             sort[parts[0]] = parts[1] === 'desc' ? -1 : 1 
             options.sort = sort
         }
-        // console.log({match, options})
         const address = await Address.find(match, null, options)
-        // debugging
-        // console.log('address :', address);
         if (!address || address.length <= 0) {
             return res.status(404).send({message:'Not Found'})
         }
         res.status(200).send(address)
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 
@@ -61,8 +59,6 @@ router.get('/addresses/init', auth, async (req, res) => {
             const count = await Address.countDocuments({
                 isInitialized: false
             })
-            // debugging
-            // console.log('count :', count)
             if(count > 0){
                 return res.status(200).send({message:count})
             }
@@ -73,7 +69,6 @@ router.get('/addresses/init', auth, async (req, res) => {
         }else{
             options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
         }
-
         if (req.query.sort) {
             const parts = req.query.sort.split(':')
             sort[parts[0]] = parts[1] === 'desc' ? -1 : 1 
@@ -86,24 +81,21 @@ router.get('/addresses/init', auth, async (req, res) => {
         if(!address){
             return res.status(204).send({message:'No Content'})
         }
-
         address.forEach(addr => {
             addr.isInitialized = true
             addr.save()
         })
-
         res.status(201).send(address)
     }catch(e){
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 
 // patch address by id, available=true or false, check-in / check-out address
-// used by scanner to patch specific attributes within query string 
+// used by scanner to patch specific attributes within query string. 
+// No req.body parameters will be parsed
 router.patch("/addresses/:id", auth, async (req, res) => {
     try {
-        // debugging
-        // console.log(req.query)
         const match = {}
         const address = await Address.findById(req.params.id)
         if (!address) {
@@ -118,10 +110,7 @@ router.patch("/addresses/:id", auth, async (req, res) => {
                 address.trueCount++
                 // verify if FalsePositive 
                 const isFalsePositive = await FalsePositive(address)
-                
                 if (isFalsePositive){
-                    // debugging 
-                    // console.log('isFalsePositive :', isFalsePositive);
                     address.owner = null 
                 }
             }
@@ -129,8 +118,6 @@ router.patch("/addresses/:id", auth, async (req, res) => {
             if (!match.isAvailable) {
                 address.falseCount++
                 if (address.owner != null && address.falseCount > 0){
-                    // debugging 
-                    // console.log({info: `Address ${address.address} status, ${address.isAvailable}`})
                 }
             }
             // scanned 
@@ -150,12 +137,10 @@ router.patch("/addresses/:id", auth, async (req, res) => {
         if (req.query.fqdn){
             update.portNumber = req.query.fqdn
         }
-        // debugging
-        // console.log({info:`ip ${address.address}, available ${address.isAvailable}`})
         await address.save()
         res.status(200).send(address)
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 
@@ -187,14 +172,11 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         else { 
             return res.status(400).send({message:'Please provide a valid network address or author'})
         }
-        // find based on match
-        // debugging 
-        // console.log({match, options})
         var address = null
         try {
             address = await Address.find(match, null, options)    
         } catch (e) {
-            console.log({warning: 'Network address limit reached, check scope'})
+            logger.log('warning', 'Network address limit reached, check scope')
             // changing limit to 1 if address range is less then limit
             options.limit = 1
             address = await Address.find(match, null, options)
@@ -207,12 +189,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         const pingLoop = async () => {
             let array = []
             for (i = 0; i < address.length; i++) {
-                // debugging
-                // const result = await address[i]
-                // console.log(`${address[i].id}, ${address[i].address}, ping`)
                 await doPingCheck(address[i].address).then((result) => {
-                    // debugging
-                    // console.log(result)
                     if (!result) {
                         result = address[i].id
                         array.push(result)
@@ -220,13 +197,10 @@ router.get('/addresses/checkout', auth, async (req, res) => {
                     }
                 })
             }
-            // debugging
-            // console.log(array)
             return array
         }
         // awaiting ping
         const test = await pingLoop()
-        // console.log(test[0])
         const update = await Address.findById(test[0])
         if (update) {
             update.isAvailable = false
@@ -251,7 +225,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
             network: update.network
         })
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 

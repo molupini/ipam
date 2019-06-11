@@ -1,17 +1,18 @@
-const logging = require("../src/util/log")
+const { logger } = require('../src/util/log')
 const jwt = require("jsonwebtoken")
 const User = require("../model/user")
 const moment = require('moment')
 const { userJWTExpiring } = require('../email/message')
 
+// AUTH FUNC
 // middleware needs to be registered/used before other router calls
 const auth = async (req, res, next) => {
 
-    // logging
-    // logging(req, process.env.LOG_USER_REQUEST)
+    // LOGGER
+    logger.log('info', `${moment()} auth connection ${req.method} ${req.path}`)
 
     try {
-        // valid methods
+        // VALID METHODS
         if (!req.method.match(/(GET|POST|PATCH|DELETE)/)) {
             return res.status(400).send({message:'Invalid method'})
         }
@@ -28,13 +29,9 @@ const auth = async (req, res, next) => {
         if (!user) {
             throw new Error()
         }
-
-        //  debugging 
-        // console.log({dateExp, dateNow})
+        // JWT ABOUT TO EXPIRE SEND ONE TIME NOTIFICATION
         if(dateExp.diff(dateNow, 'hours') < 72){
             if(!user.userNoc && user.userConfirmed){
-                // debugging
-                // console.log('dateExp.diff():', dateExp.diff(dateNow, 'hours') );
                 await userJWTExpiring(user.emailAddress, user.userName)
                 user.userNoc = true
                 await user.save()
@@ -42,7 +39,6 @@ const auth = async (req, res, next) => {
 
         }
 
-        // console.log(req.path);
         // admins path access control, only allow userAdmin access 
         if(req.path.match(/^\/admins/)){
             if(!user.userAdmin){

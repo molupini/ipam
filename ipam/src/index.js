@@ -28,7 +28,6 @@ app.use('/healthv', (req, res) => {
 
 // listening
 app.listen(process.env.PORT, () => {
-    logger.log('info', 'EXPRESS')
     logger.log('info', `PORT=${process.env.PORT}`)
     logger.log('info', `NODE_ENV=${process.env.NODE_ENV}`)
 })

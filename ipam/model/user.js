@@ -113,7 +113,7 @@ userSchema.methods.toJSON = function () {
         delete thisObject.userConfirmed
         delete thisObject.userNoc
         delete thisObject.password
-        delete thisObject.tokens
+        // delete thisObject.tokens
         delete thisObject.loginFailure
         delete thisObject.userAdmin
         delete thisObject.userRoot
@@ -125,7 +125,7 @@ userSchema.methods.toJSON = function () {
             delete thisObject.userNoc
             delete thisObject.userRoot
         }
-        delete thisObject.tokens
+        // delete thisObject.tokens
         delete thisObject.password
     }
   
@@ -147,10 +147,8 @@ userSchema.methods.generateAuthToken = async function (days = process.env.MIN_JW
         } else {
             extension = extension
         }
-
         days = extension
     }
-    // console.log('days =', days)
     // jwt module use secret to generate a jwt and add to array
     const token = await jwt.sign({
         _id: user._id.toString()
@@ -163,7 +161,6 @@ userSchema.methods.generateAuthToken = async function (days = process.env.MIN_JW
     if (user.tokens.length > process.env.MAX_ARRAY_LENGTH) {
         user.tokens.shift()
     }
-
     await user.save()
     return token
 }
@@ -202,7 +199,6 @@ userSchema.statics.findByCredentials = async (email, password) => {
     if(user.userNoc){
         user.userNoc = false
     }
-
     await user.save()
     // return user 
     return user
@@ -252,8 +248,6 @@ userSchema.pre('save', async function (next) {
             await message.userModified(user.emailAddress, user.userName, user._id)
         }
         if(user.isModified("tokens")){
-            // debugging
-            // console.log(user.tokens[user.tokens.length-1]);
             const jwt = user.tokens[user.tokens.length-1].token
             await message.userJsonWebToken(user.emailAddress, jwt, user.userName)
         }

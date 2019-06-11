@@ -1,7 +1,8 @@
 // CUSTOM MODULES
 const { doPingCheck, doTcpCheck } = require("./network")
 const { httpFetch, httpFailure, httpSuccess } = require("./http")
-
+const { logger } = require('../util/log')
+const moment = require('moment')
 
 // SCAN 'SYNC' FUNCTION
 var scanSync = async function (baseUrl, path, query, jwt, ports){
@@ -12,21 +13,15 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
 
         // NETWORK LOOP
         var networkLoop = async function (addresses){
-            // debugging
-            // console.log(addresses)
             for (i = 0; i < addresses.length; i++) {
 
                 // PING FUNCTION 
                 doPingCheck(addresses[i])
                 .then((result) => {
-                    // debugging 
-                    // console.log('doPingCheck result :', result)
                     if(result.alive){
                         // debugging 
-                        // console.log('doPingCheck result :', result)
+                        logger.log('info',`${moment()} doPingCheck ${result.id} ${result.host} ${result.alive}`)
                         httpSuccess(false, baseUrl, result.id, jwt)
-                        // debugging
-                        // console.log('doPingCheck httpSuccess')
                         return 0
                     }
                     if(!result.alive){
@@ -34,7 +29,6 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
                         let copyPorts = ports.slice()
                         const index = copyPorts.indexOf(result.port)
                         if(index !== -1){
-                            // console.log('index :', index)
                             copyPorts.splice(index, 1)
                             copyPorts.unshift(result.port)
                         }else{
@@ -42,31 +36,25 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
                         }
                         const set = new Set(copyPorts)
                         const array = Array.from(set)
-                        // debugging
-                        // console.log(array)
                         var isValid = []
                         for (x = 0; x < array.length; x++){
-                            // debugging 
-                            // console.log(`${x}, ${result.host}, ${array[x]}`)
-
                             // TCP FUNCTION CHECK 
                             doTcpCheck(result.host, array[x]).then((tcpResult) => {
                                 // debugging
-                                // console.log('doTcpCheck tcpResult :', tcpResult)
+                                logger.log('info',`${moment()} doTcpCheck.tcpResult ${result.id} ${result.host} ${array[x]} ${tcpResult}`)
                                 if(tcpResult){
                                     httpSuccess(true, baseUrl, result.id, jwt)
                                     return 0
                                 }
                             }).catch((tcpError)=> {
                                 // debugging
-                                // console.log('doTcpCheck tcpError :', tcpError.message)
+                                // logger.log('info',`${moment()} doTcpCheck.tcpError ${tcpError}`)
                                 const inActive = tcpError.message.split(':')[2]
                                 const ip = result.host
                                 isValid.push({ip, inActive})
                                 if (isValid.length === array.length) {
-                                    // debugging
                                     // console.log(isValid)
-                                    // console.log(ip)
+                                    logger.log('info',`${moment()} doTcpCheck.tcpError ${ip}`)
                                     httpFailure(false, baseUrl, result.id, jwt)
                                 }
                             })
@@ -78,15 +66,12 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
                 })
             }
             // COMPLETED
-            console.log({info:'--- Scanner Completed ---'})
+            // logger.log('info',`${moment()} scanSync completed`)
         }
         // IMPORTANT TO AWAIT FOR LOOP TO FINISH
         await networkLoop(body)
-        // UNLOCK SCHEDULE 
-        // await httpFetch(baseUrl, `/configs/schedules/progress/${schedule}`, true, '?lock=false', 'PATCH', jwt)
     } catch (e) {
-        console.log('scan(), catch')
-        console.error(e)
+        throw new Error(e)
     }
 }
 

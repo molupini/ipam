@@ -1,11 +1,11 @@
 const got = require('got')
+const { logger } = require('../util/log')
+const moment = require('moment')
 
 
 // httpFetch function
 var httpFetch = async function (baseUrl, path, json = true, queryStr = '', method = 'GET', jwt){
     const url = `${path}${queryStr}`
-    // debugging 
-    // console.log('http httpFetch:',`${baseUrl}${url}`)
     // config client
     const client = got.extend({
         json,
@@ -21,25 +21,16 @@ var httpFetch = async function (baseUrl, path, json = true, queryStr = '', metho
         if(!http.body){
             throw new Error('No Body')
         }
-        // debugging 
-        // console.log(http.requestUrl)
         return http
     } catch (e) {
-        // debugging 
-        // console.error(e.path)
         throw new Error(e)
     } 
 }
 
 var addressPatchLoop = async function (entries, baseUrl, path, queryStr, jwt){
-    // debugging
-    // console.log(entries)
     try {
         let resultArray = []
         for (i = 0; i < entries.length; i++) {
-            // debugging
-            // console.log(`${entries[i].id}, ${entries[i].host},  ${entries[i].alive}`)
-    
             var isAvailable = null
             // alive, 
             if(!entries[i].alive){
@@ -50,16 +41,12 @@ var addressPatchLoop = async function (entries, baseUrl, path, queryStr, jwt){
 
             const pathUpdate = `${path}/${entries[i].id}`
             const queryUpdate = `${queryStr}${isAvailable}`
-            // debugging
-            // console.log(baseUrl, pathUpdate, queryUpdate)
             const httpResult = await httpFetch(baseUrl, pathUpdate, true, queryUpdate, 'PATCH', jwt)
             resultArray.push(httpResult.body)
         }
-        // debugging
-        // console.log('resultArray :', resultArray);
         return resultArray   
     } catch (e) {
-        console.error(e)
+        throw new Error(e)
     }
 }
 
@@ -70,12 +57,11 @@ var httpSuccess = function(log, baseUrl, id, jwt){
             return 1
         }
         if(log){
+            logger.log('info',`${moment()} httpResult.body`)
             console.log(httpResult.body)
         }
         return 0 
     }).catch((httpError) => {
-        // debugging
-        // console.log(httpError)
         throw new Error(httpError)
     })
 }
@@ -87,12 +73,11 @@ var httpFailure = async function(log, baseUrl, id, jwt){
             return 1
         }
         if(log){
+            logger.log('info',`${moment()} httpResult.body`)
             console.log(httpResult.body)
         }
         return 0 
     }).catch((httpError) => {
-        // debugging
-        // console.log(httpError)
         throw new Error(httpError)
     })
 }

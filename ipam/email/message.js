@@ -1,11 +1,14 @@
 // https://github.com/sendgrid/sendgrid-nodejs/tree/master/packages/mail
 const sendGrid = require('@sendgrid/mail')
+const moment = require('moment')
+const { logger } = require('../src/util/log')
 
 const from = process.env.MESSAGE_FROM_ADDRESS
 const support = process.env.MESSAGE_SUPPORT
 const limit = process.env.MAX_ARRAY_LENGTH
 const fqdn = process.env.EXTERNAL_ENDPOINT_FQDN
 const port = process.env.PORT
+
 
 sendGrid.setApiKey(process.env.SEND_GRID_API_KEY)
 
@@ -18,7 +21,7 @@ const userCreated = (email, user, id) => {
     <a href="http://${fqdn}:${port}/users/${id}/confirm"><strong>/Confirm</strong></a><br>
     `
 
-    const subject = `Welcome User, ${user} Please confirm`
+    const subject = `Welcome user, ${user} please confirm`
 
     var msg = {
         to: email,
@@ -27,7 +30,7 @@ const userCreated = (email, user, id) => {
         html: body,  
     }
     // debugging
-    console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'confirm account'})
+    logger.log('info',`${moment()} ${msg.subject}`)
     // sendGrid.send(msg)
 } 
 
@@ -40,7 +43,7 @@ const userJsonWebToken = (email, jwt, user) => {
     <a href="http://${fqdn}:${port}/users/login"><strong>/Login</strong></a><br>
     `
 
-    const subject = `Account Token, ${user} Web Token Created`
+    const subject = `Account token, ${user} web token created`
 
     var msg = {
         to: email,
@@ -49,7 +52,7 @@ const userJsonWebToken = (email, jwt, user) => {
         html: body,  
     }
     // debugging
-    console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'notification'})
+    logger.log('info',`${moment()} ${msg.subject}`)
     // sendGrid.send(msg)   
 }
 
@@ -61,7 +64,7 @@ const userJWTExpiring = (email, user) => {
     <a href="http://${fqdn}:${port}/users/login"><strong>/Login</strong></a><br>
     `
 
-    const subject = `Account Token, ${user} About to expire`
+    const subject = `Account token, ${user} about to expire`
 
     var msg = {
         to: email,
@@ -70,7 +73,7 @@ const userJWTExpiring = (email, user) => {
         html: body,  
     }
     // debugging
-    console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'notification'})
+    logger.log('info',`${moment()} ${msg.subject}`)
     // sendGrid.send(msg)   
 }
 
@@ -82,7 +85,7 @@ const userReset = (email, user, id) => {
     <a href="http://${fqdn}:${port}/users/${id}/reset"><strong>/Reset</strong></a><br>
     `
 
-    const subject = `Account Locked, ${user}`
+    const subject = `Account locked, ${user}`
 
     var msg = {
         to: email,
@@ -91,7 +94,7 @@ const userReset = (email, user, id) => {
         html: body,  
     }
     // debugging
-    console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'reset'})
+    logger.log('info',`${moment()} ${msg.subject}`)
     // sendGrid.send(msg)
 }
 
@@ -102,7 +105,7 @@ const userModified = (email, user, id) => {
     <a href="http://${fqdn}:${port}/users/${id}/confirm?userModified=true"><strong>/Confirm</strong></a><br>
     `
 
-    const subject = `Account Modified, ${user} Please confirm`
+    const subject = `Account modified, ${user} please confirm`
 
     var msg = {
         to: email,
@@ -111,7 +114,7 @@ const userModified = (email, user, id) => {
         html: body,  
     }
     // debugging
-    console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'confirm changes'})
+    logger.log('info',`${moment()} ${msg.subject}`)
     // sendGrid.send(msg)
 }
 
@@ -123,7 +126,7 @@ const addressTrueCount = (email, address, userId, addressId, count) => {
     Any questions, contact ${support}.<br>
     `
 
-    const subject = `Information: This address is invisible, ${address}, weeks inactive ${count}`
+    const subject = `This address is invisible, ${address}, weeks inactive ${count}`
 
     var msg = {
         to: email,
@@ -132,7 +135,7 @@ const addressTrueCount = (email, address, userId, addressId, count) => {
         html: body,  
     }
     // debugging
-    console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'config required'})
+    logger.log('info',`${moment()} ${msg.subject}`)
     // sendGrid.send(msg)
 }
 
@@ -144,7 +147,7 @@ const addressTrueCountWarn = (email, owner, address, userId, addressId, count, f
     Any questions, contact ${support}.<br>
     `
     const dDay = fp - count
-    const subject = `Warning: This address is invisible, ${address}, Removal in ${dDay} weeks`
+    const subject = `this address is invisible, ${address}, removal in ${dDay} weeks`
     
     if (email !== owner){
         var msg = {
@@ -164,7 +167,7 @@ const addressTrueCountWarn = (email, owner, address, userId, addressId, count, f
     }
 
     // debugging
-    console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'config required'})
+    logger.log('warning',`${moment()} ${msg.subject}`)
     // sendGrid.send(msg)
 }
 
@@ -180,7 +183,7 @@ const networkConfirm = (email, id, network) => {
     Any questions, contact ${support}.<br>
     `
 
-    const subject = `Network, ${network} Please confirm`
+    const subject = `Network, ${network} please confirm`
 
     var msg = {
         to: email,
@@ -189,8 +192,8 @@ const networkConfirm = (email, id, network) => {
         html: body,  
     }
     // debugging
-    console.log({date: new Date(Date.now()), sendGrid: msg.subject, action: 'confirm network'})
-    sendGrid.send(msg)
+    logger.log('info',`${moment()} ${msg.subject}`)
+    // sendGrid.send(msg)
 }
 
 

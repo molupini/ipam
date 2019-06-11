@@ -1,4 +1,6 @@
 const mongoose = require("mongoose")
+const { logger } = require('../src/util/log')
+const moment = require('moment')
 
 const options = {
     useCreateIndex: true,
@@ -13,10 +15,9 @@ const options = {
 
 const mongooseConnection = () => {
     mongoose.connect(process.env.MONGODB_URL, options).then((result) => {
-        console.log('mongodb - connected')
+        logger.log('info', `${moment()} mongoose connected`)
     }).catch((e) => {
-        // console.log(process.env.MONGODB_URL)
-        console.log('mongodb - not connected, retry in 5 seconds')
+        logger.log('info', `${moment()} mongoose not connected, retry in 5 seconds`)
         setTimeout(mongooseConnection, 5000)
     })
 }

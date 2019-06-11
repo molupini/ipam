@@ -10,7 +10,7 @@ router.get('/admins/users', auth, async (req, res) => {
         const user = await User.find({})
         res.status(200).send(user)
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 
@@ -21,14 +21,13 @@ router.get('/admins/users/:id', auth, async (req, res) => {
         if (!user) {
            return res.status(404).send({message:'Not Found'})
         }
-        // debugging
-        // console.log('user :', user);
         res.status(200).send(user)
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 
+// parse body for allowed fields 
 router.patch("/admins/users/:id", auth, async (req, res) => {
     const exclude = ['n', 'userName', 'password']
     const isValid = valid(req.body, User.schema.obj, exclude)
@@ -63,7 +62,7 @@ router.patch("/admins/users/:id", auth, async (req, res) => {
         }
         res.status(200).send(user)
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }    
 })
 
@@ -74,9 +73,9 @@ router.delete('/admins/users/:id', auth, async (req, res) => {
             return res.status(404).send({message:"User Not Found"})
         }
         await user.remove()
-        await res.status(200).send(user)
+        res.status(200).send(user)
     } catch (e) {
-        await res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 

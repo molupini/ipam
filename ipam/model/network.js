@@ -82,7 +82,7 @@ networkSchema.virtual('address', {
 networkSchema.methods.toJSON = function () {
     const network = this
     const networkObject = network.toObject()
-    delete networkObject.networkConfirmed
+    // delete networkObject.networkConfirmed
     return networkObject
 }
 
@@ -96,8 +96,6 @@ networkSchema.methods.updateNumHosts = async function (id) {
         isInitialized: true,
         isAvailable: false
     })
-    // debugging
-    // console.log(total,less)
     network.numHosts = total-less
     await network.save()
 }
@@ -122,17 +120,14 @@ networkSchema.pre("save", async function (next) {
         const addresses = await ipScope(cidrSubnet, network.cidrExclusion)
         for (i = 0; i < addresses.length; i++) {
             const ip = addresses[i].ip
-            if (ip !== network.networkAddress || ip !== network.firstAddress || ip !== network.lastAddress || ip !== network.broadcastAddress || ip !== network.defaultGateway) {
+            if (ip === network.networkAddress || ip === network.firstAddress || ip === network.lastAddress || ip === network.broadcastAddress || ip === network.defaultGateway) {
+                continue
+            }
+            else {
                 // match found and skipped
                 const address = await Address.findOne({
                     address: ip
-                    // ,
-                    // author: network._id
                 })
-                if(address){
-                    // TODO IF CIDR CHANGED UPDATE
-                    console.log('address :', address.address);
-                }
                 if(!address){
                     const address = await new Address({
                         address: ip,
@@ -140,7 +135,29 @@ networkSchema.pre("save", async function (next) {
                     })
                     await address.save()
                 }
+                // 
+                // const address = await new Address({
+                //     address: ip,
+                //     author: network._id
+                // })
+                // await address.save()
             }
+        }
+    }
+    // CIDR UPDATES THAT ARE VALID
+    if(!network.isNew && network.isModified("cidrExclusion")){
+        network.cidrExclusion.forEach(cidr => {
+            const mask = ip.cidrSubnet(cidr).subnetMaskLength
+            if(mask < network.subnetMaskLength){
+                throw new Error('Invalid exclusion')
+            }
+        })
+        if(network.networkConfirmed === true){
+            await Address.deleteMany({
+                author: network._id,
+                owner: null
+            })
+            network.networkConfirmed = false
         }
     }
     // create network

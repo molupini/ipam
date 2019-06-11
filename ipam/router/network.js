@@ -20,7 +20,7 @@ router.post('/networks', auth, async (req, res) => {
         message.networkConfirm(req.user.emailAddress, network._id, network.networkAddress)
         res.status(201).send(network)
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 
@@ -39,7 +39,7 @@ router.get("/networks/:id/confirm", auth, async (req, res) => {
         network.save()
         res.status(202).send()
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 
@@ -52,7 +52,7 @@ router.get("/networks", auth, async (req, res) => {
         }
         res.status(200).send(network)
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 
@@ -75,15 +75,15 @@ router.get("/networks/:id", auth, async (req, res) => {
             addresses: network.address}
         )
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 
 // patch network, with validation and key exclusion
 // findByIdAndUpdate() will bypass the middleware which is what we require when posting the changes below
+// parse body for allowed fields 
 router.patch("/networks/:id", auth, async (req, res) => {
-    // "networkConfirmed", excluded 
-    const exclude = ["networkAddress", "subnetMask", "numHosts", "subnetMaskLength", "broadcastAddress", "lastAddress", "firstAddress"]
+    const exclude = ["networkAddress","networkConfirmed","subnetMask", "numHosts", "subnetMaskLength", "broadcastAddress", "lastAddress", "firstAddress"]
     const isValid = valid(req.body, Network.schema.obj, exclude)
     if (!isValid) {
         return res.status(400).send({message:"Please provide a valid input"})
@@ -103,9 +103,7 @@ router.patch("/networks/:id", auth, async (req, res) => {
         await network.save()
         res.status(201).send(network)
     } catch (e) {
-        res.status(500).send({
-            error: e.message
-        })
+        res.status(500).send({error: e.message})
     }
 })
 
@@ -122,7 +120,7 @@ router.delete("/networks/:id", auth, async (req, res) => {
         await network.remove()
         res.status(200).send()
     } catch (e) {
-        res.status(500).send()
+        res.status(500).send({error: e.message})
     }
 })
 

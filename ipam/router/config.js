@@ -24,8 +24,6 @@ router.get('/configs/suggest', async (req,res) => {
             return res.status(404).send({message:"Not Found"})    
         }
         // compare fields
-        // debugging
-        // console.log({userId, count, addressId});
         if(userId !== address.owner.toString() || addressId !== address.id.toString() || parseInt(count) !== address.count){
             return res.status(400).send({message:"Bad Request"})      
         }
@@ -35,7 +33,7 @@ router.get('/configs/suggest', async (req,res) => {
         await address.save()
         res.status(200).send(address)
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 
@@ -48,7 +46,7 @@ router.get('/configs/ports', auth, async (req,res) => {
         }        
         res.status(200).send(address)
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 
@@ -71,15 +69,13 @@ router.get('/configs/schedules', auth, async (req,res) => {
 
         res.status(200).send(schedule)
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 
 // used by admins
 router.post('/configs/schedules', auth, async (req,res) => {
     try {
-        // debugging
-        // console.log('req.user :', req.user)
         const schedule = await new Schedule({
             author: req.user,
             ...req.body
@@ -90,11 +86,12 @@ router.post('/configs/schedules', auth, async (req,res) => {
         await schedule.save()
         res.status(200).send(schedule)
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 
 // patch, with validation and key exclusion
+// parse body for allowed fields 
 router.patch("/configs/schedules/:id", auth, async (req, res) => {
     const exclude = ["author", "eventFired"]
     const isValid = valid(req.body, Schedule.schema.obj, exclude)
@@ -103,8 +100,6 @@ router.patch("/configs/schedules/:id", auth, async (req, res) => {
     }
     try {
         const schedule = await Schedule.findById(req.params.id)
-        // debugging
-        // console.log(schedule)
         if (!schedule) {
             return res.status(404).send({message:"Not Found"})
         }
@@ -115,21 +110,18 @@ router.patch("/configs/schedules/:id", auth, async (req, res) => {
         body.forEach(value => {
             schedule[value] = req.body[value]
         })
-        // debugging
-        // console.log(body,schedule)
         await schedule.save()
         res.status(201).send(schedule)
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 
 // patch, event scanner only
+// No req.body parameters will be parsed
 router.patch("/configs/schedules/event/:id", auth, async (req, res) => {
     try {
         const schedule = await Schedule.findById(req.params.id)
-        // debugging
-        // console.log(schedule, req.query.event)
         if (!schedule) {
             return res.status(404).send({message:"Not Found"})
         }
@@ -140,7 +132,7 @@ router.patch("/configs/schedules/event/:id", auth, async (req, res) => {
         await schedule.save()
         res.status(201).send(schedule)
     } catch (e) {
-        res.status(500).send(e)
+        res.status(500).send({error: e.message})
     }
 })
 

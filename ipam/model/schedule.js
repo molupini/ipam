@@ -48,8 +48,6 @@ const scheduleSchema = new mongoose.Schema({
                     array.push(true)                    
                 }
             })
-            // debugging 
-            // console.log('portList array :', array)
             if(array.length !== value.length){
                 throw new Error('Please provide valid tcp port string array')
             }

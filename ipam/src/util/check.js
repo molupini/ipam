@@ -1,5 +1,6 @@
 // source code from scanner/src/util/check.js
-const ping = require('ping') 
+const ping = require('ping')
+const logger = require('../util/log')
 
 var doPingCheck = async function (ip) {
     try {
@@ -15,24 +16,6 @@ var doPingCheck = async function (ip) {
     }
 }
 
-var pingLoop = async function (addresses){
-    // debugging
-    // console.log(addresses.length)
-    let resultArray = []
-    for (i = 0; i < addresses.length; i++) {
-        // debugging
-        // console.log(`${address[i]._id}, ${addresses[i].address}, ping`)
-        await doPingCheck(addresses[i]).then((pingResult) => {
-            // console.log('doPingCheck :', pingResult);
-            resultArray.push(pingResult)
-        })
-    }
-    // debugging
-    // console.log('resultArray :', resultArray);
-    return resultArray
-}
-
 module.exports = {
-    doPingCheck, 
-    pingLoop
+    doPingCheck
 }

@@ -1,14 +1,13 @@
 const tcp = require("tcp-port-used")
 const ping = require('ping') 
 const dns = require('dns').promises
+const moment = require('moment')
+const { logger } = require('../util/log')
+
 
 var doTcpCheck = async function (ip, port) {
     try {
-        // debugging
-        // console.log(ip, port)
         const test = await tcp.check(parseInt(port), ip)
-        // debugging
-        // console.log('doTcpCHeck() :', test)
         if (test) {
             return test === true
         } else {
@@ -40,40 +39,29 @@ var doDNSCheck = async function (ip) {
         if (!test) {
             return test
         }
-        return test            
+        return test
     } catch (e) {
         throw new Error(e.code) // e.code
     }
 }
 
 var pingLoop = async function (addresses){
-    // debugging
-    // console.log(addresses.length)
     try {
         let resultArray = []
         for (i = 0; i < addresses.length; i++) {
-            // debugging
-            // console.log(`${addresses[i]._id}, ${addresses[i].address}, ping`)
-            // can't remove await below, 
             await doPingCheck(addresses[i]).then((pingResult) => {
-                // console.log('doPingCheck :', pingResult);
+                // debugging
+                logger.log('info', `${moment()} pingResult ${pingResult.id} ${pingResult.host} ${pingResult.alive}`)
                 resultArray.push(pingResult)
             })
-            // not handling catch
         }
-        // debugging
-        // console.log('resultArray :', resultArray);
         return resultArray
     } catch (e) {
-        // console.log('pingLoop(), catch')
-        console.error(e)
+        throw new Error(e)
     }
 }
 
 var tcpLoop = async function (addresses, ports){
-    // debugging
-    // console.log(addresses)
-    
     let resultArray = []
     try {
         for (i = 0; i < addresses.length; i++) {
@@ -81,7 +69,6 @@ var tcpLoop = async function (addresses, ports){
             let copyPorts = ports.slice()
             const index = copyPorts.indexOf(addresses[i].portNumber)
             if(index !== -1){
-                // console.log('index :', index)
                 copyPorts.splice(index, 1)
                 copyPorts.unshift(addresses[i].portNumber)
             }else{
@@ -89,35 +76,27 @@ var tcpLoop = async function (addresses, ports){
             }
             const set = new Set(copyPorts)
             const array = Array.from(set)
-            // debugging
-            // console.log(array)
-            // debugging
-            // console.log(`${addresses[i]._id}, ${addresses[i].address}, ${addresses[i].portNumber}`)
-
             for (x = 0; x < array.length; x++){
-                // debugging
-                // console.log('addresses[i] :', addresses[i]);
-                // console.log(`${x}, ${addresses[i].address}, ${array[x]}`)
                 await doTcpCheck(addresses[i].address, array[x]).then(() => {
                     const testResult = `${addresses[i]._id}:${addresses[i].address}:true`
+                    // debugging
+                    logger.log('info', `${moment()} doTcpCheck ${testResult}`)
                     resultArray.push(testResult)
-                    // alive address
+                    // alive address found stop loop
                     x = array.length
-
                 }).catch(() => {
                     const testResult = `${addresses[i]._id}:${addresses[i].address}:false`
+                    // debugging
+                    logger.log('info', `${moment()} doTcpCheck ${testResult}`)
                     resultArray.push(testResult)
                 })
             }
 
             
         }
-        // debugging
-        // console.log('resultArray :', resultArray);
         return resultArray
     } catch (e) {
-        console.log('tcpLoop(), catch')
-        console.error(e)
+        throw new Error(e)
     }
 }
 

@@ -9,12 +9,7 @@ const valid = (des = {}, ref = {}, excl = []) => {
             delete allowedUpdates[index]
         }
     }
-
-    // console.log(updates)
-    // console.log(allowedUpdates)
-
     const isValid = updates.every((update) => {
-        // console.log(allowedUpdates.includes(update))
         return allowedUpdates.includes(update)
     })
 
