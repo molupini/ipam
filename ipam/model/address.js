@@ -21,6 +21,10 @@ const addressSchema = new mongoose.Schema({
         type: Boolean, 
         default: false
     },
+    gatewayAvailable: {
+        type: Boolean, 
+        default: false
+    },
     count: {
         type: Number,
         default: 0
@@ -86,12 +90,14 @@ addressSchema.methods.toJSON = function () {
 // pre save
 addressSchema.pre("save", async function (next) {
     const address = this
-    if (address.isModified('isAvailable') || address.isModified('owner')) {
+    if (!address.isNew && (address.isModified('isAvailable') || address.isModified('owner'))) {
         address.trueCount = 0
         address.falseCount = 0
         address.count = 0
     }
-
+    if (!address.isNew && address.isModified('gatewayAvailable') === false) {
+        address.isInitialized = false
+    }
     next()
 })
 

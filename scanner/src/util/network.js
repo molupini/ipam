@@ -80,7 +80,7 @@ var tcpLoop = async function (addresses, ports){
                 await doTcpCheck(addresses[i].address, array[x]).then(() => {
                     const testResult = `${addresses[i]._id}:${addresses[i].address}:true`
                     // debugging
-                    logger.log('info', `${moment()} doTcpCheck ${testResult}`)
+                    logger.log('info', `${moment()} --- doTcpCheck ${testResult} ---`)
                     resultArray.push(testResult)
                     // alive address found stop loop
                     x = array.length

@@ -50,7 +50,7 @@ router.get("/addresses", auth, async (req, res) => {
     }
 })
 
-
+// used by scanner 
 router.get('/addresses/init', auth, async (req, res) => {
     try {
         const options = {}
@@ -69,6 +69,9 @@ router.get('/addresses/init', auth, async (req, res) => {
         }else{
             options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
         }
+        if (req.query.skip) {
+            options.skip = parseInt(req.query.skip)
+        }
         if (req.query.sort) {
             const parts = req.query.sort.split(':')
             sort[parts[0]] = parts[1] === 'desc' ? -1 : 1 
@@ -86,6 +89,28 @@ router.get('/addresses/init', auth, async (req, res) => {
             addr.save()
         })
         res.status(201).send(address)
+    }catch(e){
+        res.status(500).send({error: e.message})
+    }
+})
+
+// used by scanner 
+router.patch('/addresses/network/:id/gateway', auth, async (req, res) => {
+    try {
+        const address = await Address.find({
+            author: req.params.id
+        })
+        if(!address){
+            return res.status(404).send({message:'Not Found'})
+        }
+        if(req.query.available === 'true'){
+            await Address.updateMany({
+                author: req.params.id
+            },{
+                gatewayAvailable: true
+            })
+        }
+        res.status(201).send({message: 'Gateway available'})
     }catch(e){
         res.status(500).send({error: e.message})
     }
@@ -152,6 +177,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         // hard-coded options, only available address that have no owner allocated,
         // limit amount provided by env variable
         match.isAvailable = true
+        match.gatewayAvailable = true
         match.owner = null
         options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
         options.sort = {

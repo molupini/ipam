@@ -7,7 +7,16 @@ const valid = require("../src/util/compare")
 // get, all users
 router.get('/admins/users', auth, async (req, res) => {
     try {
-        const user = await User.find({})
+        var options = {}
+        if (req.query.limit) { 
+            options.limit = parseInt(req.query.limit)
+        }else{
+            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+        }
+        if (req.query.skip) {
+            options.skip = parseInt(req.query.skip)
+        }
+        const user = await User.find({},null, options)
         res.status(200).send(user)
     } catch (e) {
         res.status(500).send({error: e.message})

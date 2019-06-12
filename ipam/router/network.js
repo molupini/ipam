@@ -46,7 +46,16 @@ router.get("/networks/:id/confirm", auth, async (req, res) => {
 // get, all 
 router.get("/networks", auth, async (req, res) => {
     try {
-        const network = await Network.find({})
+        var options = {}
+        if (req.query.limit) { 
+            options.limit = parseInt(req.query.limit)
+        }else{
+            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+        }
+        if (req.query.skip) {
+            options.skip = parseInt(req.query.skip)
+        }
+        const network = await Network.find({}, null, options)
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
@@ -60,6 +69,15 @@ router.get("/networks", auth, async (req, res) => {
 router.get("/networks/:id", auth, async (req, res) => {
     const _id = req.params.id
     try {
+        var options = {}
+        if (req.query.limit) { 
+            options.limit = parseInt(req.query.limit)
+        }else{
+            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+        }
+        if (req.query.skip) {
+            options.skip = parseInt(req.query.skip)
+        }
         const network = await Network.findById({ _id })
         if (!network) {
             return res.status(404).send({message:'Not Found'})
@@ -67,7 +85,8 @@ router.get("/networks/:id", auth, async (req, res) => {
         await network.updateNumHosts(network._id)
         if (req.query.populate === 'true') {
             await network.populate({
-                path: 'address'
+                path: 'address',
+                options
             }).execPopulate()
         }
         res.status(200).send({
@@ -93,8 +112,10 @@ router.patch("/networks/:id", auth, async (req, res) => {
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
-        if (network.author !== null && network.author.toString() !== req.user.id.toString()) {
-            return res.status(403).send({message:"Forbidden"})
+        if(!req.user.userRoot){
+            if (network.author !== null && network.author.toString() !== req.user.id.toString()) {
+                return res.status(403).send({message:"Forbidden"})
+            }
         }
         const body = Object.keys(req.body)
         body.forEach(value => {

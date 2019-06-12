@@ -127,9 +127,21 @@ router.get("/users/me", auth, (req, res) => {
 // get, my networks
 router.get("/users/my/networks", auth, async(req, res) => {
     try {
+        var options = {}
+        if (req.query.limit) { 
+            options.limit = parseInt(req.query.limit)
+        }else{
+            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+        }
+        if (req.query.skip) {
+            options.skip = parseInt(req.query.skip)
+        }
+        options.sort = {
+            'updatedAt': -1
+        }
         const user = await User.findById(req.user.id)
         // create a virtual between local _id and author
-        await user.populate('network').execPopulate()
+        await user.populate({path:'network', options}).execPopulate()
         user.network.forEach(network => {
             network.updateNumHosts(network._id)
         })
@@ -142,8 +154,15 @@ router.get("/users/my/networks", auth, async(req, res) => {
 // get, my addresses
 router.get("/users/my/addresses", auth, async (req, res) => {
     try {
-        const options = {}
-        // sort by updatedAt 
+        var options = {}
+        if (req.query.limit) { 
+            options.limit = parseInt(req.query.limit)
+        }else{
+            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+        }
+        if (req.query.skip) {
+            options.skip = parseInt(req.query.skip)
+        }
         options.sort = {
             'updatedAt': -1
         }

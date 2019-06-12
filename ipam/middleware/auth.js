@@ -16,6 +16,8 @@ const auth = async (req, res, next) => {
         if (!req.method.match(/(GET|POST|PATCH|DELETE)/)) {
             return res.status(400).send({message:'Invalid method'})
         }
+
+        // VERIFY JWT
         // replace Bearer string with '' string and verify token within header against JWT secret and decode _id within data play-load
         const token = req.header("Authorization").replace("Bearer ", "")
         const decoded = jwt.verify(token, process.env.JSON_WEB_TOKEN_SECRET)
@@ -23,6 +25,7 @@ const auth = async (req, res, next) => {
         const dateExp = moment(decoded.exp*1000)
         // const dateExp = new Date(decoded.exp*1000)
 
+        // FIND USER BASED ON ID
         // find id with token provided 
         const user = await User.findOne({ _id: decoded._id, 'tokens.token': token })
         // bearer user not found
@@ -39,6 +42,24 @@ const auth = async (req, res, next) => {
 
         }
 
+        // ADDRESSES PATH
+        // addresses path access control, only allow userAdmin access 
+        if(req.path.match(/^\/addresses\/checkout/)){
+            if(!user.userConfirmed){
+                throw new Error()
+            }
+        }
+        else if(req.path.match(/^\/addresses\/init/) || req.path.match(/^\/addresses\/network/)){
+            if(!user.userRoot){
+                throw new Error()
+            }
+        }
+        // unauthorized access on patch addresses example user could transfer ownership without being the actual owner
+        else if(req.path.match(/^\/addresses/) && !req.method.match(/GET/) && !user.userAdmin){
+            throw new Error()
+        }
+
+        // ADMINS PATH
         // admins path access control, only allow userAdmin access 
         if(req.path.match(/^\/admins/)){
             if(!user.userAdmin){
@@ -57,22 +78,36 @@ const auth = async (req, res, next) => {
                 user.userRoot = false
             }
         }
+
+        // CONFIGS PATH
+        // networks path access control, only allow userAdmin access 
+        if(req.path.match(/^\/configs\/suggest/)){
+            if(!user.userConfirmed){
+                throw new Error()
+            }
+        }
+        else if(req.path.match(/^\/configs\/schedules\/event/)){
+            if(!user.userRoot){
+                throw new Error()
+            }
+        }
+        else if(req.path.match(/^\/configs/)){
+            if(!user.userAdmin){
+                throw new Error()
+            }
+        }
+
+        // NETWORKS PATH
         // networks path access control, only allow userAdmin access 
         if(req.path.match(/^\/networks/)){
             if(!user.userAdmin){
                 throw new Error()
             }
         }
-        // addresses path access control, only allow userAdmin access 
-        if(req.path.match(/^\/addresses/)){
-            if(!user.userConfirmed){
-                throw new Error()
-            }
-        }
-        // unauthorized access on patch addresses example user could transfer ownership without being the actual owner
-        else if(req.path.match(/^\/addresses/) && !req.method.match(/GET/) && !user.userAdmin){
-            throw new Error()
-        }
+
+        // USERS PATH
+        // access control not required
+       
         // give the route handler the user fetched from the database
         req.token = token
         req.user = user

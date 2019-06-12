@@ -113,7 +113,7 @@ userSchema.methods.toJSON = function () {
         delete thisObject.userConfirmed
         delete thisObject.userNoc
         delete thisObject.password
-        // delete thisObject.tokens
+        delete thisObject.tokens
         delete thisObject.loginFailure
         delete thisObject.userAdmin
         delete thisObject.userRoot
@@ -125,7 +125,7 @@ userSchema.methods.toJSON = function () {
             delete thisObject.userNoc
             delete thisObject.userRoot
         }
-        // delete thisObject.tokens
+        delete thisObject.tokens
         delete thisObject.password
     }
   
@@ -270,6 +270,10 @@ userSchema.pre('remove', async function (next) {
         owner: user._id
     }, {
         owner: null
+    })
+    // remove all schedules owned by account
+    await Schedule.deleteMany({
+        author: user._id
     })
     next()
 })

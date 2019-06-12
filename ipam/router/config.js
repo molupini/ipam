@@ -6,6 +6,7 @@ const Address = require('../model/address')
 const Schedule = require('../model/schedule')
 const valid = require('../src/util/compare')
 
+
 // user only, via email confirmation 
 router.get('/configs/suggest', async (req,res) => {
     try {
@@ -50,9 +51,18 @@ router.get('/configs/ports', auth, async (req,res) => {
     }
 })
 
-// used by scanner & userAdmin
+// used by scanner
 router.get('/configs/schedules', auth, async (req,res) => {
     try {
+        var options = {}
+        if (req.query.limit) { 
+            options.limit = parseInt(req.query.limit)
+        }else{
+            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+        }
+        if (req.query.skip) {
+            options.skip = parseInt(req.query.skip)
+        }
         const match = {}
         var schedule = null
         if(req.query.endpoint){
@@ -61,7 +71,7 @@ router.get('/configs/schedules', auth, async (req,res) => {
                 endpoint: match.endpoint
             })
         }else{
-            schedule = await Schedule.find({})
+            schedule = await Schedule.find({}, null, options)
         }
         if(!schedule){
             return res.status(404).send({message:"Not Found"})    

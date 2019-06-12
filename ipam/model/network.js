@@ -147,8 +147,13 @@ networkSchema.pre("save", async function (next) {
     // CIDR UPDATES THAT ARE VALID
     if(!network.isNew && network.isModified("cidrExclusion")){
         network.cidrExclusion.forEach(cidr => {
+            const cidrAddr = ip.cidr(cidr)
+            const test = ip.cidrSubnet(`${network.networkAddress}/${network.subnetMaskLength}`).contains(cidrAddr)
             const mask = ip.cidrSubnet(cidr).subnetMaskLength
             if(mask < network.subnetMaskLength){
+                throw new Error('Invalid exclusion')
+            }
+            if(!test){
                 throw new Error('Invalid exclusion')
             }
         })
