@@ -1,6 +1,6 @@
 const { logger } = require('../src/util/log')
-const jwt = require("jsonwebtoken")
-const User = require("../model/user")
+const jwt = require('jsonwebtoken')
+const User = require('../model/user')
 const moment = require('moment')
 const { userJWTExpiring } = require('../email/message')
 
@@ -19,7 +19,7 @@ const auth = async (req, res, next) => {
 
         // VERIFY JWT
         // replace Bearer string with '' string and verify token within header against JWT secret and decode _id within data play-load
-        const token = req.header("Authorization").replace("Bearer ", "")
+        const token = req.header('Authorization').replace('Bearer ', '')
         const decoded = jwt.verify(token, process.env.JSON_WEB_TOKEN_SECRET)
         const dateNow = moment()
         const dateExp = moment(decoded.exp*1000)
@@ -49,7 +49,7 @@ const auth = async (req, res, next) => {
                 throw new Error()
             }
         }
-        else if(req.path.match(/^\/addresses\/init/) || req.path.match(/^\/addresses\/network/)){
+        else if(req.path.match(/^\/addresses\/init/) || req.path.match(/^\/addresses\/network/) || req.path.match(/^\/addresses\/status/)){
             if(!user.userRoot){
                 throw new Error()
             }

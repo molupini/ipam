@@ -1,6 +1,6 @@
 // modules 
-const iprange = require("iprange")
-const ip = require("ip")
+const iprange = require('iprange')
+const ip = require('ip')
 
 // function
 const ipScope = (cidrSubnet, cidrExclusion) => {
@@ -36,7 +36,7 @@ const ipV4 = (address) => {
     return ip.isV4Format(address)
 }
 
-// expv
+
 module.exports = {
     ipScope,
     ipVaild,

@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
         trim: true,
         validate(value) {
             if (!validator.isEmail(value)) {
-                throw new Error("Please provide a valid email address")
+                throw new Error('Please provide a valid email address')
             }
         },
         unique: true
@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema({
         validate(value) {
             const filter = new Filter()
             if (filter.isProfane(value)) {
-                throw new Error("profanity is not allowed")
+                throw new Error('profanity is not allowed')
             }
         }
     },
@@ -45,8 +45,8 @@ const userSchema = new mongoose.Schema({
         required: true,
         minlength: 8,
         validate(value) {
-            if (value.toLowerCase().includes("password")) {
-                throw new Error("Please provide a valid password")
+            if (value.toLowerCase().includes('password')) {
+                throw new Error('Please provide a valid password')
             }
         }
     },
@@ -54,8 +54,8 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         validate(value) {
-            if (!validator.isMobilePhone(value, "en-ZA")) {
-                throw new Error("Please provide a South African mobile number")
+            if (!validator.isMobilePhone(value, 'en-ZA')) {
+                throw new Error('Please provide a South African mobile number')
             }
         }
     },
@@ -214,7 +214,7 @@ userSchema.pre('save', async function (next) {
     if(user.createdAt === user.updatedAt){
         // user creation count, userRoot, userAdmin role assigned to count 'n' 0
         const num = await User.countDocuments()
-        if (user.isModified("password")) {
+        if (user.isModified('password')) {
             user.password = await bcryptjs.hash(user.password, 8)
         }
         user.n = num 
@@ -239,15 +239,15 @@ userSchema.pre('save', async function (next) {
         if (!user.userConfirmed) {
             throw new Error('Please confirm email address')
         } 
-        if(user.isModified("password")){
+        if(user.isModified('password')){
             user.password = await bcryptjs.hash(user.password, 8)
         }
-        if (user.isModified("emailAddress")) {
+        if (user.isModified('emailAddress')) {
             user.userConfirmed = false
             // if successful save user modified email will be sent
             await message.userModified(user.emailAddress, user.userName, user._id)
         }
-        if(user.isModified("tokens")){
+        if(user.isModified('tokens')){
             const jwt = user.tokens[user.tokens.length-1].token
             await message.userJsonWebToken(user.emailAddress, jwt, user.userName)
         }
@@ -278,6 +278,6 @@ userSchema.pre('remove', async function (next) {
     next()
 })
 
-const User = mongoose.model("User", userSchema)
+const User = mongoose.model('User', userSchema)
 
 module.exports = User

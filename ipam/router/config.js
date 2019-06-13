@@ -12,7 +12,7 @@ router.get('/configs/suggest', async (req,res) => {
     try {
         // mandatory fields
         if(!req.query.conf){
-            return res.status(400).send({message:"Missing element in query string"})
+            return res.status(400).send({message:'Missing element in query string'})
         }
         // splitting string
         const userId = req.query.conf.split(':')[0]
@@ -22,11 +22,11 @@ router.get('/configs/suggest', async (req,res) => {
         // address lookup
         const address = await Address.findById(addressId)
         if(!address){
-            return res.status(404).send({message:"Not Found"})    
+            return res.status(404).send({message:'Not Found'})    
         }
         // compare fields
         if(userId !== address.owner.toString() || addressId !== address.id.toString() || parseInt(count) !== address.count){
-            return res.status(400).send({message:"Bad Request"})      
+            return res.status(400).send({message:'Bad Request'})      
         }
         if(req.query.port){
             address.portNumber = req.query.port
@@ -43,7 +43,7 @@ router.get('/configs/ports', auth, async (req,res) => {
     try {
         const address = await Address.find().distinct('portNumber')
         if(!address){
-            return res.status(404).send({message:"Not Found"})    
+            return res.status(404).send({message:'Not Found'})    
         }        
         res.status(200).send(address)
     } catch (e) {
@@ -74,7 +74,7 @@ router.get('/configs/schedules', auth, async (req,res) => {
             schedule = await Schedule.find({}, null, options)
         }
         if(!schedule){
-            return res.status(404).send({message:"Not Found"})    
+            return res.status(404).send({message:'Not Found'})    
         }        
 
         res.status(200).send(schedule)
@@ -91,7 +91,7 @@ router.post('/configs/schedules', auth, async (req,res) => {
             ...req.body
         })
         if(!schedule){
-            return res.status(404).send({message:"Not Found"})    
+            return res.status(404).send({message:'Not Found'})    
         }        
         await schedule.save()
         res.status(200).send(schedule)
@@ -102,19 +102,21 @@ router.post('/configs/schedules', auth, async (req,res) => {
 
 // patch, with validation and key exclusion
 // parse body for allowed fields 
-router.patch("/configs/schedules/:id", auth, async (req, res) => {
-    const exclude = ["author", "eventFired"]
+router.patch('/configs/schedules/:id', auth, async (req, res) => {
+    const exclude = ['eventFired']
     const isValid = valid(req.body, Schedule.schema.obj, exclude)
     if (!isValid) {
-        return res.status(400).send({message:"Please provide a valid input"})
+        return res.status(400).send({message:'Please provide a valid input'})
     }
     try {
         const schedule = await Schedule.findById(req.params.id)
         if (!schedule) {
-            return res.status(404).send({message:"Not Found"})
+            return res.status(404).send({message:'Not Found'})
         }
-        if (schedule.author.toString() !== req.user.id.toString()) {
-            return res.status(403).send({message:"Forbidden"})
+        if(!req.user.userRoot){
+            if (schedule.author.toString() !== req.user.id.toString()) {
+                return res.status(403).send({message:'Forbidden'})
+            }
         }
         const body = Object.keys(req.body)
         body.forEach(value => {
@@ -129,14 +131,16 @@ router.patch("/configs/schedules/:id", auth, async (req, res) => {
 
 // patch, event scanner only
 // No req.body parameters will be parsed
-router.patch("/configs/schedules/event/:id", auth, async (req, res) => {
+router.patch('/configs/schedules/event/:id', auth, async (req, res) => {
     try {
         const schedule = await Schedule.findById(req.params.id)
         if (!schedule) {
-            return res.status(404).send({message:"Not Found"})
+            return res.status(404).send({message:'Not Found'})
         }
-        if (schedule.author.toString() !== req.user.id.toString()) {
-            return res.status(403).send({message:"Forbidden"})
+        if(!req.user.userRoot){
+            if (schedule.author.toString() !== req.user.id.toString()) {
+                return res.status(403).send({message:'Forbidden'})
+            }
         }
         schedule.eventFired = req.query.event === 'true'
         await schedule.save()

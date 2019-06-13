@@ -1,6 +1,6 @@
 // CUSTOM MODULES
-const { pingLoop, tcpLoop } = require("./network")
-const { httpFetch, addressPatchLoop } = require("./http")
+const { pingLoop, tcpLoop } = require('./network')
+const { httpFetch, addressPatchLoop } = require('./http')
 const { logger } = require('../util/log')
 const moment = require('moment')
 

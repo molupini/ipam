@@ -1,7 +1,7 @@
 // modules
-const express = require("express")
+const express = require('express')
 const app = express()
-require("../db/mongoose")
+require('../db/mongoose')
 const { logger } = require('./util/log')
 
 // routers
@@ -13,7 +13,7 @@ const adminRouter = require('../router/admin')
 
 // config/middleware
 // maintenance 
-// return res.status(503).send({ message: "Currently under maintenance" })
+// return res.status(503).send({ message: 'Currently under maintenance' })
 
 app.use(express.json()) // auto parse incoming req
 app.use(userRouter)

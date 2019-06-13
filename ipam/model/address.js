@@ -1,6 +1,6 @@
 // modules
-const mongoose = require("mongoose")
-const validator = require("validator")
+const mongoose = require('mongoose')
+const validator = require('validator')
 
 const addressSchema = new mongoose.Schema({
     address: {
@@ -8,7 +8,7 @@ const addressSchema = new mongoose.Schema({
         type: String,
         validate(value) {
             if (!validator.isIP(value, 4)) {
-                throw new Error("Please provide a valid Address")
+                throw new Error('Please provide a valid Address')
             }
         },
         unique: true
@@ -88,20 +88,20 @@ addressSchema.methods.toJSON = function () {
 }
 
 // pre save
-addressSchema.pre("save", async function (next) {
+addressSchema.pre('save', async function (next) {
     const address = this
     if (!address.isNew && (address.isModified('isAvailable') || address.isModified('owner'))) {
         address.trueCount = 0
         address.falseCount = 0
         address.count = 0
     }
-    if (!address.isNew && address.isModified('gatewayAvailable') === false) {
+    if (!address.isNew && address.isModified('gatewayAvailable') && address.gatewayAvailable === false) {
         address.isInitialized = false
     }
     next()
 })
 
 // export
-const Address = mongoose.model("Address", addressSchema)
+const Address = mongoose.model('Address', addressSchema)
 
 module.exports = Address

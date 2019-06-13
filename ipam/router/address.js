@@ -1,16 +1,17 @@
 // modules
-const express = require("express")
+const express = require('express')
 const router = new express.Router()
 const auth = require('../middleware/auth')
-const Address = require("../model/address")
+const Address = require('../model/address')
 const { FalsePositive } = require('../src/util/counter')
-const { doPingCheck } = require("../src/util/check")
+const { doPingCheck } = require('../src/util/check')
 const { logger } = require('../src/util/log')
+const valid = require('../src/util/compare')
 
 // CRUD
 // get addresses, query strings optional 
 // example {{url}}/addresses?network=192.168&available=true&owner=null&limit=5&skip=0&sort=updatedAt:acs
-router.get("/addresses", auth, async (req, res) => {
+router.get('/addresses', auth, async (req, res) => {
     try {
         const match = {}
         const options = {}
@@ -119,7 +120,7 @@ router.patch('/addresses/network/:id/gateway', auth, async (req, res) => {
 // patch address by id, available=true or false, check-in / check-out address
 // used by scanner to patch specific attributes within query string. 
 // No req.body parameters will be parsed
-router.patch("/addresses/:id", auth, async (req, res) => {
+router.patch('/addresses/status/:id', auth, async (req, res) => {
     try {
         const match = {}
         const address = await Address.findById(req.params.id)
@@ -160,10 +161,37 @@ router.patch("/addresses/:id", auth, async (req, res) => {
         }
         // fully qualified domain name
         if (req.query.fqdn){
-            update.portNumber = req.query.fqdn
+            update.fqdn = req.query.fqdn
         }
         await address.save()
         res.status(200).send(address)
+    } catch (e) {
+        res.status(500).send({error: e.message})
+    }
+})
+
+router.patch('/addresses/:id', auth, async (req, res) => {
+    const exclude = ['isInitialized','isAvailable','gatewayAvailable', 'count', 'falseCount', 'trueCount', 'firstAddress', '_id', 'address', 'author']
+    const isValid = valid(req.body, Address.schema.obj, exclude)
+    if (!isValid) {
+        return res.status(400).send({message:'Please provide a valid input'})
+    }
+    try {
+        const address = await Address.findById(req.params.id)
+        if (!address) {
+            return res.status(404).send({message:'Not Found'})
+        }
+        if(!req.user.userRoot){
+            if (address.owner !== null && address.owner.toString() !== req.user.id.toString()) {
+                return res.status(403).send({message:'Forbidden'})
+            }
+        }
+        const body = Object.keys(req.body)
+        body.forEach(value => {
+            address[value] = req.body[value]
+        })
+        await address.save()
+        res.status(201).send(address)
     } catch (e) {
         res.status(500).send({error: e.message})
     }
@@ -202,7 +230,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         try {
             address = await Address.find(match, null, options)    
         } catch (e) {
-            logger.log('warning', 'Network address limit reached, check scope')
+            logger.log('info', 'Network address limit reached, check scope')
             // changing limit to 1 if address range is less then limit
             options.limit = 1
             address = await Address.find(match, null, options)

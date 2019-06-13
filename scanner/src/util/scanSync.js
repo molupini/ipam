@@ -1,6 +1,6 @@
 // CUSTOM MODULES
-const { doPingCheck, doTcpCheck } = require("./network")
-const { httpFetch, httpFailure, httpSuccess, httpGatewaySuccess } = require("./http")
+const { doPingCheck, doTcpCheck } = require('./network')
+const { httpFetch, httpFailure, httpSuccess, httpGatewaySuccess } = require('./http')
 const { logger } = require('../util/log')
 const moment = require('moment')
 

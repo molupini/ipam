@@ -2,7 +2,7 @@ const express = require('express')
 const User = require('../model/user')
 const auth = require('../middleware/auth')
 const router = new express.Router()
-const valid = require("../src/util/compare")
+const valid = require('../src/util/compare')
 
 // get, all users
 router.get('/admins/users', auth, async (req, res) => {
@@ -37,11 +37,11 @@ router.get('/admins/users/:id', auth, async (req, res) => {
 })
 
 // parse body for allowed fields 
-router.patch("/admins/users/:id", auth, async (req, res) => {
+router.patch('/admins/users/:id', auth, async (req, res) => {
     const exclude = ['n', 'userName', 'password']
     const isValid = valid(req.body, User.schema.obj, exclude)
     if (!isValid) {
-       return res.status(400).send({message:"Please provide a valid input"})
+       return res.status(400).send({message:'Please provide a valid input'})
     }
     try {
         const user = await User.findById(req.params.id)
@@ -79,7 +79,7 @@ router.delete('/admins/users/:id', auth, async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if(!user){
-            return res.status(404).send({message:"User Not Found"})
+            return res.status(404).send({message:'User Not Found'})
         }
         await user.remove()
         res.status(200).send(user)

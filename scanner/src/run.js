@@ -113,7 +113,7 @@ runLoop()
 //         if(!conf.body){
 //             throw new Error('No Config')
 //         }
-//     run(baseUrl, '/addresses', `?available=true&owner=null&sort=updatedAt:acs`, jwt, conf.body, runCount++)
+//     run(baseUrl, '/addresses/status', `?available=true&owner=null&sort=updatedAt:acs`, jwt, conf.body, runCount++)
 //     })
 //     .catch((err) => {
 //     })

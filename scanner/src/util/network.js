@@ -1,4 +1,4 @@
-const tcp = require("tcp-port-used")
+const tcp = require('tcp-port-used')
 const ping = require('ping') 
 const dns = require('dns').promises
 const moment = require('moment')

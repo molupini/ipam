@@ -1,16 +1,16 @@
 // User router
 // authentication required for operating IP Address Manager solution
 // Basic CRUD operation 
-const express = require("express")
-const User = require("../model/user")
-const auth = require("../middleware/auth")
+const express = require('express')
+const User = require('../model/user')
+const auth = require('../middleware/auth')
 const router = new express.Router()
-const valid = require("../src/util/compare")
+const valid = require('../src/util/compare')
 const message = require('../email/message')
 
 
 // create user
-router.post("/users/create", async (req, res) => {
+router.post('/users/create', async (req, res) => {
     try {
         const user = await new User(req.body)
         await user.save()
@@ -23,11 +23,11 @@ router.post("/users/create", async (req, res) => {
 
 // get, confirm user
 // 1 endpoint used to retrieve your credentials
-router.get("/users/:id/confirm", async (req, res) => {
+router.get('/users/:id/confirm', async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if (!user) {
-            return res.status(404).send({message:"User Not Found"})
+            return res.status(404).send({message:'User Not Found'})
         }
         // already confirmed
         if(user.userConfirmed === true){
@@ -53,7 +53,7 @@ router.get("/users/:id/confirm", async (req, res) => {
 // 2 endpoint used to retrieve your credentials
 // different default for JWT 
 // parse body for only emailAddress and password
-router.patch("/users/login", async (req, res) => {
+router.patch('/users/login', async (req, res) => {
     try {
         // user login by emailAddress and password
         const user = await User.findByCredentials(req.body.emailAddress, req.body.password)
@@ -68,15 +68,15 @@ router.patch("/users/login", async (req, res) => {
 })
 
 // post, reset
-router.get("/users/:id/reset", auth, async (req, res) => {
+router.get('/users/:id/reset', auth, async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
         if (!user) {
-            return res.status(404).send({message:"User Not Found"})
+            return res.status(404).send({message:'User Not Found'})
         }
         // already reset
         if(user.loginFailure === 0){
-            return res.status(400).send({message:"Account unlocked"})
+            return res.status(400).send({message:'Account unlocked'})
         }
         const pass = await user.restPassword()
         await user.save()
@@ -88,7 +88,7 @@ router.get("/users/:id/reset", auth, async (req, res) => {
 })
 
 // logout, current session
-router.post("/users/logout", auth, async (req, res) => {
+router.post('/users/logout', auth, async (req, res) => {
     try {
         if(req.user.tokens.length > 1){
             req.user.tokens = req.user.tokens.filter(token => token.token !== req.token)    
@@ -107,7 +107,7 @@ router.post("/users/logout", auth, async (req, res) => {
 
 // logout, all sessions
 // helpful when more then one device or a shared account
-router.post("/users/logoutAll", auth, async (req, res) => {
+router.post('/users/logoutAll', auth, async (req, res) => {
     try {
         const user = await User.findByIdAndUpdate(req.user.id, {
             tokens: []
@@ -120,12 +120,12 @@ router.post("/users/logoutAll", auth, async (req, res) => {
 })
 
 // get, me
-router.get("/users/me", auth, (req, res) => {
+router.get('/users/me', auth, (req, res) => {
     res.status(200).send(req.user)
 })
 
 // get, my networks
-router.get("/users/my/networks", auth, async(req, res) => {
+router.get('/users/my/networks', auth, async(req, res) => {
     try {
         var options = {}
         if (req.query.limit) { 
@@ -152,7 +152,7 @@ router.get("/users/my/networks", auth, async(req, res) => {
 })
 
 // get, my addresses
-router.get("/users/my/addresses", auth, async (req, res) => {
+router.get('/users/my/addresses', auth, async (req, res) => {
     try {
         var options = {}
         if (req.query.limit) { 
@@ -177,12 +177,12 @@ router.get("/users/my/addresses", auth, async (req, res) => {
 
 // patch, me
 // parse body for allowed fields 
-router.patch("/users/me", auth, async (req, res) => {
+router.patch('/users/me', auth, async (req, res) => {
     // allow only specific keys within req.body 
     const exclude = ['n','loginFailure','userAdmin','userRoot']
     const isValid = valid(req.body, User.schema.obj, exclude)
     if (!isValid) {
-        return res.status(400).send({message:"Please provide valid data"})
+        return res.status(400).send({message:'Please provide valid data'})
     }
     try {
         const body = Object.keys(req.body)
@@ -198,7 +198,7 @@ router.patch("/users/me", auth, async (req, res) => {
 })
 
 // delete, me
-router.delete("/users/me", auth, async (req, res) => {
+router.delete('/users/me', auth, async (req, res) => {
     try {
         await req.user.remove()
         res.status(200).send(req.user)

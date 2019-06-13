@@ -1,8 +1,8 @@
-const mongoose = require("mongoose")
-const validator = require("validator")
-const ip = require("ip")
-const Address = require("../model/address")
-const { ipScope } = require("../src/util/range")
+const mongoose = require('mongoose')
+const validator = require('validator')
+const ip = require('ip')
+const Address = require('../model/address')
+const { ipScope } = require('../src/util/range')
 
 const networkSchema = new mongoose.Schema({
     networkAddress: {
@@ -11,7 +11,7 @@ const networkSchema = new mongoose.Schema({
         required: true,
         validate(value) {
             if (!validator.isIP(value,4)) {
-                throw new Error("Please provide a valid Network Address")
+                throw new Error('Please provide a valid Network Address')
             }
         }
         ,
@@ -23,21 +23,21 @@ const networkSchema = new mongoose.Schema({
         trim: true,
         validate(value) {
             if (!validator.isIP(value,4)) {
-                throw new Error("Please provide a valid subnet mask")
+                throw new Error('Please provide a valid subnet mask')
             }
         }
     }, 
     firstAddress: {
         type: String,
-        default: "0.0.0.0"
+        default: '0.0.0.0'
     },
     lastAddress:{
         type: String,
-        default: "0.0.0.0"
+        default: '0.0.0.0'
     },
     broadcastAddress:{
         type: String,
-        default: "0.0.0.0"
+        default: '0.0.0.0'
     },
     subnetMaskLength:{
         type: Number,
@@ -49,7 +49,7 @@ const networkSchema = new mongoose.Schema({
     },
     defaultGateway: {
         type: String,
-        default: "0.0.0.0"
+        default: '0.0.0.0'
     },
     VLAN: {
         type: Number,
@@ -101,21 +101,21 @@ networkSchema.methods.updateNumHosts = async function (id) {
 }
 
 // pre Save
-networkSchema.pre("save", async function (next) {
+networkSchema.pre('save', async function (next) {
     const network = this
     const subnet = await ip.subnet(network.networkAddress, network.subnetMask)
     
     // allowed modification, note order above first post/save below
      const cidr = `${network.networkAddress}/${network.subnetMaskLength}`
-     if (network.isModified("defaultGateway") && !ip.cidrSubnet(cidr).contains(network.defaultGateway)) {
-         throw new Error("Please provide a valid gateway")
+     if (network.isModified('defaultGateway') && !ip.cidrSubnet(cidr).contains(network.defaultGateway)) {
+         throw new Error('Please provide a valid gateway')
     }
 
-     if (network.isModified("VLAN") && (network.VLAN < 0 || network.VLAN > 4094)) {
-         throw new Error("Please provide a valid vlan")
+     if (network.isModified('VLAN') && (network.VLAN < 0 || network.VLAN > 4094)) {
+         throw new Error('Please provide a valid vlan')
     }
 
-    if (network.isModified("networkConfirmed") && network.networkConfirmed === true) {
+    if (network.isModified('networkConfirmed') && network.networkConfirmed === true) {
         const cidrSubnet = `${network.networkAddress}/${network.subnetMaskLength}`
         const addresses = await ipScope(cidrSubnet, network.cidrExclusion)
         for (i = 0; i < addresses.length; i++) {
@@ -145,7 +145,7 @@ networkSchema.pre("save", async function (next) {
         }
     }
     // CIDR UPDATES THAT ARE VALID
-    if(!network.isNew && network.isModified("cidrExclusion")){
+    if(!network.isNew && network.isModified('cidrExclusion')){
         network.cidrExclusion.forEach(cidr => {
             const cidrAddr = ip.cidr(cidr)
             const test = ip.cidrSubnet(`${network.networkAddress}/${network.subnetMaskLength}`).contains(cidrAddr)
@@ -167,7 +167,7 @@ networkSchema.pre("save", async function (next) {
     }
     // create network
     // networkAddress can not be modified by user
-    if (network.isModified("networkAddress")) {
+    if (network.isModified('networkAddress')) {
         network.firstAddress = subnet.firstAddress
         network.lastAddress = subnet.lastAddress
         network.broadcastAddress = subnet.broadcastAddress
@@ -187,6 +187,6 @@ networkSchema.pre('remove', async function (next) {
     next()
 })
 
-const Network = mongoose.model("Network", networkSchema)
+const Network = mongoose.model('Network', networkSchema)
 
 module.exports = Network

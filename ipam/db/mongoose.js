@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require('mongoose')
 const { logger } = require('../src/util/log')
 const moment = require('moment')
 

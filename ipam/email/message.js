@@ -167,7 +167,7 @@ const addressTrueCountWarn = (email, owner, address, userId, addressId, count, f
     }
 
     // debugging
-    logger.log('warning',`${moment()} ${msg.subject}`)
+    logger.log('info',`${moment()} ${msg.subject}`)
     // sendGrid.send(msg)
 }
 

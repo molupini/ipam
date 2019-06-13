@@ -51,7 +51,7 @@ var addressPatchLoop = async function (entries, baseUrl, path, queryStr, jwt){
 }
 
 var httpSuccess = function(log, baseUrl, id, jwt){
-    httpFetch(baseUrl, `/addresses/${id}`, true, `?available=false`, 'PATCH', jwt)
+    httpFetch(baseUrl, `/addresses/status/${id}`, true, `?available=false`, 'PATCH', jwt)
     .then((httpResult) => {
         if(!httpResult){
             return 1
@@ -83,7 +83,7 @@ var httpGatewaySuccess = function(log, baseUrl, id, jwt){
 }
 
 var httpFailure = async function(log, baseUrl, id, jwt){
-    await httpFetch(baseUrl, `/addresses/${id}`, true, `?available=true`, 'PATCH', jwt)
+    await httpFetch(baseUrl, `/addresses/status/${id}`, true, `?available=true`, 'PATCH', jwt)
     .then((httpResult) => {
         if(!httpResult){
             return 1

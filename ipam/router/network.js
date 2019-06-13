@@ -1,9 +1,9 @@
 // modules
-const express = require("express")
+const express = require('express')
 const router = new express.Router()
-const auth = require("../middleware/auth")
-const Network = require("../model/network")
-const valid = require("../src/util/compare")
+const auth = require('../middleware/auth')
+const Network = require('../model/network')
+const valid = require('../src/util/compare')
 const message = require('../email/message')
 
 // endpoints 
@@ -25,7 +25,7 @@ router.post('/networks', auth, async (req, res) => {
 })
 
 // get, confirm network and build addresses
-router.get("/networks/:id/confirm", auth, async (req, res) => {
+router.get('/networks/:id/confirm', auth, async (req, res) => {
     try {
         const _id = req.params.id
         const network = await Network.findById(_id)
@@ -33,7 +33,7 @@ router.get("/networks/:id/confirm", auth, async (req, res) => {
             return res.status(404).send({message:'Not Found'})
         }
         if (network.networkConfirmed) {
-            return res.status(406).send({message:"Network confirmed"})
+            return res.status(406).send({message:'Network confirmed'})
         }
         network.networkConfirmed = true
         network.save()
@@ -44,7 +44,7 @@ router.get("/networks/:id/confirm", auth, async (req, res) => {
 })
 
 // get, all 
-router.get("/networks", auth, async (req, res) => {
+router.get('/networks', auth, async (req, res) => {
     try {
         var options = {}
         if (req.query.limit) { 
@@ -66,7 +66,7 @@ router.get("/networks", auth, async (req, res) => {
 })
 
 // get, id 
-router.get("/networks/:id", auth, async (req, res) => {
+router.get('/networks/:id', auth, async (req, res) => {
     const _id = req.params.id
     try {
         var options = {}
@@ -101,11 +101,11 @@ router.get("/networks/:id", auth, async (req, res) => {
 // patch network, with validation and key exclusion
 // findByIdAndUpdate() will bypass the middleware which is what we require when posting the changes below
 // parse body for allowed fields 
-router.patch("/networks/:id", auth, async (req, res) => {
-    const exclude = ["networkAddress","networkConfirmed","subnetMask", "numHosts", "subnetMaskLength", "broadcastAddress", "lastAddress", "firstAddress"]
+router.patch('/networks/:id', auth, async (req, res) => {
+    const exclude = ['networkAddress','networkConfirmed','subnetMask', 'numHosts', 'subnetMaskLength', 'broadcastAddress', 'lastAddress', 'firstAddress']
     const isValid = valid(req.body, Network.schema.obj, exclude)
     if (!isValid) {
-        return res.status(400).send({message:"Please provide a valid input"})
+        return res.status(400).send({message:'Please provide a valid input'})
     }
     try {
         const network = await Network.findById(req.params.id)
@@ -114,7 +114,7 @@ router.patch("/networks/:id", auth, async (req, res) => {
         }
         if(!req.user.userRoot){
             if (network.author !== null && network.author.toString() !== req.user.id.toString()) {
-                return res.status(403).send({message:"Forbidden"})
+                return res.status(403).send({message:'Forbidden'})
             }
         }
         const body = Object.keys(req.body)
@@ -129,14 +129,16 @@ router.patch("/networks/:id", auth, async (req, res) => {
 })
 
 // delete network 
-router.delete("/networks/:id", auth, async (req, res) => {
+router.delete('/networks/:id', auth, async (req, res) => {
     try {
         const network = await Network.findById(req.params.id)
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
-        if (network.author.toString() !== req.user.id.toString()) {
-            return res.status(403).send({message:"Forbidden"})
+        if(!req.user.userRoot){
+            if (network.author.toString() !== req.user.id.toString()) {
+                return res.status(403).send({message:'Forbidden'})
+            }
         }
         await network.remove()
         res.status(200).send()

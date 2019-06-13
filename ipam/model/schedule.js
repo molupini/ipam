@@ -26,11 +26,11 @@ const scheduleSchema = new mongoose.Schema({
     },
     scanSynchronous:{
         type: Boolean,
-        default: false
+        default: true
     },
     limit:{
         type: Number,
-        default: 5,
+        default: 20,
         validate(value){
             if(value > 100 || value < 1){
                 throw new Error('Please provide valid data')
@@ -55,7 +55,7 @@ const scheduleSchema = new mongoose.Schema({
     },
     minuteInterval:{
         type: Number,
-        default: 1,
+        default: 5,
         validate(value){
             if(!value > 0 && !value <= 1380){
                 throw new Error('Please provide valid data, in minutes')
