@@ -61,6 +61,7 @@ const addressSchema = new mongoose.Schema({
        type: String, 
        default: 'host.unknown',
        trim: true,
+       lowercase: true, 
        validate(value){
            if(!validator.isFQDN(value)){
                throw new Error('Please provide valid Full Qualified Domain Name')

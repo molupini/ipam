@@ -31,7 +31,7 @@ router.get('/addresses', auth, async (req, res) => {
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
-            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+            options.limit = parseInt(req.user.maxCount)
         }
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)
@@ -68,7 +68,7 @@ router.get('/addresses/init', auth, async (req, res) => {
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
-            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+            options.limit = parseInt(req.user.maxCount)
         }
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)
@@ -135,7 +135,7 @@ router.patch('/addresses/status/:id', auth, async (req, res) => {
             if (match.isAvailable) {
                 address.trueCount++
                 // verify if FalsePositive 
-                const isFalsePositive = await FalsePositive(address)
+                const isFalsePositive = await FalsePositive(address, req.query.maxFp)
                 if (isFalsePositive){
                     address.owner = null 
                 }
@@ -207,7 +207,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         match.isAvailable = true
         match.gatewayAvailable = true
         match.owner = null
-        options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+        options.limit = parseInt(req.user.maxCount)
         options.sort = {
             'updatedAt': -1
         }

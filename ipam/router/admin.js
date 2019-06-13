@@ -11,7 +11,7 @@ router.get('/admins/users', auth, async (req, res) => {
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
-            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+            options.limit = parseInt(req.user.maxCount)
         }
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)
@@ -52,7 +52,6 @@ router.patch('/admins/users/:id', auth, async (req, res) => {
         body.forEach(value => {
             user[value] = req.body[value]
         })
-        await user.save()
         // if userRoot specified and authentication passed in auth middleware, 
         // find existing and remove privileges, only one root account possible
         const options = {}
@@ -66,9 +65,13 @@ router.patch('/admins/users/:id', auth, async (req, res) => {
             if(!root){
                 return res.status(404).send({message:'Not Found'})
             }
+            if(!user.userConfirmed){
+                return res.status(404).send({message:'Non verified user'})
+            }
             root.userRoot = false
             await root.save()
         }
+        await user.save()
         res.status(200).send(user)
     } catch (e) {
         res.status(500).send({error: e.message})

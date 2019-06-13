@@ -2,11 +2,11 @@ const User = require('../../model/user')
 const Network = require('../../model/network')
 const message = require('../../email/message')
 
-const FalsePositive = async (address) => {
+const FalsePositive = async (address, maxFp) => {
     if(address.owner != null){
         // load trueCount threshold from environment variable 
         // create a fp FalsePositive counter
-        var fp = parseInt(process.env.TRUE_COUNT_THRESHOLD)
+        var fp = parseInt(maxFp)
         // evaluating if value is suitable 
         if(fp % 2 !== 0 && fp < 10){
             fp = 10

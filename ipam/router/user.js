@@ -3,6 +3,7 @@
 // Basic CRUD operation 
 const express = require('express')
 const User = require('../model/user')
+const Messenger = require('../model/messenger')
 const auth = require('../middleware/auth')
 const router = new express.Router()
 const valid = require('../src/util/compare')
@@ -14,6 +15,9 @@ router.post('/users/create', async (req, res) => {
     try {
         const user = await new User(req.body)
         await user.save()
+        // const messenger = await Messenger.findOne({
+        //     provider:'email'
+        // })
         await message.userCreated(user.emailAddress, user.userName, user.id)
         res.status(201).send(user)
     } catch (e) {
@@ -131,7 +135,7 @@ router.get('/users/my/networks', auth, async(req, res) => {
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
-            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+            options.limit = parseInt(req.user.maxCount)
         }
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)
@@ -158,7 +162,7 @@ router.get('/users/my/addresses', auth, async (req, res) => {
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
-            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+            options.limit = parseInt(req.user.maxCount)
         }
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)

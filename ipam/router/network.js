@@ -50,7 +50,7 @@ router.get('/networks', auth, async (req, res) => {
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
-            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+            options.limit = parseInt(req.user.maxCount)
         }
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)
@@ -73,7 +73,7 @@ router.get('/networks/:id', auth, async (req, res) => {
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
-            options.limit = parseInt(process.env.MAX_QUERY_LIMIT)
+            options.limit = parseInt(req.user.maxCount)
         }
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)

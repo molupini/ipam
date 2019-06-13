@@ -9,19 +9,21 @@ HEALTHCHECK --interval=10s --timeout=2s --start-period=15s \
     CMD node ./src/util/health.js
 
 # labels,
-# ARG CREATED_DATE=not-set
-# ARG SOURCE_COMMIT=not-set
+ARG CREATED_DATE=not-set
+ARG SOURCE_COMMIT=not-set
 
-# LABEL org.opencontainers.image.authors=maurizio.lupini@bcx.co.za
-# LABEL org.opencontainers.image.created=$CREATED_DATE
-# LABEL org.opencontainers.image.revision=${SOURCE_COMMIT}
-# LABEL org.opencontainers.image.title="Ipam Node.js Project, Ipam"
-# LABEL org.opencontainers.image.url=https://hub.docker.com/r/mauriziolupini
-# LABEL org.opencontainers.image.source=not-set
-# LABEL org.opencontainers.image.source=MIT
-# LABEL org.opencontainers.image.nodeversion=10
+LABEL org.opencontainers.image.authors=maurizio.lupini@bcx.co.za
+LABEL org.opencontainers.image.created=$CREATED_DATE
+LABEL org.opencontainers.image.revision=${SOURCE_COMMIT}
+LABEL org.opencontainers.image.title="Ipam Node.js Project, Ipam"
+LABEL org.opencontainers.image.url=https://hub.docker.com/r/mauriziolupini
+LABEL org.opencontainers.image.source=not-set
+LABEL org.opencontainers.image.source=MIT
+LABEL org.opencontainers.image.nodeversion=10
 
-ENV NODE_ENV=production
+# temp for testing 
+# ENV NODE_ENV=production
+ENV NODE_ENV=development
 
 RUN apk add --no-cache tini 
 

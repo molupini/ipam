@@ -47,7 +47,7 @@ var run = async function (baseUrl, path, query, jwt, conf, runCount){
             }
 
             // ADD LIMIT TO QUERY STRING VARIABLE
-            var query = `${query}&limit=${conf.limit}`
+            var query = `${query}&limit=${conf.limit}&maxFp=${conf.maxTrueCount}`
             logger.log('info',`${moment()} query ${query}`)
             // SPECIFY TCP PORTS 
             ports = conf.portList

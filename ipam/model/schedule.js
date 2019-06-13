@@ -37,6 +37,15 @@ const scheduleSchema = new mongoose.Schema({
             }
         }
     },
+    maxTrueCount:{
+        type: Number,
+        default: 10,
+        validate(value){
+            if(value > 52 || value < 10){
+                throw new Error('Please provide valid data')
+            }
+        }
+    },
     portList:{
         type: Array,
         default: ['3389','80','5986','22'],
@@ -55,7 +64,7 @@ const scheduleSchema = new mongoose.Schema({
     },
     minuteInterval:{
         type: Number,
-        default: 5,
+        default: 10,
         validate(value){
             if(!value > 0 && !value <= 1380){
                 throw new Error('Please provide valid data, in minutes')
@@ -90,7 +99,7 @@ const scheduleSchema = new mongoose.Schema({
     timestamps: true
 })
 
-// multi unique fields 
+// multi unique fields, suitable for multi tenancy 
 // scheduleSchema.index({author: 1, endpoint: 1}, {unique: true})
 
 scheduleSchema.methods.toJSON = function(){

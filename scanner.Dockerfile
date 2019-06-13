@@ -1,10 +1,6 @@
 # # base
 FROM node:10-alpine as base 
 
-ENV EXPRESS_URL=http://express:3000
-ENV TCP_PORT_ARRAY=443,80,3389,5986,53,23,22
-ENV JWT_SCANNER=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1Y2U2NWVmYmZjZjY3ODAwMTJiZTNjNGYiLCJpYXQiOjE1NTg2MDE0NzIsImV4cCI6MTU1ODc3NDI3Mn0.AmM8dEVHUdhpx2px-YhEPbC6cVL8i5mmqvSrutwUeIo
-
 ARG CREATED_DATE=not-set
 ARG SOURCE_COMMIT=not-set
 LABEL org.opencontainers.image.authors=maurizio.lupini@bcx.co.za
@@ -16,7 +12,9 @@ LABEL org.opencontainers.image.source=not-set
 LABEL org.opencontainers.image.source=MIT
 LABEL org.opencontainers.image.nodeversion=10
 
-ENV NODE_ENV=production
+# temp for testing 
+# ENV NODE_ENV=production
+ENV NODE_ENV=development
 
 RUN apk add --no-cache tini 
 

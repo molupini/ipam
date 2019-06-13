@@ -33,7 +33,7 @@ const auth = async (req, res, next) => {
             throw new Error()
         }
         // JWT ABOUT TO EXPIRE SEND ONE TIME NOTIFICATION
-        if(dateExp.diff(dateNow, 'hours') < 72){
+        if(dateExp.diff(dateNow, 'hours') < (user.maxTTL/3)){
             if(!user.userNoc && user.userConfirmed){
                 await userJWTExpiring(user.emailAddress, user.userName)
                 user.userNoc = true

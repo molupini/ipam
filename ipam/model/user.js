@@ -6,6 +6,7 @@ const bcryptjs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const Address = require('../model/address')
 const Schedule = require('../model/schedule')
+const Messenger = require('../model/messenger')
 const message = require('../email/message')
 const random = require('randomatic')
 
@@ -58,6 +59,44 @@ const userSchema = new mongoose.Schema({
                 throw new Error('Please provide a South African mobile number')
             }
         }
+    },
+    authProvider: {
+        type: String,
+        trim: true, 
+        lowercase: true, 
+        default: 'jwt',
+        validate(value){
+            if(!value.match(/(none|jwt|ldap|auth0)/)){
+                throw new Error('Please provide valid data')
+            }
+        },
+    },
+    minTTL: {
+        type: Number, 
+        default: 7, 
+        validate(value){
+            if(!value <= 10 && !value > 0){
+                throw new Error('Please provide valid data')
+            }
+         }
+    },
+    maxTTL: {
+        type: Number, 
+        default: 364, 
+        validate(value){
+            if(!value <= 1095 && !value > 364){
+                throw new Error('Please provide valid data between 365 - 1095')
+            }
+         }
+    },
+    maxAmount: {
+        type: Number, 
+        default: 5, 
+        validate(value){
+            if(!value <= 10 && !value > 0){
+                throw new Error('Please provide valid data')
+            }
+         }
     },
     loginFailure :{
         type: Number,
@@ -113,6 +152,10 @@ userSchema.methods.toJSON = function () {
         delete thisObject.userConfirmed
         delete thisObject.userNoc
         delete thisObject.password
+        delete thisObject.authProvider
+        delete thisObject.minTTL
+        delete thisObject.maxTTL
+        delete thisObject.maxAmount
         delete thisObject.tokens
         delete thisObject.loginFailure
         delete thisObject.userAdmin
@@ -133,17 +176,17 @@ userSchema.methods.toJSON = function () {
 } 
 
 // methods are accessible on the instances - instance methods 
-userSchema.methods.generateAuthToken = async function (days = process.env.MIN_JWT_TTL) {
+userSchema.methods.generateAuthToken = async function (days) {
     const user = this
     // query string, for jwt extension, will not allow greater then 365,
     // default 2 days
     var extension = parseInt(days)
-    if (isNaN(extension) || extension < process.env.MIN_JWT_TTL) {
-        days = process.env.MIN_JWT_TTL
+    if (isNaN(extension) || extension < user.minTTL) {
+        days = user.minTTL
      }
     if(extension > 1){
-        if (extension >= process.env.MAX_JWT_TTL){
-            extension = process.env.MAX_JWT_TTL
+        if (extension >= user.maxTTL){
+            extension = user.maxTTL
         } else {
             extension = extension
         }
@@ -158,7 +201,7 @@ userSchema.methods.generateAuthToken = async function (days = process.env.MIN_JW
         token
     })
     // tokens array length, remove stale elements
-    if (user.tokens.length > process.env.MAX_ARRAY_LENGTH) {
+    if (user.tokens.length > user.maxAmount) {
         user.tokens.shift()
     }
     await user.save()
@@ -223,13 +266,13 @@ userSchema.pre('save', async function (next) {
             user.userAdmin = true
             // create a default init address endpoint schedule, used by scanner(s)
             const schedule = await new Schedule({
-                author: user.id,
-                // endpoint: 'address', 
-                // eventFired: false,
-                // weekdaySchedule: 6,
-                // cronSchedule: '* 1 * * * *'           
+                author: user.id
+            })
+            const messenger = await new Messenger({
+                author: user.id
             })
             await schedule.save()
+            await messenger.save()
         }
         // if successful save confirmation email will be sent
         // await message.userCreated(user.emailAddress, user.userName, user.id)
@@ -249,7 +292,7 @@ userSchema.pre('save', async function (next) {
         }
         if(user.isModified('tokens')){
             const jwt = user.tokens[user.tokens.length-1].token
-            await message.userJsonWebToken(user.emailAddress, jwt, user.userName)
+            await message.userJsonWebToken(user.emailAddress, jwt, user.userName, user.maxAmount)
         }
     }
 
@@ -271,8 +314,12 @@ userSchema.pre('remove', async function (next) {
     }, {
         owner: null
     })
-    // remove all schedules owned by account
+    // remove all schedules created by account
     await Schedule.deleteMany({
+        author: user._id
+    })
+    // remove all messenger created by account
+    await Messenger.deleteMany({
         author: user._id
     })
     next()

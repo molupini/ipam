@@ -1,9 +1,6 @@
-node_modules
-.env
-seed
+node_modules/
 .git/
 npm-debug.log
-init.js
-docker-compose*
+.gitignore
 *.env
 TODO
