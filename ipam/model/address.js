@@ -23,7 +23,7 @@ const addressSchema = new mongoose.Schema({
     },
     gatewayAvailable: {
         type: Boolean, 
-        default: false
+        default: true
     },
     count: {
         type: Number,
@@ -95,9 +95,6 @@ addressSchema.pre('save', async function (next) {
         address.trueCount = 0
         address.falseCount = 0
         address.count = 0
-    }
-    if (!address.isNew && address.isModified('gatewayAvailable') && address.gatewayAvailable === false) {
-        address.isInitialized = false
     }
     next()
 })

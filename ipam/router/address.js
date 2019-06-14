@@ -58,11 +58,9 @@ router.get('/addresses/init', auth, async (req, res) => {
         const sort = {}
         if(req.query.count === 'true'){
             const count = await Address.countDocuments({
-                isInitialized: false
+                isInitialized: false, 
+                gatewayAvailable: true
             })
-            if(count > 0){
-                return res.status(200).send({message:count})
-            }
             return res.status(200).send({message:count})
         }
         if (req.query.limit) { 
@@ -79,7 +77,8 @@ router.get('/addresses/init', auth, async (req, res) => {
             options.sort = sort
         }
         const address = await Address.find({
-            isInitialized: false
+            isInitialized: false, 
+            gatewayAvailable: true
         }, null, options)
 
         if(!address){
@@ -104,14 +103,24 @@ router.patch('/addresses/network/:id/gateway', auth, async (req, res) => {
         if(!address){
             return res.status(404).send({message:'Not Found'})
         }
-        if(req.query.available === 'true'){
-            await Address.updateMany({
-                author: req.params.id
-            },{
-                gatewayAvailable: true
-            })
+        if(req.query.available){
+            if(req.query.available === 'true'){
+                await Address.updateMany({
+                    author: req.params.id
+                },{
+                    gatewayAvailable: true
+                })
+            }
+            else {
+                await Address.updateMany({
+                    author: req.params.id
+                },{
+                    gatewayAvailable: false,
+                    isAvailable: false
+                })
+            }
         }
-        res.status(201).send({message: 'Gateway available'})
+        return res.status(201).send({message: `Gateway available, ${req.query.available}`})
     }catch(e){
         res.status(500).send({error: e.message})
     }

@@ -58,13 +58,14 @@ CMD ["npm", "audit"]
 
 
 # # production, should always be the default and last stage 
+# need to give permission to ping and perform tcp 
 FROM source as prod
 
-RUN chown -R node:node .
+# RUN chown -R node:node .
 
 # nested directory will include package.json which is duplication
-RUN rm ./package*.json 
+# RUN rm ./package*.json 
 
-USER node
+# USER node
 
 CMD ["node", "./src/run.js"]

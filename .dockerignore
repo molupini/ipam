@@ -1,4 +1,6 @@
 node_modules/
+sandbox/
+.env/
 .git/
 npm-debug.log
 .gitignore

@@ -16,13 +16,13 @@ var runCount = 0
 
 
 // MAIN FUNCTION
-var run = async function (baseUrl, path, query, jwt, conf, runCount){
+var run = async function (baseUrl, path, query, jwt, conf){
         try {
             var addresses = null
             var ports = null
             var init = false
             // STARTING
-            logger.log('info', `${moment()} mode scanSynchronous=${conf.scanSynchronous}`)
+            await logger.log('info', `${moment()} mode scanSynchronous=${conf.scanSynchronous}`)
             // QUERY IF ANY INIT ADDRESSES
             addresses = await httpFetch(baseUrl, '/addresses/init?count=true', true, '', 'GET', jwt)
 
@@ -30,25 +30,26 @@ var run = async function (baseUrl, path, query, jwt, conf, runCount){
             // ELSE IF WEEKDAY INTERVAL 'FULL SCAN' OMIT OWNER AND AVAILABLE, ADJUST QUERY STRING, SET EVENT FIRED TO TRUE
             // ELSE IF NEXT DAY, SET EVENT FIRED TO FALSE
             if(addresses.body.message > 0){
+                await logger.log('info', `${moment()} --- init count, ${addresses.body.message} ---`)
                 query = `/init?sort=updatedAt:acs`
                 init = true
             } 
             if(!init && moment().isoWeekday() === conf.weekdayInterval && !conf.eventFired){
                 // UPDATE QUERY
-                query = `?sort=updatedAt:acs`
-                await logger.log('info', `${moment()} full scan, weekday interval`)
+                // query = `?sort=updatedAt:acs`
+                await logger.log('info', `${moment()} --- full scan, weekday interval ---`)
                 // UPDATE EVENT FIRED TO TRUE
                 await httpFetch(baseUrl, `/configs/schedules/event/${conf._id}`, true, '?event=true', 'PATCH', jwt)
             }
             if (!init && ((conf.weekdayInterval - moment().isoWeekday()) === -1) && conf.eventFired){
                 // UPDATE EVENT FIRED TO FALSE
-                await logger.log('info', `${moment()} passed full scan interval`)
+                await logger.log('info', `${moment()} --- passed full scan interval ---`)
                 await httpFetch(baseUrl, `/configs/schedules/event/${conf._id}`, true, '?event=false', 'PATCH', jwt)
             }
 
             // ADD LIMIT TO QUERY STRING VARIABLE
             var query = `${query}&limit=${conf.limit}&maxFp=${conf.maxTrueCount}`
-            logger.log('info',`${moment()} query ${query}`)
+            await logger.log('info',`${moment()} --- query ${query} ---`)
             // SPECIFY TCP PORTS 
             ports = conf.portList
 
@@ -87,7 +88,7 @@ const runLoop = async function () {
             await new Promise(resolve => setTimeout(resolve, delay*by)) 
             
             // RUN MAIN 
-            await run(baseUrl, '/addresses', `?available=true&owner=null&sort=updatedAt:acs`, jwt, conf.body, (runCount++))
+            await run(baseUrl, '/addresses', `?available=true&owner=null&sort=updatedAt:acs`, jwt, conf.body)
             
             // MEASURE TIME BETWEEN MOMENTS 
             const then = await moment()
@@ -98,10 +99,14 @@ const runLoop = async function () {
                 // logger.log('info',`${moment()} adjusted, ${thenNow/(delay*by)}`)
             }
         } catch (e) {
-            logger.log('error',`${moment()} ${e}`)
+            const errorStr = String(e)
+            if(errorStr.match(/(HTTPError)/)){
+                logger.log('error',`${moment()} ${errorStr.split(':')[4].trim()}`)
+            }else{
+                logger.log('error',`${moment()} ${e}`)
+            }
             await new Promise(resolve => setTimeout(resolve, (delay*by)*2))
         }
-
     }
 }
 runLoop()
@@ -113,7 +118,7 @@ runLoop()
 //         if(!conf.body){
 //             throw new Error('No Config')
 //         }
-//     run(baseUrl, '/addresses/status', `?available=true&owner=null&sort=updatedAt:acs`, jwt, conf.body, runCount++)
+//     run(baseUrl, '/addresses/status', `?available=true&owner=null&sort=updatedAt:acs`, jwt, conf.body)
 //     })
 //     .catch((err) => {
 //     })

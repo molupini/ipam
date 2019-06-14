@@ -1,6 +1,6 @@
 // CUSTOM MODULES
 const { doPingCheck, doTcpCheck } = require('./network')
-const { httpFetch, httpFailure, httpSuccess, httpGatewaySuccess } = require('./http')
+const { httpFetch, httpFailure, httpSuccess, httpGateway } = require('./http')
 const { logger } = require('../util/log')
 const moment = require('moment')
 
@@ -18,6 +18,8 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
                     // PING FUNCTION 
                     doPingCheck(addresses[i])
                     .then((result) => {
+                        // debugging
+                        logger.log('info',`${moment()} doPingCheck result ${result}`)
                         if(result.alive){
                             // debugging 
                             logger.log('info',`${moment()} --- doPingCheck ${result.id} ${result.host} ${result.alive} ---`)
@@ -48,13 +50,13 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
                                     }
                                 }).catch((tcpError)=> {
                                     // debugging
-                                    // logger.log('info',`${moment()} doTcpCheck.tcpError ${tcpError}`)
+                                    logger.log('info',`${moment()} doTcpCheck.tcpError ${tcpError}`)
                                     const inActive = tcpError.message.split(':')[2]
                                     const ip = result.host
                                     isValid.push({ip, inActive})
                                     if (isValid.length === array.length) {
                                         // console.log(isValid)
-                                        logger.log('info',`${moment()} doTcpCheck.tcpError ${ip}`)
+                                        // logger.log('info',`${moment()} doTcpCheck.tcpError ${ip}`)
                                         httpFailure(false, baseUrl, result.id, jwt)
                                     }
                                 })
@@ -88,8 +90,9 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
                             portNumber: null
                         }
                         doPingCheck(pingObject).then((pingResult) => {
-                            if(pingResult.alive){
-                                httpGatewaySuccess(false, baseUrl, pingResult.id, jwt)
+                            if(pingResult){
+                                httpGateway(false, baseUrl, pingResult.alive, pingResult.id, jwt)
+                                return 0
                             }
                         })
                     }

@@ -147,6 +147,9 @@ router.patch('/configs/schedules/event/:id', auth, async (req, res) => {
             }
         }
         schedule.eventFired = req.query.event === 'true'
+        await Address.updateMany({
+            isInitialized: false
+        })
         await schedule.save()
         res.status(201).send(schedule)
     } catch (e) {

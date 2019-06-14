@@ -66,8 +66,8 @@ var httpSuccess = function(log, baseUrl, id, jwt){
     })
 }
 
-var httpGatewaySuccess = function(log, baseUrl, id, jwt){
-    httpFetch(baseUrl, `/addresses/network/${id}/gateway`, true, `?available=true`, 'PATCH', jwt)
+var httpGateway = function(log, baseUrl, status, id, jwt){
+    httpFetch(baseUrl, `/addresses/network/${id}/gateway`, true, `?available=${status}`, 'PATCH', jwt)
     .then((httpResult) => {
         if(!httpResult){
             return 1
@@ -104,5 +104,5 @@ module.exports = {
     addressPatchLoop,
     httpSuccess,
     httpFailure, 
-    httpGatewaySuccess
+    httpGateway
 }

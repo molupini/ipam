@@ -32,7 +32,7 @@ const scheduleSchema = new mongoose.Schema({
         type: Number,
         default: 20,
         validate(value){
-            if(value > 100 || value < 1){
+            if(value > 255 || value < 1){
                 throw new Error('Please provide valid data')
             }
         }
