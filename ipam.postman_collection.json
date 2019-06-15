@@ -1,0 +1,1210 @@
+{
+	"info": {
+		"_postman_id": "dcc97af7-3d08-430a-880c-b9becacd4abb",
+		"name": "ipam",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "user",
+			"item": [
+				{
+					"name": "create user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "cdd26b60-4cab-4c7e-99e4-d6c4d1e0ec1a",
+								"exec": [
+									"if (pm.response.code === 201){",
+									"    pm.environment.set(\"userId\", pm.response.json()._id);",
+									"}",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"emailAddress\":\"maurizio.lupini@bcx.co.za\",\n\t\"userName\":\"mauriziolupini\",\n\t\"password\":\"....\",\n\t\"mobilePhone\":\"+27659991060\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/users/create",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "confirm user",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "c0cad8ec-1a12-41ae-a912-23c15c448ca5",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "d3c5bf8e-6c17-48a4-aadc-89f987d4e8dc",
+								"exec": [
+									"if(pm.response.code === 202){",
+									"    pm.environment.set('authToken', pm.response.json().token)",
+									"}",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/users/{{userId}}/confirm",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"{{userId}}",
+								"confirm"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "c5fbc90e-03df-4d6c-89fd-fe7558d74930",
+								"exec": [
+									"if(pm.response.code === 202){",
+									"    pm.environment.set('authToken', pm.response.json().token)",
+									"    pm.environment.set(\"userId\", pm.response.json().user._id);",
+									"}",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"emailAddress\": \"maurizio.lupini@bcx.co.za\",\n    \"password\": \"....\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/users/login",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete me",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/users/me",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reset user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7bb48dc7-8991-46d5-b9f1-52c772bf1c6c",
+								"exec": [
+									"if (pm.response.code === 202){",
+									"    pm.environment.set(\"userId\", pm.response.json().user._id);",
+									"    pm.environment.set(\"userPass\", pm.response.json().pass);",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/users/{{userId}}/reset",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"{{userId}}",
+								"reset"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "user logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/users/logout",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "user logoutall",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/users/logoutAll",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"logoutAll"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get me",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "894b1160-fe89-4666-b92b-71a4c074c3b4",
+								"exec": [
+									"if (pm.response.code === 200){",
+									"    pm.environment.set(\"userId\", pm.response.json()._id);",
+									"}",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/users/me",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "patch me",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ed0f605c-3ea9-4c5c-a825-b77077c93ed6",
+								"exec": [
+									"if (pm.response.code === 202){",
+									"    pm.environment.set(\"userId\", pm.response.json()._id);",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"userName\":\"services\",\n\t\"mobilePhone\":\"+27861112200\",\n\t\"emailAddress\": \"services@bcx.co.za\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/users/me",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get my networks",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7ef611c5-630d-42a3-9994-f970ab83cad4",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/users/my/networks",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"my",
+								"networks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get my address",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/users/my/addresses",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"users",
+								"my",
+								"addresses"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "admin",
+			"item": [
+				{
+					"name": "all users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/admins/users",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"admins",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get user",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/admins/users/{{userId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"admins",
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "patch user",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"userAdmin\": true,\n\t\"userRoot\": true,\n\t\"emailAddress\": \"service@myloft.co.za\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/admins/users/5d02053a4bce0e0086cd7e26",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"admins",
+								"users",
+								"5d02053a4bce0e0086cd7e26"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete user",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/admins/users/5ce30ed43814f4148268043d",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"admins",
+								"users",
+								"5ce30ed43814f4148268043d"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "network",
+			"item": [
+				{
+					"name": "create network",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5f8ac7e0-544b-4fd4-9f1e-35d4c8352693",
+								"exec": [
+									"if (pm.response.code === 201){",
+									"    pm.environment.set(\"networkId\", pm.response.json()._id);",
+									"}",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"networkAddress\":\"10.12.110.0\",\n\t\"subnetMask\": \"255.255.255.0\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/networks",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"networks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "patch network",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "59cf933f-afa4-4e7f-92f0-3049061af680",
+								"exec": [
+									"if (pm.response.code === 201){",
+									"    pm.environment.set(\"networkId\", pm.response.json()._id);",
+									"}",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"defaultGateway\": \"192.168.88.1\",\n\t\"VLAN\": 0,\n\t\"cidrExclusion\": [\n\t\t\t\"192.168.88.0/28\",\n\t\t\t\"192.168.88.255/28\"\n\t\t]\n}"
+						},
+						"url": {
+							"raw": "{{url}}/networks/{{networkId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"networks",
+								"{{networkId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "confirm network",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7d33dab4-e15b-4fc2-9630-b4070d9d1cf3",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/networks/{{networkId}}/confirm",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"networks",
+								"{{networkId}}",
+								"confirm"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "all networks",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/networks",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"networks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get network",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/networks/{{networkId}}?populate=true&limit=1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"networks",
+								"{{networkId}}"
+							],
+							"query": [
+								{
+									"key": "populate",
+									"value": "true"
+								},
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete network",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/networks/{{networkId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"networks",
+								"{{networkId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "address",
+			"item": [
+				{
+					"name": "get addresses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/addresses",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"addresses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "checkout address",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "405fe98c-1cf4-4aeb-8599-1b2ea4a95d85",
+								"exec": [
+									"if(pm.response.code === 200){",
+									"pm.environment.set(\"addressId\", pm.response.json().addresses._id);",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/addresses/checkout?author={{networkId}}&fqdn=www.gotobed.io&port=888&populate=true",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"addresses",
+								"checkout"
+							],
+							"query": [
+								{
+									"key": "author",
+									"value": "{{networkId}}"
+								},
+								{
+									"key": "fqdn",
+									"value": "www.gotobed.io"
+								},
+								{
+									"key": "port",
+									"value": "888"
+								},
+								{
+									"key": "populate",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "patch address",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"portNumber\": \"3000\",\n\t\"fqdn\": \"www.abc.co.za\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/addresses/{{addressId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"addresses",
+								"{{addressId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "init address",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/addresses/init",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"addresses",
+								"init"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "init address count",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/addresses/init?count=true",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"addresses",
+								"init"
+							],
+							"query": [
+								{
+									"key": "count",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "11d8e2b3-fc26-4d51-a308-b2151124f142",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "3d939604-8e71-42ab-8389-cbc7d8cc6263",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "config",
+			"item": [
+				{
+					"name": "port",
+					"item": [
+						{
+							"name": "suggest port",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{url}}/configs/suggest?conf={{userId}}:0:{{addressId}}&port=8088",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"configs",
+										"suggest"
+									],
+									"query": [
+										{
+											"key": "conf",
+											"value": "{{userId}}:0:{{addressId}}"
+										},
+										{
+											"key": "port",
+											"value": "8088"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get ports",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{url}}/configs/ports",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"configs",
+										"ports"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "schedule",
+					"item": [
+						{
+							"name": "get config schedule",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "14b1c3db-4e3b-4840-9669-95f353773e18",
+										"exec": [
+											"if(pm.response.code === 200){",
+											"pm.environment.set(\"scheduleId\", pm.response.json()._id);",
+											"}",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{url}}/configs/schedules?endpoint=address",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"configs",
+										"schedules"
+									],
+									"query": [
+										{
+											"key": "endpoint",
+											"value": "address"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create schedule",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "563f4123-8ed9-4458-ae6b-a5cb855a534b",
+										"exec": [
+											"if(pm.response.code === 200){",
+											"pm.environment.set(\"scheduleId\", pm.response.json()._id);",
+											"}",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"endpoint\": \"network\"\n}"
+								},
+								"url": {
+									"raw": "{{url}}/configs/schedules",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"configs",
+										"schedules"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "patch schedule",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"scanSynchronous\": true,\n\t\"weekdayInterval\": 5,\n\t\"minuteInterval\": 1,\n\t\"limit\": 2,\n    \"portList\": [\n        \"3389\",\n        \"8080\",\n        \"22\",\n        \"443\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{url}}/configs/schedules/{{scheduleId}}",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"configs",
+										"schedules",
+										"{{scheduleId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "patch schedule event",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{url}}/configs/schedules/event/{{scheduleId}}?event=false",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"configs",
+										"schedules",
+										"event",
+										"{{scheduleId}}"
+									],
+									"query": [
+										{
+											"key": "event",
+											"value": "false"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "messenger",
+					"item": [
+						{
+							"name": "get config messenger",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "14b1c3db-4e3b-4840-9669-95f353773e18",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{url}}/configs/messengers?provider=email",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"configs",
+										"messengers"
+									],
+									"query": [
+										{
+											"key": "provider",
+											"value": "email"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{authToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "546a3fbb-243f-410d-9497-7f5329623055",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "dc28f32e-2f0e-452d-a183-3dde29c9ad22",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "8d789715-0910-4db2-bc3f-6e75d886474b",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

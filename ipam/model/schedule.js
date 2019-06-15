@@ -41,14 +41,14 @@ const scheduleSchema = new mongoose.Schema({
         type: Number,
         default: 10,
         validate(value){
-            if(value > 52 || value < 10){
+            if(value > 53 || value < 10){
                 throw new Error('Please provide valid data')
             }
         }
     },
     portList:{
         type: Array,
-        default: ['3389','80','5986','22'],
+        default: ['3389','22'],
         trim: true, 
         validate(value){
             let array = []
