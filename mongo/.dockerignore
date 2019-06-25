@@ -1,9 +1,0 @@
-node_modules
-.env
-seed
-.git/
-npm-debug.log
-init.js
-docker-compose*
-*.env
-TODO

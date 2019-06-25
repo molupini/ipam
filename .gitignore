@@ -3,6 +3,6 @@
 **/.env/
 **/.git/
 **/npm-debug.log
-**/init.js
+**/seed/
 **/*.env
 **/TODO

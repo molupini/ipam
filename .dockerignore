@@ -1,8 +1,8 @@
-node_modules/
-sandbox/
-.env/
+**/node_modules/
+**/sandbox/
+**/.env/
 .git/
-npm-debug.log
+**/npm-debug.log
 .gitignore
-*.env
-TODO
+**/*.env
+**/TODO
