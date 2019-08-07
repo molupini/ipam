@@ -8,6 +8,8 @@ const { logger } = require('../src/util/log')
 // env variables & instance variables
 const baseUrl = process.env.EXPRESS_URL
 const jwt = process.env.JWT_SCANNER
+const networkAddress = process.env.NETWORK_ADDRESS
+
 var delay = 1
 var by = 60000
 var loopCount = 0
@@ -72,6 +74,8 @@ var run = async function (baseUrl, path, query, jwt, conf){
 // RUN / WHILE LOOP
 const runLoop = async function () {
     var conf = null
+    var networkQuery = ''
+    
     while (true) {
 
         try {
@@ -88,7 +92,14 @@ const runLoop = async function () {
             await new Promise(resolve => setTimeout(resolve, delay*by)) 
             
             // RUN MAIN 
-            await run(baseUrl, '/addresses', `?available=true&owner=null&sort=updatedAt:acs`, jwt, conf.body)
+            // CONDITION BELOW, TARGET ADDRESSES BASED ON ENV VARIABLE
+            if (networkAddress){
+                if (!networkAddress.match(/^[0-9]{1,3}(\.[0-9]{1,3}|\.){1,2}\.0$/)){
+                    throw new Error('Fatal provide valid network address environment variable')
+                }
+                networkQuery = `&network=${networkAddress}`
+            }
+            await run(baseUrl, '/addresses', `?available=true&owner=null&sort=updatedAt:acs${networkQuery}`, jwt, conf.body)
             
             // MEASURE TIME BETWEEN MOMENTS 
             const then = await moment()
