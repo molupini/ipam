@@ -3,6 +3,6 @@ sandbox/
 .env/
 .git/
 npm-debug.log
-**/seed/
+/mongo/seed/
 *.env
 TODO
