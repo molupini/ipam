@@ -3,6 +3,6 @@ sandbox/
 .env/
 .git/
 npm-debug.log
-seed/
+**/seed/
 *.env
 TODO
