@@ -1,8 +1,8 @@
-**/node_modules/
-**/sandbox/
-**/.env/
-**/.git/
-**/npm-debug.log
-**/seed/
-**/*.env
-**/TODO
+node_modules/
+sandbox/
+.env/
+.git/
+npm-debug.log
+seed/
+*.env
+TODO
