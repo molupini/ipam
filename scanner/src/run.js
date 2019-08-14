@@ -12,8 +12,8 @@ const networkAddress = process.env.NETWORK_ADDRESS
 
 var delay = 1
 var by = 60000
-var loopCount = 0
-var runCount = 0
+// var loopCount = 0
+// var runCount = 0
 // var finished = false
 
 
@@ -112,7 +112,7 @@ const runLoop = async function () {
         } catch (e) {
             const errorStr = String(e)
             if(errorStr.match(/(HTTPError)/)){
-                logger.log('error',`${moment()} ${errorStr.split(':')[4].trim()}`)
+                logger.log('error',`${moment()} ${errorStr}`)
             }else{
                 logger.log('error',`${moment()} ${e}`)
             }
