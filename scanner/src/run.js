@@ -12,9 +12,7 @@ const networkAddress = process.env.NETWORK_ADDRESS
 
 var delay = 1
 var by = 60000
-// var loopCount = 0
-// var runCount = 0
-// var finished = false
+var loopCount = 0
 
 
 // MAIN FUNCTION

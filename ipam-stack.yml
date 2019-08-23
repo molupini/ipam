@@ -24,16 +24,18 @@ services:
 
     ipam-mongo:
       image: mauriziolupini/ipam-mongo:prod
+      secrets:
+        - mongodb-password
       ports:
         - 37017:27017
       networks:
         - ipam-network
-      # volumes:
-      #   - /var/run/docker.sock:/var/run/docker.sock
-      #   - ipam-mongodb:/data/db
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./ipam-mongodb:/data/db
       environment:
         MONGO_INITDB_ROOT_USERNAME: 'dbadmin'
-        MONGO_INITDB_ROOT_PASSWORD: 'CoffeeTea123'
+        MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongodb-password
         MONGO_INITDB_DATABASE: 'ipam'
       deploy:
         replicas: 1
@@ -49,6 +51,11 @@ services:
       image: mauriziolupini/ipam-scanner:prod
       networks:
         - ipam-network
+      environment:
+        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1NjY1NDgzMTYsImV4cCI6MTU2NzE1MzExNn0.TkRhpoz77iGUUfHx7-sMtfr6tMz8TG8Nf49MaaUfgOA'
+        EXPRESS_URL: 'http://ipam-express:3000'
+        NETWORK_ADDRESS: 'all'
+        NODE_ENV: 'development'
       deploy:
         replicas: 1
         update_config:
@@ -61,5 +68,6 @@ networks:
   ipam-network:
     driver: overlay
 
-# volumes:
-#   ipam-mongodb:
+secrets:
+  mongodb-password:
+    external: true
