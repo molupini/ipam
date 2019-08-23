@@ -1,0 +1,65 @@
+version: "3.7"
+
+services:
+
+    ipam-express:
+        image: mauriziolupini/ipam-express:prod
+        ports:
+          - "3000:3000"
+        networks:
+          - ipam-network
+        environment:
+          MONGODB_USER: 'dbadmin'
+          MONGODB_PASS: 'CoffeeTea123'
+          MONGODB_URL: "mongodb://ipam-mongo:27017/ipam?authSource=admin"
+          JSON_WEB_TOKEN_SECRET: "TheresNothingYouCanDoThatCantBeDone"
+          SEND_GRID_API_KEY: ''
+        deploy:
+          replicas: 1
+          update_config:
+            parallelism: 2
+            delay: 10s
+          restart_policy:
+            condition: on-failure
+
+    ipam-mongo:
+      image: mauriziolupini/ipam-mongo:prod
+      ports:
+        - 37017:27017
+      networks:
+        - ipam-network
+      # volumes:
+      #   - /var/run/docker.sock:/var/run/docker.sock
+      #   - ipam-mongodb:/data/db
+      environment:
+        MONGO_INITDB_ROOT_USERNAME: 'dbadmin'
+        MONGO_INITDB_ROOT_PASSWORD: 'CoffeeTea123'
+        MONGO_INITDB_DATABASE: 'ipam'
+      deploy:
+        replicas: 1
+        update_config:
+          parallelism: 2
+          delay: 10s
+        restart_policy:
+          condition: on-failure
+        placement:
+          constraints: [node.role == Manager]
+
+    ipam-scanner:
+      image: mauriziolupini/ipam-scanner:prod
+      networks:
+        - ipam-network
+      deploy:
+        replicas: 1
+        update_config:
+          parallelism: 2
+          delay: 10s
+        restart_policy:
+          condition: on-failure
+
+networks:
+  ipam-network:
+    driver: overlay
+
+# volumes:
+#   ipam-mongodb:

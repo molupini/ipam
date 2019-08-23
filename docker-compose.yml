@@ -1,7 +1,7 @@
 version: "2.4"
 
 services: 
-  express:
+  ipam-express:
     build:
       context: .
       target: dev
@@ -16,7 +16,7 @@ services:
     env_file:
       - ./.env/app.development.env
 
-  mongo:
+  ipam-mongo:
     build:
       context: .
       dockerfile: ./mongo.Dockerfile
@@ -26,7 +26,7 @@ services:
     env_file:
       - ./.env/app.development.env
 
-  scanner:
+  ipam-scanner:
     build:
       context: .
       target: dev

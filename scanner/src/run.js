@@ -74,11 +74,15 @@ var run = async function (baseUrl, path, query, jwt, conf){
 // RUN / WHILE LOOP
 const runLoop = async function () {
     var conf = null
-    var networkQuery = ''
+    var query = '?available=true&owner=null&sort=updatedAt:acs'
     
     while (true) {
 
         try {
+            // NETWORK PARAMETER
+            if (networkAddress.match(/^[0-9]{1,3}(\.[0-9]{1,3}|\.){1,2}\.0$/)){
+                query+=`&network=${networkAddress}`
+            }
             // FETCH CONFIG
             conf = await httpFetch(baseUrl, '/configs/schedules?endpoint=address', true, '', 'GET', jwt)
             if(!conf.body){
@@ -93,13 +97,7 @@ const runLoop = async function () {
             
             // RUN MAIN 
             // CONDITION BELOW, TARGET ADDRESSES BASED ON ENV VARIABLE
-            if (networkAddress){
-                if (!networkAddress.match(/^[0-9]{1,3}(\.[0-9]{1,3}|\.){1,2}\.0$/)){
-                    throw new Error('Fatal provide valid network address environment variable')
-                }
-                networkQuery = `&network=${networkAddress}`
-            }
-            await run(baseUrl, '/addresses', `?available=true&owner=null&sort=updatedAt:acs${networkQuery}`, jwt, conf.body)
+            await run(baseUrl, '/addresses', query, jwt, conf.body)
             
             // MEASURE TIME BETWEEN MOMENTS 
             const then = await moment()
