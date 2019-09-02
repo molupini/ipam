@@ -20,7 +20,17 @@ var createUnSecureTransport = async (host = '', port = '587') => {
     let transport = await nodemailer.createTransport({
         host: host,
         port: parseInt(port),
-        secure: false
+        secure: false,
+        requireTLS: true,
+        tls: {
+            rejectUnauthorized: false
+        },
+        port: port
+        // ,
+        // auth: {
+        //   user: 'user@user.com',
+        //   pass: 'password'
+        // }
     })
     return transport
 }

@@ -28,6 +28,11 @@ router.get('/addresses', auth, async (req, res) => {
         if (req.query.owner === 'null') {
             match.owner = null
         }
+        if (!req.query.cloudHosted === 'true') {
+            match.cloudHosted = true
+        }else {
+            match.cloudHosted = false
+        }
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
@@ -59,7 +64,8 @@ router.get('/addresses/init', auth, async (req, res) => {
         if(req.query.count === 'true'){
             const count = await Address.countDocuments({
                 isInitialized: false, 
-                gatewayAvailable: true
+                gatewayAvailable: true,
+                cloudHosted: false
             })
             return res.status(200).send({message:count})
         }
@@ -78,7 +84,8 @@ router.get('/addresses/init', auth, async (req, res) => {
         }
         const address = await Address.find({
             isInitialized: false, 
-            gatewayAvailable: true
+            gatewayAvailable: true,
+            cloudHosted: false
         }, null, options)
 
         if(!address){
@@ -234,6 +241,11 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         }
         else { 
             return res.status(400).send({message:'Please provide a valid network address or author'})
+        }
+        if (!req.query.cloudHosted === 'true') {
+            match.cloudHosted = true
+        }else {
+            match.cloudHosted = false
         }
         var address = null
         try {

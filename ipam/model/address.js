@@ -21,6 +21,10 @@ const addressSchema = new mongoose.Schema({
         type: Boolean, 
         default: false
     },
+    cloudHosted: {
+        type: Boolean, 
+        default: false
+    },
     gatewayAvailable: {
         type: Boolean, 
         default: true

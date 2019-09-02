@@ -19,7 +19,8 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
                     doPingCheck(addresses[i])
                     .then((result) => {
                         // debugging
-                        logger.log('info',`${moment()} doPingCheck result ${result}`)
+                        logger.log('info',`${moment()} doPingCheck result = `) //${result}
+                        console.log({result})
                         if(result.alive){
                             // debugging 
                             logger.log('info',`${moment()} --- doPingCheck ${result.id} ${result.host} ${result.alive} ---`)

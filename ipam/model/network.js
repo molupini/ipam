@@ -67,6 +67,10 @@ const networkSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    cloudHosted: {
+        type: Boolean,
+        default: false
+    },
     author: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
@@ -135,7 +139,8 @@ networkSchema.pre('save', async function (next) {
                 if(!address){
                     const address = await new Address({
                         address: ip,
-                        author: network._id
+                        author: network._id,
+                        cloudHosted: network.cloudHosted
                     })
                     await address.save()
                 }
