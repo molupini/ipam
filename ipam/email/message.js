@@ -1,5 +1,6 @@
 // https://github.com/sendgrid/sendgrid-nodejs/tree/master/packages/mail
 const sendGrid = require('@sendgrid/mail')
+const nodemailer = require('nodemailer')
 const moment = require('moment')
 const { logger } = require('../src/util/log')
 const Messenger = require('../model/messenger')
@@ -10,9 +11,18 @@ var getConfig = async (provider) => {
         provider
     })
     if(conf.token !== null){
-        sendGrid.setApiKey(conf.token)
+        await sendGrid.setApiKey(conf.token)
     }
     return conf 
+}
+
+var createUnSecureTransport = async (host = '', port = '587') => {
+    let transport = await nodemailer.createTransport({
+        host: host,
+        port: parseInt(port),
+        secure: false
+    })
+    return transport
 }
 
 const userCreated = async (email, user, id) => {
@@ -23,7 +33,6 @@ const userCreated = async (email, user, id) => {
         from = config.emailFrom
         support = config.emailSupport
     }
-    
     const body = `<strong>Thank you for joining our Service!</strong><br>
     To finish registration, we just need you to confirm that you indeed received this email.<br>
     To confirm, please click the link below.<br><br>
@@ -40,8 +49,17 @@ const userCreated = async (email, user, id) => {
     }
     // debugging
     logger.log('info',`${moment()} ${msg.subject}`)
-    if(config.isAvailable){
-        sendGrid.send(msg)
+    if(config.isEnabled){
+        if(config.provider === 'api'){
+            await sendGrid.send(msg)
+        }
+        if(config.provider === 'email'){
+            const transport = await createUnSecureTransport(config.relayHost, config.replayPort)
+            const info = await transport.sendMail(msg)
+            if(config.replayLogger){
+                logger.log('info',`${moment()} message sendMail ${info.messageId}`)
+            }
+        }
     }
 } 
 
@@ -71,8 +89,17 @@ const userJsonWebToken = async (email, jwt, user, limit) => {
     }
     // debugging
     logger.log('info',`${moment()} ${msg.subject}`)
-    if(config.isAvailable){
-        sendGrid.send(msg)
+    if(config.isEnabled){
+        if(config.provider === 'api'){
+            await sendGrid.send(msg)
+        }
+        if(config.provider === 'email'){
+            const transport = await createUnSecureTransport(config.relayHost, config.replayPort)
+            const info = await transport.sendMail(msg)
+            if(config.replayLogger){
+                logger.log('info',`${moment()} message sendMail ${info.messageId}`)
+            }
+        }
     }
 }
 
@@ -101,9 +128,18 @@ const userJWTExpiring = async (email, user) => {
     }
     // debugging
     logger.log('info',`${moment()} ${msg.subject}`)
-    if(config.isAvailable){
-        sendGrid.send(msg)
-    }  
+    if(config.isEnabled){
+        if(config.provider === 'api'){
+            await sendGrid.send(msg)
+        }
+        if(config.provider === 'email'){
+            const transport = await createUnSecureTransport(config.relayHost, config.replayPort)
+            const info = await transport.sendMail(msg)
+            if(config.replayLogger){
+                logger.log('info',`${moment()} message sendMail ${info.messageId}`)
+            }
+        }
+    }
 }
 
 const userReset = async (email, user, id) => {
@@ -131,8 +167,17 @@ const userReset = async (email, user, id) => {
     }
     // debugging
     logger.log('info',`${moment()} ${msg.subject}`)
-    if(config.isAvailable){
-        sendGrid.send(msg)
+    if(config.isEnabled){
+        if(config.provider === 'api'){
+            await sendGrid.send(msg)
+        }
+        if(config.provider === 'email'){
+            const transport = await createUnSecureTransport(config.relayHost, config.replayPort)
+            const info = await transport.sendMail(msg)
+            if(config.replayLogger){
+                logger.log('info',`${moment()} message sendMail ${info.messageId}`)
+            }
+        }
     }
 }
 
@@ -160,8 +205,17 @@ const userModified = async (email, user, id) => {
     }
     // debugging
     logger.log('info',`${moment()} ${msg.subject}`)
-    if(config.isAvailable){
-        sendGrid.send(msg)
+    if(config.isEnabled){
+        if(config.provider === 'api'){
+            await sendGrid.send(msg)
+        }
+        if(config.provider === 'email'){
+            const transport = await createUnSecureTransport(config.relayHost, config.replayPort)
+            const info = await transport.sendMail(msg)
+            if(config.replayLogger){
+                logger.log('info',`${moment()} message sendMail ${info.messageId}`)
+            }
+        }
     }
 }
 
@@ -176,7 +230,7 @@ const addressTrueCount = async (email, address, userId, addressId, count) => {
     
     const body = `<strong>We noticed your IP Address is invisible!</strong><br>
     If you wish to keep this allocated to your account and not released back into the wild, please click on the link or alternatively contact the network address administrator:<br><br>
-    <a href="${fqdn}/configs/ports/suggest?conf=${userId}\:${count}\:${addressId}&port=n"><strong>/Configure</strong></a><br><br>
+    <a href="${fqdn}/configs/ports/suggest?config.${userId}\:${count}\:${addressId}&port=n"><strong>/Configure</strong></a><br><br>
     Any questions, contact ${support}.<br>
     `
 
@@ -190,8 +244,17 @@ const addressTrueCount = async (email, address, userId, addressId, count) => {
     }
     // debugging
     logger.log('info',`${moment()} ${msg.subject}`)
-    if(config.isAvailable){
-        sendGrid.send(msg)
+    if(config.isEnabled){
+        if(config.provider === 'api'){
+            await sendGrid.send(msg)
+        }
+        if(config.provider === 'email'){
+            const transport = await createUnSecureTransport(config.relayHost, config.replayPort)
+            const info = await transport.sendMail(msg)
+            if(config.replayLogger){
+                logger.log('info',`${moment()} message sendMail ${info.messageId}`)
+            }
+        }
     }
 }
 
@@ -231,8 +294,17 @@ const addressTrueCountWarn = async (email, owner, address, userId, addressId, co
 
     // debugging
     logger.log('info',`${moment()} ${msg.subject}`)
-    if(config.isAvailable){
-        sendGrid.send(msg)
+    if(config.isEnabled){
+        if(config.provider === 'api'){
+            await sendGrid.send(msg)
+        }
+        if(config.provider === 'email'){
+            const transport = await createUnSecureTransport(config.relayHost, config.replayPort)
+            const info = await transport.sendMail(msg)
+            if(config.replayLogger){
+                logger.log('info',`${moment()} message sendMail ${info.messageId}`)
+            }
+        }
     }
 }
 
@@ -265,8 +337,17 @@ const networkConfirm = async (email, id, network) => {
     }
     // debugging
     logger.log('info',`${moment()} ${msg.subject}`)
-    if(config.isAvailable){
-        sendGrid.send(msg)
+    if(config.isEnabled){
+        if(config.provider === 'api'){
+            await sendGrid.send(msg)
+        }
+        if(config.provider === 'email'){
+            const transport = await createUnSecureTransport(config.relayHost, config.replayPort)
+            const info = await transport.sendMail(msg)
+            if(config.replayLogger){
+                logger.log('info',`${moment()} message sendMail ${info.messageId}`)
+            }
+        }
     }
 }
 

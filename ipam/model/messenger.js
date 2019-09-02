@@ -13,7 +13,7 @@ const messengerSchema = new mongoose.Schema({
         lowercase: true, 
         default: 'email',
         validate(value){
-            if(!value.match(/(email|sms|slack|chat)/)){
+            if(!value.match(/(api|email|sms|slack|chat)/)){
                 throw new Error('Please provide valid data')
             }
         },
@@ -81,6 +81,34 @@ const messengerSchema = new mongoose.Schema({
         type: String,
         default: null,
         trim: true
+    },
+    relayHost:{
+        type: String,
+        default: 'mail.google.com',
+        trim: true,
+        validate(value){
+            if(!validator.isFQDN(value)){
+                throw new Error('Please provide valid data')
+            }
+        }
+    },
+    relayPort:{
+        type: String,
+        default: '587',
+        trim: true,
+        validate(value){
+            if(!validator.isPort(value)){
+                throw new Error('Please provide valid data')
+            }
+        }
+    },
+    replayLogger:{
+        type: Boolean,
+        default: true
+    },
+    isEnabled:{
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true
