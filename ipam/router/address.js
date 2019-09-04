@@ -3,6 +3,7 @@ const express = require('express')
 const router = new express.Router()
 const auth = require('../middleware/auth')
 const Address = require('../model/address')
+const Network = require('../model/network')
 const { FalsePositive } = require('../src/util/counter')
 const { doPingCheck } = require('../src/util/check')
 const { logger } = require('../src/util/log')
@@ -13,14 +14,17 @@ const valid = require('../src/util/compare')
 // example {{url}}/addresses?network=192.168&available=true&owner=null&limit=5&skip=0&sort=updatedAt:acs
 router.get('/addresses', auth, async (req, res) => {
     try {
-        const match = {}
-        const options = {}
+        var match = {}
+        var options = {}
         const sort = {}
         if (req.query.network) {
-            if (!req.query.network.match(/^[0-9]{1,3}(\.[0-9]{1,3}|\.){1,2}\.0$/)) {
-                return res.status(400).send({message:'Please provide a valid network'})
+            const network = await Network.findOne({
+                networkAddress: req.query.network
+            })
+            if (!network) {
+                return res.status(404).send({message:'Network Not Found'})
             }
-            match.address = new RegExp(`^${req.query.network.replace(/0$/,'')}`)
+            match.author = network._id
         }
         if (req.query.available) {
             match.isAvailable = req.query.available === 'true'
