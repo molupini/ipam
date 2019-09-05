@@ -15,7 +15,8 @@ const networkSchema = new mongoose.Schema({
             }
         }
         ,
-        unique: true
+        unique: true,
+        index: true
     },
     subnetMask: {
         type: String,

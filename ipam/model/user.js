@@ -26,7 +26,8 @@ const userSchema = new mongoose.Schema({
                 throw new Error('Please provide a valid email address')
             }
         },
-        unique: true
+        unique: true,
+        index: true
     },
     userName: {
         type: String,

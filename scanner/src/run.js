@@ -78,8 +78,8 @@ const runLoop = async function () {
 
         try {
             // NETWORK PARAMETER
-            if (networkAddress.match(/^[0-9]{1,3}(\.[0-9]{1,3}|\.){1,2}\.0$/)){
-                query+=`&network=${networkAddress}`
+            if (networkAddress !== 'all'){
+                query = `?network=${networkAddress}&available=true&owner=null&sort=updatedAt:acs`
             }
             // FETCH CONFIG
             conf = await httpFetch(baseUrl, '/configs/schedules?endpoint=address', true, '', 'GET', jwt)

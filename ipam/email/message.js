@@ -21,7 +21,7 @@ var createUnSecureTransport = async (host = '', port = '587') => {
         host: host,
         port: parseInt(port),
         secure: false,
-        requireTLS: true,
+        requireTLS: false,
         tls: {
             rejectUnauthorized: false
         },

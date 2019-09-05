@@ -11,7 +11,8 @@ const addressSchema = new mongoose.Schema({
                 throw new Error('Please provide a valid Address')
             }
         },
-        unique: true
+        unique: true,
+        index: true
     },
     isInitialized:{
         type: Boolean,
