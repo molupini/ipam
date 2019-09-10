@@ -57,8 +57,8 @@ var httpSuccess = function(log, baseUrl, id, jwt){
             return 1
         }
         if(log){
-            logger.log('info',`${moment()} httpResult.body`)
-            console.log(httpResult.body)
+            // logger.log('info',`${moment()} httpResult.body`)
+            // console.log(httpResult.body)
         }
         return 0 
     }).catch((httpError) => {
@@ -73,8 +73,8 @@ var httpGateway = function(log, baseUrl, status, id, jwt){
             return 1
         }
         if(log){
-            logger.log('info',`${moment()} httpResult.body`)
-            console.log(httpResult.body)
+            // logger.log('info',`${moment()} httpResult.body`)
+            // console.log(httpResult.body)
         }
         return 0 
     }).catch((httpError) => {
@@ -89,8 +89,8 @@ var httpFailure = async function(log, baseUrl, id, jwt){
             return 1
         }
         if(log){
-            logger.log('info',`${moment()} httpResult.body`)
-            console.log(httpResult.body)
+            // logger.log('info',`${moment()} httpResult.body`)
+            // console.log(httpResult.body)
         }
         return 0 
     }).catch((httpError) => {

@@ -51,7 +51,7 @@ var pingLoop = async function (addresses){
         for (i = 0; i < addresses.length; i++) {
             await doPingCheck(addresses[i]).then((pingResult) => {
                 // debugging
-                logger.log('info', `${moment()} pingResult ${pingResult.id} ${pingResult.host} ${pingResult.alive}`)
+                // logger.log('info', `${moment()} pingResult ${pingResult.id} ${pingResult.host} ${pingResult.alive}`)
                 resultArray.push(pingResult)
             })
         }
@@ -80,14 +80,14 @@ var tcpLoop = async function (addresses, ports){
                 await doTcpCheck(addresses[i].address, array[x]).then(() => {
                     const testResult = `${addresses[i]._id}:${addresses[i].address}:true`
                     // debugging
-                    logger.log('info', `${moment()} --- doTcpCheck ${testResult} ---`)
+                    // logger.log('info', `${moment()} --- doTcpCheck ${testResult} ---`)
                     resultArray.push(testResult)
                     // alive address found stop loop
                     x = array.length
                 }).catch(() => {
                     const testResult = `${addresses[i]._id}:${addresses[i].address}:false`
                     // debugging
-                    logger.log('info', `${moment()} doTcpCheck ${testResult}`)
+                    // logger.log('info', `${moment()} doTcpCheck ${testResult}`)
                     resultArray.push(testResult)
                 })
             }

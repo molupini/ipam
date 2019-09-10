@@ -19,11 +19,11 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
                     doPingCheck(addresses[i])
                     .then((result) => {
                         // debugging
-                        logger.log('info',`${moment()} doPingCheck result = `) //${result}
-                        console.log({result})
+                        // logger.log('info',`${moment()} doPingCheck result = `) //${result}
+                        // console.log({result})
                         if(result.alive){
                             // debugging 
-                            logger.log('info',`${moment()} --- doPingCheck ${result.id} ${result.host} ${result.alive} ---`)
+                            // logger.log('info',`${moment()} --- doPingCheck ${result.id} ${result.host} ${result.alive} ---`)
                             httpSuccess(false, baseUrl, result.id, jwt)
                             return 0
                         }
@@ -51,7 +51,7 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
                                     }
                                 }).catch((tcpError)=> {
                                     // debugging
-                                    logger.log('info',`${moment()} doTcpCheck.tcpError ${tcpError}`)
+                                    // logger.log('info',`${moment()} doTcpCheck.tcpError ${tcpError}`)
                                     const inActive = tcpError.message.split(':')[2]
                                     const ip = result.host
                                     isValid.push({ip, inActive})

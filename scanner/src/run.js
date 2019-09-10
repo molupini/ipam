@@ -22,7 +22,7 @@ var run = async function (baseUrl, path, query, jwt, conf){
             var ports = null
             var init = false
             // STARTING
-            await logger.log('info', `${moment()} mode scanSynchronous=${conf.scanSynchronous}`)
+            // await logger.log('info', `${moment()} mode scanSynchronous=${conf.scanSynchronous}`)
             // QUERY IF ANY INIT ADDRESSES
             addresses = await httpFetch(baseUrl, '/addresses/init?count=true', true, '', 'GET', jwt)
 
@@ -30,7 +30,7 @@ var run = async function (baseUrl, path, query, jwt, conf){
             // ELSE IF WEEKDAY INTERVAL 'FULL SCAN' OMIT OWNER AND AVAILABLE, ADJUST QUERY STRING, SET EVENT FIRED TO TRUE
             // ELSE IF NEXT DAY, SET EVENT FIRED TO FALSE
             if(addresses.body.message > 0){
-                await logger.log('info', `${moment()} --- init count, ${addresses.body.message} ---`)
+                // await logger.log('info', `${moment()} --- init count, ${addresses.body.message} ---`)
                 query = `/init?sort=updatedAt:acs`
                 init = true
             } 
@@ -100,7 +100,7 @@ const runLoop = async function () {
             // MEASURE TIME BETWEEN MOMENTS 
             const then = await moment()
             const thenNow = await then.diff(now, 'milliseconds')
-            logger.log('info',`${moment()} drift, ${thenNow}, delay ${(delay*by)}`)
+            // logger.log('info',`${moment()} drift, ${thenNow}, delay ${(delay*by)}`)
             if (thenNow > delay*by){
                 // await httpFetch(baseUrl, `/configs/schedules/progress/${conf.body._id}`, true, `?interval=${delay}`, 'PATCH', jwt)
                 // logger.log('info',`${moment()} adjusted, ${thenNow/(delay*by)}`)
