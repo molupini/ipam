@@ -21,6 +21,7 @@ var run = async function (baseUrl, path, query, jwt, conf){
             var addresses = null
             var ports = null
             var init = false
+            var innerQuery = query
             // STARTING
             // await logger.log('info', `${moment()} mode scanSynchronous=${conf.scanSynchronous}`)
             // QUERY IF ANY INIT ADDRESSES
@@ -31,12 +32,12 @@ var run = async function (baseUrl, path, query, jwt, conf){
             // ELSE IF NEXT DAY, SET EVENT FIRED TO FALSE
             if(addresses.body.message > 0){
                 // await logger.log('info', `${moment()} --- init count, ${addresses.body.message} ---`)
-                query = `/init?sort=updatedAt:acs`
+                innerQuery = `/init?sort=updatedAt:acs`
                 init = true
             } 
             if(!init && moment().isoWeekday() === conf.weekdayInterval && !conf.eventFired){
                 // UPDATE QUERY
-                // query = `?sort=updatedAt:acs`
+                // innerQuery = `?sort=updatedAt:acs`
                 await logger.log('info', `${moment()} --- full scan, weekday interval ---`)
                 // UPDATE EVENT FIRED TO TRUE
                 await httpFetch(baseUrl, `/configs/schedules/event/${conf._id}`, true, '?event=true', 'PATCH', jwt)
@@ -48,17 +49,17 @@ var run = async function (baseUrl, path, query, jwt, conf){
             }
 
             // ADD LIMIT TO QUERY STRING VARIABLE
-            var query = `${query}&limit=${conf.limit}&maxFp=${conf.maxTrueCount}`
-            await logger.log('info',`${moment()} --- query ${query} ---`)
+            innerQuery = `${innerQuery}&limit=${conf.limit}&maxFp=${conf.maxTrueCount}`
+            await logger.log('info',`${moment()} --- innerQuery ${innerQuery} ---`)
             // SPECIFY TCP PORTS 
             ports = conf.portList
 
             // SCAN FUNCTION 
             if(conf.scanSynchronous){
-                await scanSync(baseUrl, path, query, jwt, ports)
+                await scanSync(baseUrl, path, innerQuery, jwt, ports)
             }
             else {
-                await scanAsync(baseUrl, path, query, jwt, ports)
+                await scanAsync(baseUrl, path, innerQuery, jwt, ports)
             }
             return true
         } catch (e) {
