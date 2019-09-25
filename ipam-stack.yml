@@ -4,13 +4,20 @@ services:
 
     ipam-express:
         image: mauriziolupini/ipam-express:prod
+        logging:
+          driver: "json-file"
+          options:
+            max-size: "5m"
+            max-file: "3"
+        secrets:
+          - mongodb-password
         ports:
           - "3000:3000"
         networks:
           - ipam-network
         environment:
           MONGODB_USER: 'dbadmin'
-          MONGODB_PASS: 'CoffeeTea123'
+          MONGODB_PASS_FILE: 'CoffeeTea123'
           MONGODB_URL: "mongodb://ipam-mongo:27017/ipam?authSource=admin"
           JSON_WEB_TOKEN_SECRET: "TheresNothingYouCanDoThatCantBeDone"
           SEND_GRID_API_KEY: ''
@@ -47,14 +54,41 @@ services:
         placement:
           constraints: [node.role == Manager]
 
-    ipam-scanner:
+    ipam-scanner-all:
       image: mauriziolupini/ipam-scanner:prod
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "5m"
+          max-file: "3"
       networks:
         - ipam-network
       environment:
-        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1NjY1NDgzMTYsImV4cCI6MTU2NzE1MzExNn0.TkRhpoz77iGUUfHx7-sMtfr6tMz8TG8Nf49MaaUfgOA'
+        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
         EXPRESS_URL: 'http://ipam-express:3000'
         NETWORK_ADDRESS: 'all'
+        NODE_ENV: 'development'
+      deploy:
+        replicas: 1
+        update_config:
+          parallelism: 2
+          delay: 10s
+        restart_policy:
+          condition: on-failure
+
+    ipam-scanner-stm:
+      image: mauriziolupini/ipam-scanner:prod
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "5m"
+          max-file: "3"
+      networks:
+        - ipam-network
+      environment:
+        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
+        EXPRESS_URL: 'http://ipam-express:3000'
+        NETWORK_ADDRESS: '10.7.0.0'
         NODE_ENV: 'development'
       deploy:
         replicas: 1
@@ -71,3 +105,4 @@ networks:
 secrets:
   mongodb-password:
     external: true
+

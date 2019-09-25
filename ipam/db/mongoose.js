@@ -8,7 +8,7 @@ const options = {
     useNewUrlParser: true,
     // autoIndex: false,
     user: process.env.MONGODB_USER,
-    pass: process.env.MONGODB_PASS, 
+    pass: process.env.MONGODB_PASS_FILE, 
     reconnectTries: 30,
     reconnectInterval: 500,
     poolSize: 10,
