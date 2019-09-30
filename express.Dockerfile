@@ -1,5 +1,7 @@
 # # base
-FROM node:10-alpine as base 
+FROM node:12-alpine as base 
+# MEMORY LEAK FAILURE, INVESTIGATING NEW IMAGE
+# FROM node:10-alpine as base 
 
 ENV PORT=3000
 EXPOSE ${PORT}

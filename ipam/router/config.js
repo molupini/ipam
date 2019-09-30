@@ -62,7 +62,7 @@ router.get('/configs/schedules', auth, async (req,res) => {
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
-            options.limit = parseInt(req.user.maxCount)
+            options.limit = parseInt(req.user.maxAmount)
         }
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)
@@ -165,7 +165,7 @@ router.get('/configs/messengers', auth, async (req,res) => {
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
-            options.limit = parseInt(req.user.maxCount)
+            options.limit = parseInt(req.user.maxAmount)
         }
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)

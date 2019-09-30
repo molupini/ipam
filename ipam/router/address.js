@@ -40,7 +40,7 @@ router.get('/addresses', auth, async (req, res) => {
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
-            options.limit = parseInt(req.user.maxCount)
+            options.limit = parseInt(req.user.maxAmount)
         }
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)
@@ -76,7 +76,7 @@ router.get('/addresses/init', auth, async (req, res) => {
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
-            options.limit = parseInt(req.user.maxCount)
+            options.limit = parseInt(req.user.maxAmount)
         }
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)
@@ -227,7 +227,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         match.isAvailable = true
         match.gatewayAvailable = true
         match.owner = null
-        options.limit = parseInt(req.user.maxCount)
+        options.limit = parseInt(req.user.maxAmount)
         options.sort = {
             'updatedAt': -1
         }

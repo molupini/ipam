@@ -2,7 +2,8 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const ip = require('ip')
 const Address = require('../model/address')
-const { ipScope } = require('../src/util/range')
+const Cidr = require('../model/cidr')
+const { ipScope, rangeBuilder } = require('../src/util/range')
 
 const networkSchema = new mongoose.Schema({
     networkAddress: {
@@ -87,6 +88,12 @@ networkSchema.virtual('address', {
     foreignField: 'author'
 })
 
+// networkSchema.virtual('cidr', {
+//     ref: 'Cidr',
+//     localField: '_id',
+//     foreignField: 'author'
+// })
+
 // toJSON
 networkSchema.methods.toJSON = function () {
     const network = this
@@ -97,23 +104,21 @@ networkSchema.methods.toJSON = function () {
 
 networkSchema.methods.updateNumHosts = async function (id) {
     const network = this
-    const total = await Address.countDocuments({
-    author: id
-    })
-    const less = await Address.countDocuments({
+    const amount = await Address.countDocuments({
         author: id,
         isInitialized: true,
-        isAvailable: false
+        isAvailable: false,
+        owner: null, 
+        cloudHosted: false
     })
-    network.numHosts = total-less
+    network.numHosts = amount
     await network.save()
 }
 
 // pre Save
 networkSchema.pre('save', async function (next) {
     const network = this
-    const subnet = await ip.subnet(network.networkAddress, network.subnetMask)
-    
+ 
     // allowed modification, note order above first post/save below
      const cidr = `${network.networkAddress}/${network.subnetMaskLength}`
      if (network.isModified('defaultGateway') && !ip.cidrSubnet(cidr).contains(network.defaultGateway)) {
@@ -123,63 +128,67 @@ networkSchema.pre('save', async function (next) {
      if (network.isModified('VLAN') && (network.VLAN < 0 || network.VLAN > 4094)) {
          throw new Error('Please provide a valid vlan')
     }
-    // TODO, CHANGE TO REDUCE ITERATIONS INTO A REGEX PATTERN MATCH EXAMPLE TO-FROM 
-    // TODO, BEFORE THE ABOVE CHANGE EVAL A POST SAVE ACTIVITY, # SEE POST SAVE, CONTINUED #
-    // TODO, BELOW CHANGE IS WORKING BEFORE REMOVING COMMENTED BELOW
-    // if (network.isModified('networkConfirmed') && network.networkConfirmed === true) {
-    //     const cidrSubnet = `${network.networkAddress}/${network.subnetMaskLength}`
-    //     const addresses = await ipScope(cidrSubnet, network.cidrExclusion)
-    //     for (i = 0; i < addresses.length; i++) {
-    //         const ip = addresses[i].ip
-    //         if (ip === network.networkAddress || ip === network.firstAddress || ip === network.lastAddress || ip === network.broadcastAddress || ip === network.defaultGateway) {
-    //             continue
-    //         }
-    //         else {
-    //             // match found and skipped
-    //             const address = await Address.findOne({
-    //                 address: ip
-    //             })
-    //             if(!address){
-    //                 const address = await new Address({
-    //                     address: ip,
-    //                     author: network._id,
-    //                     cloudHosted: network.cloudHosted
-    //                 })
-    //                 await address.save()
-    //             }
-    //             // 
-    //             // const address = await new Address({
-    //             //     address: ip,
-    //             //     author: network._id
-    //             // })
-    //             // await address.save()
-    //         }
-    //     }
-    // }
+
     // CIDR UPDATES THAT ARE VALID
     if(!network.isNew && network.isModified('cidrExclusion')){
+
+        // REMOVE WHEN CIDR CHANGE FOUND
+        await Cidr.deleteMany({
+            author: network._id
+        })
+        // CIDR LOOP
         network.cidrExclusion.forEach(cidr => {
-            const cidrAddr = ip.cidr(cidr)
-            const test = ip.cidrSubnet(`${network.networkAddress}/${network.subnetMaskLength}`).contains(cidrAddr)
-            const mask = ip.cidrSubnet(cidr).subnetMaskLength
-            if(mask < network.subnetMaskLength){
-                throw new Error('Invalid exclusion')
+            // IF INCLUDES FORWARD SLASH CIDR NOTATION 
+            if(cidr.match(/(\/)/)){
+                const cidrAddr = ip.cidr(cidr)
+                // RETURN TEST TRUE IF VALID FALSE IF NOT 
+                const test = ip.cidrSubnet(`${network.networkAddress}/${network.subnetMaskLength}`).contains(cidrAddr)
+                // RETURN MASK
+                const mask = ip.cidrSubnet(cidr).subnetMaskLength
+                if(mask < network.subnetMaskLength){
+                    throw new Error('Invalid exclusion')
+                }
+                if(!test){
+                    throw new Error('Invalid exclusion')
+                }
             }
-            if(!test){
-                throw new Error('Invalid exclusion')
+            // IF INCLUDES DASH CIDR NOTATION 
+            if(cidr.match(/(\-)/)){
+                if(cidr.split(/(\-)/).length !== 3){
+                    throw new Error('Invalid exclusion array length')
+                }
+                const array = cidr.split(/(\-)/)
+                for (i = 0; i < array.length; i++){
+                    if(array[i] !== '-'){
+                        const test = ip.cidrSubnet(`${network.networkAddress}/${network.subnetMaskLength}`).contains(array[i])
+                        if(!test){
+                            throw new Error('Invalid exclusion')
+                        }
+                    }
+                }
+                const cidrModel = new Cidr({
+                    author: network.id, 
+                    owner: network.author,
+                    fromToRange: cidr
+                })
+                cidrModel.save()
             }
         })
+
+        // REMOVE WHEN CHANGES FOUND
         if(network.networkConfirmed === true){
             await Address.deleteMany({
                 author: network._id,
                 owner: null
             })
+
             network.networkConfirmed = false
         }
     }
     // create network
     // networkAddress can not be modified by user
     if (network.isModified('networkAddress')) {
+        const subnet = await ip.subnet(network.networkAddress, network.subnetMask)
         network.firstAddress = subnet.firstAddress
         network.lastAddress = subnet.lastAddress
         network.broadcastAddress = subnet.broadcastAddress
@@ -198,7 +207,8 @@ networkSchema.post('save', async function (doc, next) {
         const network = doc
         if (!network.isNew && network.networkConfirmed === true) {
             const cidrSubnet = `${network.networkAddress}/${network.subnetMaskLength}`
-            const addresses = await ipScope(cidrSubnet, network.cidrExclusion)
+            // TODO PERFORMANCE CONSIDERATION RATHER PERFORM INSERT WITH IP SCOPE FUNCTION AS YOU ARE ITERATING AGAIN ONCE YOU HAVE THE OBJECT RETURNED
+            const addresses = await ipScope(cidrSubnet, network.cidrExclusion, network.firstAddress, network.lastAddress, network.subnetMask)
             for (i = 0; i < addresses.length; i++) {
                 const ip = addresses[i].ip
                 if (ip === network.networkAddress || ip === network.firstAddress || ip === network.lastAddress || ip === network.broadcastAddress || ip === network.defaultGateway) {
@@ -233,6 +243,7 @@ networkSchema.post('save', async function (doc, next) {
 networkSchema.pre('remove', async function (next) {
     const network = this
     await Address.deleteMany({ author: network._id })
+    await Cidr.deleteMany({ author: network._id })
     next()
 })
 

@@ -3,6 +3,7 @@ const express = require('express')
 const router = new express.Router()
 const auth = require('../middleware/auth')
 const Network = require('../model/network')
+const Cidr = require('../model/cidr')
 const valid = require('../src/util/compare')
 const message = require('../email/message')
 
@@ -50,7 +51,7 @@ router.get('/networks', auth, async (req, res) => {
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
-            options.limit = parseInt(req.user.maxCount)
+            options.limit = parseInt(req.user.maxAmount)
         }
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)
@@ -73,7 +74,7 @@ router.get('/networks/:id', auth, async (req, res) => {
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
-            options.limit = parseInt(req.user.maxCount)
+            options.limit = parseInt(req.user.maxAmount)
         }
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)
@@ -82,17 +83,29 @@ router.get('/networks/:id', auth, async (req, res) => {
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
-        await network.updateNumHosts(network._id)
+        // TODO SLOW QUERY RESULTING IN TIMEOUTS 
+        // await network.updateNumHosts(network._id)
         if (req.query.populate === 'true') {
-            await network.populate({
-                path: 'address',
-                options
-            }).execPopulate()
+            if(req.query.document === 'cidr'){
+                const cidr = await Cidr.find({
+                    author : network.id
+                })
+                return res.status(200).send({
+                    network, 
+                    cidr: cidr
+                })
+            } else {
+                await network.populate({
+                    path: 'address',
+                    options
+                }).execPopulate()
+                return res.status(200).send({
+                    network, 
+                    addresses: network.address
+                })
+            }
         }
-        res.status(200).send({
-            network, 
-            addresses: network.address}
-        )
+        return res.status(200).send(network)
     } catch (e) {
         res.status(500).send({error: e.message})
     }
