@@ -85,11 +85,17 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
             await array.forEach(id => {
                 httpFetch(baseUrl, '/networks', true, `/${id}`, 'GET', jwt).then((result) => { 
                     if(result.body){
+                        // debugging
+                        // console.log('gatewayLoop =')
+                        // console.log(result.body)
                         const pingObject = {
-                            _id: result.body.network._id,
-                            address: result.body.network.defaultGateway,
+                            _id: result.body._id,
+                            address: result.body.defaultGateway,
                             portNumber: null
                         }
+                        // debugging
+                        // console.log('pingObject =')
+                        // console.log(pingObject)
                         doPingCheck(pingObject).then((pingResult) => {
                             if(pingResult){
                                 httpGateway(false, baseUrl, pingResult.alive, pingResult.id, jwt)
