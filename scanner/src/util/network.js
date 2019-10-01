@@ -1,6 +1,6 @@
 const tcp = require('tcp-port-used')
 const ping = require('ping') 
-const dns = require('dns').promises
+const { Resolver } = require('dns').promises
 const moment = require('moment')
 const { logger } = require('../util/log')
 
@@ -33,9 +33,11 @@ var doPingCheck = async function (ip) {
     }
 }
 
-var doDNSCheck = async function (ip) {
+var doDNSCheck = async function (ip, nameServers) {
     try {
-        const test = await dns.resolve(ip, 'PTR') // resolvePtr,resolveAny,reverse
+        const resolver = new Resolver()
+        await resolver.setServers(nameServers)
+        const test = await resolver.resolve(ip, 'PTR') // resolvePtr,resolveAny,reverse
         if (!test) {
             return test
         }

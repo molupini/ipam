@@ -82,6 +82,22 @@ var httpGateway = function(log, baseUrl, status, id, jwt){
     })
 }
 
+var httpPointer = function(log, baseUrl, status, id, jwt){
+    httpFetch(baseUrl, `/addresses/network/${id}/pointer`, true, `?available=${status}`, 'PATCH', jwt)
+    .then((httpResult) => {
+        if(!httpResult){
+            return 1
+        }
+        if(log){
+            // logger.log('info',`${moment()} httpResult.body`)
+            // console.log(httpResult.body)
+        }
+        return 0 
+    }).catch((httpError) => {
+        throw new Error(httpError)
+    })
+}
+
 var httpFailure = async function(log, baseUrl, id, jwt){
     await httpFetch(baseUrl, `/addresses/status/${id}`, true, `?available=true`, 'PATCH', jwt)
     .then((httpResult) => {
@@ -104,5 +120,6 @@ module.exports = {
     addressPatchLoop,
     httpSuccess,
     httpFailure, 
-    httpGateway
+    httpGateway,
+    httpPointer
 }

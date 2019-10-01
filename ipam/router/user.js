@@ -146,9 +146,10 @@ router.get('/users/my/networks', auth, async(req, res) => {
         const user = await User.findById(req.user.id)
         // create a virtual between local _id and author
         await user.populate({path:'network', options}).execPopulate()
-        user.network.forEach(network => {
-            network.updateNumHosts(network._id)
-        })
+        // TODO NEED TO EVAL PERFORMANCE
+        // user.network.forEach(network => {
+        //     network.updateNumHosts(network._id)
+        // })
         res.status(200).send(user.network)
     } catch (e) {
         res.status(500).send({error: e.message})

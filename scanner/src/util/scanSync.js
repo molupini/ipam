@@ -1,6 +1,6 @@
 // CUSTOM MODULES
-const { doPingCheck, doTcpCheck } = require('./network')
-const { httpFetch, httpFailure, httpSuccess, httpGateway } = require('./http')
+const { doPingCheck, doTcpCheck, doDNSCheck } = require('./network')
+const { httpFetch, httpFailure, httpSuccess, httpGateway, httpPointer } = require('./http')
 const { logger } = require('../util/log')
 const moment = require('moment')
 
@@ -14,7 +14,7 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
         // NETWORK LOOP
         var networkLoop = async function (addresses){
             for (i = 0; i < addresses.length; i++) {
-                if(addresses[i].gatewayAvailable){
+                if(addresses[i].gatewayAvailable && addresses[i].noDNSPointer){
                     // PING FUNCTION 
                     doPingCheck(addresses[i])
                     .then((result) => {
@@ -73,6 +73,38 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
             // logger.log('info',`${moment()} scanSync completed`)
         }
 
+        // POINTER FOUND
+        var hostNameLoop = async function (addresses){
+            // console.log('hostNameLoop =')
+            // console.log(addresses)
+            try {
+                for(x = 0; x < addresses.length; x++){
+                    const addr = addresses[x]
+                    // debugging
+                    // console.log('hostNameLoop =')
+                    // console.log(addr)
+                    // console.log('baseUrl =')
+                    // console.log(baseUrl)
+                    httpFetch(baseUrl, '/networks', true, `/${addr.author}`, 'GET', jwt).then((result) => {
+                        if(result.body){
+                            doDNSCheck(addr.address, result.body.dnsServers).then((dnsResult) => {
+                                // debugging
+                                console.log('dnsResult =')
+                                console.log(dnsResult)
+                                httpPointer(false, baseUrl, false, addr._id, jwt)
+                            }).catch((dnsError) => {
+                                // debugging
+                                // console.log('dnsError =')
+                                httpPointer(false, baseUrl, true, addr._id, jwt)
+                            })
+                        }
+                    })
+                }
+            } catch (e) {
+                throw new Error(e)  
+            }
+        }
+
         // GATEWAY AVAILABLE 
         var gatewayLoop = async function (addresses){
             var networks = []
@@ -112,6 +144,7 @@ var scanSync = async function (baseUrl, path, query, jwt, ports){
 
         // IMPORTANT TO AWAIT FOR LOOP TO FINISH
         await gatewayLoop(body)
+        await hostNameLoop(body)
         await networkLoop(body)
     } catch (e) {
         throw new Error(e)

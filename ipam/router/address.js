@@ -137,6 +137,26 @@ router.patch('/addresses/network/:id/gateway', auth, async (req, res) => {
     }
 })
 
+// used by scanner 
+router.patch('/addresses/network/:id/pointer', auth, async (req, res) => {
+    try {
+        var address = null
+        if(req.query.available){
+            address = await Address.findByIdAndUpdate({
+                _id: req.params.id
+            },{
+                noDNSPointer: req.query.available === 'true'
+            })
+        }
+        if (!address) {
+            return res.status(404).send({message:'Not Found'})
+        }
+        return res.status(201).send({message: `Pointer found, ${address.noDNSPointer}`})
+    }catch(e){
+        res.status(500).send({error: e.message})
+    }
+})
+
 // patch address by id, available=true or false, check-in / check-out address
 // used by scanner to patch specific attributes within query string. 
 // No req.body parameters will be parsed
@@ -227,6 +247,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         // limit amount provided by env variable
         match.isAvailable = true
         match.gatewayAvailable = true
+        match.noDNSPointer = true
         match.owner = null
         options.sort = {
             'updatedAt': -1

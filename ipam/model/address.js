@@ -30,6 +30,10 @@ const addressSchema = new mongoose.Schema({
         type: Boolean, 
         default: true
     },
+    noDNSPointer: {
+        type: Boolean, 
+        default: true
+    },
     count: {
         type: Number,
         default: 0
