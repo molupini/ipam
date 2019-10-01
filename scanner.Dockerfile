@@ -1,5 +1,5 @@
 # # base
-FROM node:10-alpine as base 
+FROM node:12-alpine as base 
 
 ARG CREATED_DATE=not-set
 ARG SOURCE_COMMIT=not-set
