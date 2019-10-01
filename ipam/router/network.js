@@ -83,8 +83,9 @@ router.get('/networks/:id', auth, async (req, res) => {
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
-        // TODO SLOW QUERY RESULTING IN TIMEOUTS 
-        // await network.updateNumHosts(network._id)
+        if (req.query.count === 'true') {
+            network.updateNumHosts(network._id)
+        }
         if (req.query.populate === 'true') {
             if(req.query.document === 'cidr'){
                 const cidr = await Cidr.find({

@@ -222,49 +222,73 @@ router.get('/addresses/checkout', auth, async (req, res) => {
     try {
         const match = {}
         const options = {}
+        // HARD CODED OPTIONS 
         // hard-coded options, only available address that have no owner allocated,
         // limit amount provided by env variable
         match.isAvailable = true
         match.gatewayAvailable = true
         match.owner = null
-        options.limit = parseInt(req.user.maxAmount)
         options.sort = {
             'updatedAt': -1
         }
-        // two possible options
+        
+        // TWO QUERY OPTIONS
         // query by network 
         if (req.query.network) {
-            if (!req.query.network.match(/^[0-9]{1,3}(\.[0-9]{1,3}|\.){1,2}\.0$/)) {
-                return res.status(400).send({message:'Please provide a valid network'})
+            const network = await Network.findOne({
+                networkAddress: req.query.network
+            })
+            if (!network) {
+                return res.status(404).send({message:'Network Not Found'})
             }
-            match.address = new RegExp(`^${req.query.network.replace(/0$/,'')}`)
+            match.author = network._id
         }
         // query by author
         else if (req.query.author) {
-            match.author = req.query.author
+            const network = await Network.findOne({
+                _id: req.query.author
+            })
+            if (!network) {
+                return res.status(404).send({message:'Author Not Found'})
+            }
+            match.author = network._id
         }
         else { 
-            return res.status(400).send({message:'Please provide a valid network address or author'})
+            return res.status(400).send({message:'Author or Network Required'})
         }
+
+        // CLOUD ADDRESSES
         if (!req.query.cloudHosted === 'true') {
             match.cloudHosted = true
         }else {
             match.cloudHosted = false
         }
+
+        // LIMITS 
+        if (parseInt(req.query.limit) > req.user.maxAmount) { 
+            options.limit = req.user.maxAmount
+        } 
+        else if (parseInt(req.query.limit) < req.user.maxAmount){
+            options.limit = parseInt(req.query.limit)
+        }
+        else{
+            options.limit = 1
+        }
+
+        // TRY GET THE ADDRESSES SPECIFIED WITHIN LIMITS ABOVE 
         var address = null
         try {
             address = await Address.find(match, null, options)    
         } catch (e) {
-            logger.log('info', 'Network address limit reached, check scope')
-            // changing limit to 1 if address range is less then limit
             options.limit = 1
             address = await Address.find(match, null, options)
         }
-        // 404 if null or array length zero
+        // 404 IF NULL OR ARRAY ZERO
         if (!address || address.length === 0) {
-            return res.status(404).send({message:'Not Found'})
+            return res.status(404).send({message:'No free addresses'})
         }
-        // ping/array of addresses function 
+
+        // PING ARRAY FUNC
         const pingLoop = async () => {
             let array = []
             for (i = 0; i < address.length; i++) {
@@ -280,6 +304,8 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         }
         // awaiting ping
         const test = await pingLoop()
+
+        // UPDATE DOCUMENT 
         const update = await Address.findById(test[0])
         if (update) {
             update.isAvailable = false
@@ -294,6 +320,8 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         }
         await update.save()
         // create a virtual between local _id and author aka network 
+
+        // RETURN POPULATED OR NOT
         if (req.query.populate === 'true') {
             await update.populate({
                 path: 'network'

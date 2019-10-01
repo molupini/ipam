@@ -108,8 +108,7 @@ networkSchema.methods.updateNumHosts = async function (id) {
         author: id,
         isInitialized: true,
         isAvailable: false,
-        owner: null, 
-        cloudHosted: false
+        owner: null
     })
     network.numHosts = amount
     await network.save()
@@ -201,13 +200,13 @@ networkSchema.pre('save', async function (next) {
     next()
 })
 
-// TODO, # SEE POST SAVE, CONTINUED #
 networkSchema.post('save', async function (doc, next) {
     try {
         const network = doc
         if (!network.isNew && network.networkConfirmed === true) {
             const cidrSubnet = `${network.networkAddress}/${network.subnetMaskLength}`
-            // TODO PERFORMANCE CONSIDERATION RATHER PERFORM INSERT WITH IP SCOPE FUNCTION AS YOU ARE ITERATING AGAIN ONCE YOU HAVE THE OBJECT RETURNED
+            // TODO PERFORMANCE CONSIDERATION RATHER PERFORM INSERT WITH CIDR UPDATES OF ALL ADDRESSES
+            // THEN WITHIN IP SCOPE FUNCTION DELETE DOCUMENTS THAT MEET CIDR REGEX 
             const addresses = await ipScope(cidrSubnet, network.cidrExclusion, network.firstAddress, network.lastAddress, network.subnetMask)
             for (i = 0; i < addresses.length; i++) {
                 const ip = addresses[i].ip
