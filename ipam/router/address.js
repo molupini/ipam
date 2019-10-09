@@ -32,6 +32,9 @@ router.get('/addresses', auth, async (req, res) => {
         if (req.query.owner === 'null') {
             match.owner = null
         }
+        if (req.query.ptr === 'true') {
+            match.noDNSPointer = false
+        }
         if (!req.query.cloudHosted === 'true') {
             match.cloudHosted = true
         }else {
