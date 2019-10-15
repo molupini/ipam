@@ -81,8 +81,9 @@ cidrSchema.pre('save', async function (next) {
             // console.log('re =')
             // console.log(re)
             cidr.regexPattern = reg
+            const r = new RegExp(reg)
             // debugging
-            // console.log(cidr)
+            console.log(r)
         }
     }
     next()

@@ -2,31 +2,64 @@
 const iprange = require('iprange')
 const ip = require('ip')
 const Cidr = require('../../model/cidr')
+const Address = require('../../model/address')
 
 // function
-const ipScope = async (cidrSubnet, cidrExclusion, firstAddress, lastAddress, subnetMask) => {
+// TODO CREATE SCOPE AND WITH EVERY EXCLUSION REMOVE DOCUMENTS THAT MATCH WHILE KEEPING THE REMAINING 
+const seedIpAddresses = async (network, build=false) => {
+    const cidrSubnet = `${network.networkAddress}/${network.subnetMaskLength}`
+    const range = await iprange(cidrSubnet)
+    if(range){
+        for (a = 0; a < range.length; a++) {
+            if(network.lastAddress === range[a]){
+                network.loadingAddress = false
+                await network.save()
+            }
+            if(range[a] === network.networkAddress || range[a] === network.firstAddress || range[a] === network.lastAddress || range[a] === network.broadcastAddress || range[a] === network.defaultGateway){
+                continue
+            } 
+            else {
+                if(build){
+                    addr = await new Address({
+                        address: range[a],
+                        author: network.id,
+                        cloudHosted: network.cloudHosted
+                    })
+                    await addr.save()     
+                }
+                else {
+                    var addr = await Address.findOne({
+                        address: range[a]
+                    })
+                    if(!addr){
+                        addr = await new Address({
+                            address: range[a],
+                            author: network.id,
+                            cloudHosted: network.cloudHosted
+                        })
+                        await addr.save()       
+                    }
+                }
+            }
+            
+        }
+    }
+}
+
+const scopeExclusionCheck = async (network) => {
     
-    // TODO TESTING BELOW RANGE BUILDER, # 
-    // const range = await iprange(cidrSubnet)
-    
-    // # RANGE BUILDER
-    const range = rangeBuilder(firstAddress, lastAddress, subnetMask)
-    // debugging
-    // console.log('range =')
-    // console.log(range)
-    var addressesArray = []
     var cidr = null
     var re = null 
     // debugging
-    // console.log('network =')
-    // console.log(network)
+    console.log('network =')
+    console.log(network)
     
     // ITERATE OVER EXCLUSIONS
-    for (i = 0; i < cidrExclusion.length; i++) {
-        const exclusion = cidrExclusion[i]
+    for (i = 0; i < network.cidrExclusion.length; i++) {
+        const exclusion = network.cidrExclusion[i]
         // debugging
-        // console.log('exclusion =')
-        // console.log(exclusion)
+        console.log('exclusion =')
+        console.log(exclusion)
 
         // BUILD EXCLUSION FROM TO RANGE REGEX
         if(exclusion.match(/(\-)/)){
@@ -39,29 +72,75 @@ const ipScope = async (cidrSubnet, cidrExclusion, firstAddress, lastAddress, sub
             // provide regex
             re = new RegExp(cidr.regexPattern)
             // debugging
-            // console.log('re =')
-            // console.log(re)
-        }
-        for (x = 0; x < range.length; x++) {
-            const address = range[x]
-            // console.log(address)
-            
-            // EXCLUSION IS SHORT HAND NOTATION 
-            if(exclusion !== undefined && exclusion.match(/(\/)/)){
-                const isExcluded = ip.cidrSubnet(exclusion).contains(address)
-                if (!isExcluded) {
-                    addressesArray.push({ip: address})
-                }
-            }
-            // EXCLUSION IS LONG HAND NOTATION, FROM TO RANGE
-            else if (exclusion !== undefined && exclusion.match(/(\-)/)){
-                if (!address.match(re)){
-                    addressesArray.push({ip: address})
-                }
+            console.log('re =')
+            console.log(re)
+            const removed = await Address.deleteMany({"address": {$regex: re}})
+            // debugging
+            console.log('removed =')
+            console.log(removed)
+            if(network.cidrExclusion.length === i){
+                network.loadingExclusion === false
             }
         }
+        // for (x = 0; x < range.length; x++) {
+        //     const address = range[x]
+        //     var isExcluded = false
+        //     // console.log(address)
+        //     if (address === firstAddress || address === lastAddress || address === subnetMask || address === broadcast || address === gateway) {
+        //         continue
+        //     } else {
+        //         // EXCLUSION IS SHORT HAND NOTATION 
+        //         if(exclusion !== undefined){
+        //             if(exclusion.match(/(\/)/)){
+        //                 isExcluded = ip.cidrSubnet(exclusion).contains(address)
+        //                 // debugging
+        //                 // console.log('exclusion / =')
+        //                 // isExcluded = isExcluded === true ? false : true
+        //                 // if (!isExcluded) {
+        //                 //     // addressesArray.push({ip: address})
+        //                 // }
+        //             }
+        //             // EXCLUSION IS LONG HAND NOTATION, FROM TO RANGE
+        //             else if (exclusion.match(/(\-)/)){
+        //                 // debugging
+        //                 // console.log('exclusion - =')
+        //                 isExcluded = address.match(re) === null ? false : true
+                        
+        //                 // if (!address.match(re)){
+        //                 //     // addressesArray.push({ip: address})
+        //                 // }
+        //             }
+        //             // debugging
+
+        //             console.log('address =')
+        //             console.log(address)
+        //             console.log('isExcluded =')
+        //             console.log(isExcluded)
+        //             // ADDRESS
+        //             // var addr = null
+        //             // if(!isExcluded){
+        //             //     addr = Address.findOne({
+        //             //         address: address
+        //             //     })
+        //             //     if(!addr){
+        //             //         addr = new Address({
+        //             //             address: address,
+        //             //             author: id,
+        //             //             cloudHosted: hosted
+        //             //         })
+        //             //         addr.save()
+        //             //     }
+        //             //     // debugging
+        //             //     console.log('addr =')
+        //             //     console.log(addr)
+        //             // }
+        //         }
+        //     }
+
+        // }
+        
     }
-    return addressesArray
+    return null
 }
 
 const ipVaild = (cidr, address) => {
@@ -130,8 +209,10 @@ const rangeBuilder = (start, end, mask) => {
 }
 
 module.exports = {
-    ipScope,
+    scopeExclusionCheck,
     ipVaild,
     rangeBuilder,
-    ipV4
+    ipV4,
+    seedIpAddresses, 
+    
 }

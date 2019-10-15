@@ -98,6 +98,72 @@ services:
         restart_policy:
           condition: on-failure
 
+    ipam-scanner-prd:
+      image: mauriziolupini/ipam-scanner:prod
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "5m"
+          max-file: "3"
+      networks:
+        - ipam-network
+      environment:
+        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
+        EXPRESS_URL: 'http://ipam-express:3000'
+        NETWORK_ADDRESS: '10.83.0.0'
+        NODE_ENV: 'development'
+      deploy:
+        replicas: 1
+        update_config:
+          parallelism: 2
+          delay: 10s
+        restart_policy:
+          condition: on-failure
+
+    ipam-scanner-nprd:
+      image: mauriziolupini/ipam-scanner:prod
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "5m"
+          max-file: "3"
+      networks:
+        - ipam-network
+      environment:
+        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
+        EXPRESS_URL: 'http://ipam-express:3000'
+        NETWORK_ADDRESS: '10.84.0.0'
+        NODE_ENV: 'development'
+      deploy:
+        replicas: 1
+        update_config:
+          parallelism: 2
+          delay: 10s
+        restart_policy:
+          condition: on-failure
+
+    ipam-scanner-poc:
+      image: mauriziolupini/ipam-scanner:prod
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "5m"
+          max-file: "3"
+      networks:
+        - ipam-network
+      environment:
+        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
+        EXPRESS_URL: 'http://ipam-express:3000'
+        NETWORK_ADDRESS: '10.86.16.0'
+        NODE_ENV: 'development'
+      deploy:
+        replicas: 1
+        update_config:
+          parallelism: 2
+          delay: 10s
+        restart_policy:
+          condition: on-failure
+
 networks:
   ipam-network:
     driver: overlay
@@ -105,4 +171,3 @@ networks:
 secrets:
   mongodb-password:
     external: true
-

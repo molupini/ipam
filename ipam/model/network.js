@@ -1,9 +1,10 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
 const ip = require('ip')
+const iprange = require('iprange')
 const Address = require('../model/address')
 const Cidr = require('../model/cidr')
-const { ipScope, rangeBuilder } = require('../src/util/range')
+const { scopeExclusionCheck, seedIpAddresses } = require('../src/util/range')
 
 const networkSchema = new mongoose.Schema({
     networkAddress: {
@@ -70,6 +71,14 @@ const networkSchema = new mongoose.Schema({
         default: false
     },
     cloudHosted: {
+        type: Boolean,
+        default: false
+    },
+    loadingAddress: {
+        type: Boolean,
+        default: false
+    },
+    loadingExclusion: {
         type: Boolean,
         default: false
     },
@@ -174,7 +183,7 @@ networkSchema.pre('save', async function (next) {
             }
         })
 
-        // REMOVE WHEN CHANGES FOUND
+        // REMOVE WHEN CHANGES FOUND IN CIDR EXCLUSIONS 
         if(network.networkConfirmed === true){
             await Address.deleteMany({
                 author: network._id,
@@ -182,7 +191,11 @@ networkSchema.pre('save', async function (next) {
             })
 
             network.networkConfirmed = false
+            network.loadingAddress = true
         }
+    }
+    if(!network.isNew && network.loadingAddress === false && network.networkConfirmed === true){
+        network.loadingExclusion = true
     }
     // create network
     // networkAddress can not be modified by user
@@ -194,8 +207,18 @@ networkSchema.pre('save', async function (next) {
         network.subnetMaskLength = subnet.subnetMaskLength
         network.numHosts = subnet.numHosts
         network.defaultGateway = subnet.firstAddress
-        network.cidrExclusion.push(`${subnet.networkAddress}/27`)
-        network.cidrExclusion.push(`${subnet.broadcastAddress}/30`)
+        var first = subnet.firstAddress 
+        firstNum = parseInt(first.split('.')[3])+1
+        var last = subnet.firstAddress
+        lastNum = parseInt(last.split('.')[3])+4
+        network.cidrExclusion.push(`${first.replace(/\d{1,3}$/, firstNum)}-${last.replace(/\d{1,3}$/, lastNum)}`)
+        const cidrModel = new Cidr({
+            author: network.id, 
+            owner: network.author,
+            fromToRange: network.cidrExclusion[0]
+        })
+        cidrModel.save()
+        network.loadingAddress = true
     }
     next()
 })
@@ -203,31 +226,41 @@ networkSchema.pre('save', async function (next) {
 networkSchema.post('save', async function (doc, next) {
     try {
         const network = doc
-        if (!network.isNew && network.networkConfirmed === true) {
-            const cidrSubnet = `${network.networkAddress}/${network.subnetMaskLength}`
+        // const cidrSubnet = `${network.networkAddress}/${network.subnetMaskLength}`
+        if (network.loadingAddress === true){
+            // debugging
+            // console.log('network isNew =')
+            // console.log(network.isNew)
+            seedIpAddresses(network, true)
+        }
+
+        // TODO network.isModified('networkConfirmed') isn't taking effect
+        // console.log('networkConfirmed =')
+        // console.log(network.isModified('networkConfirmed'))
+        if (network.loadingExclusion === true && network.networkConfirmed === true) {
             // TODO PERFORMANCE CONSIDERATION RATHER PERFORM INSERT WITH CIDR UPDATES OF ALL ADDRESSES
             // THEN WITHIN IP SCOPE FUNCTION DELETE DOCUMENTS THAT MEET CIDR REGEX 
-            const addresses = await ipScope(cidrSubnet, network.cidrExclusion, network.firstAddress, network.lastAddress, network.subnetMask)
-            for (i = 0; i < addresses.length; i++) {
-                const ip = addresses[i].ip
-                if (ip === network.networkAddress || ip === network.firstAddress || ip === network.lastAddress || ip === network.broadcastAddress || ip === network.defaultGateway) {
-                    continue
-                }
-                else {
-                    // match found and skipped
-                    const address = await Address.findOne({
-                        address: ip
-                    })
-                    if(!address){
-                        const address = await new Address({
-                            address: ip,
-                            author: network._id,
-                            cloudHosted: network.cloudHosted
-                        })
-                        await address.save()
-                    }
-                }
-            }
+            scopeExclusionCheck(network)
+            // for (i = 0; i < addresses.length; i++) {
+            //     const ip = addresses[i].ip
+            //     if (ip === network.networkAddress || ip === network.firstAddress || ip === network.lastAddress || ip === network.broadcastAddress || ip === network.defaultGateway) {
+            //         continue
+            //     }
+            //     else {
+            //         // match found and skipped
+            //         const address = await Address.findOne({
+            //             address: ip
+            //         })
+            //         if(!address){
+            //             const address = await new Address({
+            //                 address: ip,
+            //                 author: network._id,
+            //                 cloudHosted: network.cloudHosted
+            //             })
+            //             await address.save()
+            //         }
+            //     }
+            // }
         }
         next()
     } 

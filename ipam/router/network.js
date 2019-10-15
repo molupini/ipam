@@ -33,11 +33,14 @@ router.get('/networks/:id/confirm', auth, async (req, res) => {
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
+        if (network.loadingAddress) {
+            return res.status(404).send({message:'Loading Addresses'})
+        }
         if (network.networkConfirmed) {
             return res.status(406).send({message:'Network confirmed'})
         }
         network.networkConfirmed = true
-        network.save()
+        await network.save()
         res.status(202).send()
     } catch (e) {
         res.status(500).send({error: e.message})
@@ -83,6 +86,9 @@ router.get('/networks/:id', auth, async (req, res) => {
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
+        if (network.loadingAddress) {
+            return res.status(404).send({message:'Loading Addresses'})
+        }
         if (req.query.count === 'true') {
             network.updateNumHosts(network._id)
         }
@@ -126,6 +132,9 @@ router.patch('/networks/:id', auth, async (req, res) => {
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
+        if (network.loadingAddress) {
+            return res.status(404).send({message:'Loading Addresses'})
+        }
         if(!req.user.userRoot){
             if (network.author !== null && network.author.toString() !== req.user.id.toString()) {
                 return res.status(403).send({message:'Forbidden'})
@@ -148,6 +157,9 @@ router.delete('/networks/:id', auth, async (req, res) => {
         const network = await Network.findById(req.params.id)
         if (!network) {
             return res.status(404).send({message:'Not Found'})
+        }
+        if (network.loadingAddress) {
+            return res.status(404).send({message:'Loading Addresses'})
         }
         if(!req.user.userRoot){
             if (network.author.toString() !== req.user.id.toString()) {
