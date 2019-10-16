@@ -68,12 +68,29 @@ router.get('/addresses/init', auth, async (req, res) => {
     try {
         const options = {}
         const sort = {}
-        if(req.query.count === 'true'){
-            const count = await Address.countDocuments({
-                isInitialized: false, 
-                gatewayAvailable: true,
-                cloudHosted: false
+        var network = null
+        if (req.query.network){
+            network = await Network.findOne({
+                networkAddress: req.query.network
             })
+        }
+        if(req.query.count === 'true'){
+            var count = 0
+            if(network){
+                count = await Address.countDocuments({
+                    isInitialized: false, 
+                    gatewayAvailable: true,
+                    cloudHosted: false,
+                    author: network._id
+                })
+            } 
+            else {
+                count = await Address.countDocuments({
+                    isInitialized: false, 
+                    gatewayAvailable: true,
+                    cloudHosted: false
+                })
+            }
             return res.status(200).send({message:count})
         }
         if (req.query.limit) { 
@@ -89,12 +106,21 @@ router.get('/addresses/init', auth, async (req, res) => {
             sort[parts[0]] = parts[1] === 'desc' ? -1 : 1 
             options.sort = sort
         }
-        const address = await Address.find({
-            isInitialized: false, 
-            gatewayAvailable: true,
-            cloudHosted: false
-        }, null, options)
-
+        if (network){
+            var address = await Address.find({
+                isInitialized: false, 
+                gatewayAvailable: true,
+                cloudHosted: false,
+                author: network._id
+            }, null, options)
+        } 
+        else {
+            var address = await Address.find({
+                isInitialized: false, 
+                gatewayAvailable: true,
+                cloudHosted: false
+            }, null, options)
+        }
         if(!address){
             return res.status(204).send({message:'No Content'})
         }

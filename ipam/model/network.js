@@ -111,16 +111,22 @@ networkSchema.methods.toJSON = function () {
     return networkObject
 }
 
-networkSchema.methods.updateNumHosts = async function (id) {
-    const network = this
-    const amount = await Address.countDocuments({
-        author: id,
-        isInitialized: true,
-        isAvailable: false,
-        owner: null
-    })
-    network.numHosts = amount
-    await network.save()
+networkSchema.methods.updateNumHosts = async function (id, free=true) {
+    var amount = 0
+    if(free === 'true'){
+        amount = await Address.countDocuments({
+            author: id,
+            isInitialized: true,
+            isAvailable: true,
+            owner: null
+        })
+    } else if (free === 'false') {
+        amount = await Address.countDocuments({
+            author: id
+        })
+    }
+
+    return amount
 }
 
 // pre Save
@@ -159,6 +165,15 @@ networkSchema.pre('save', async function (next) {
                 if(!test){
                     throw new Error('Invalid exclusion')
                 }
+                const pattern = `${ip.cidrSubnet(cidr).firstAddress}-${ip.cidrSubnet(cidr).lastAddress}`
+                const cidrModel = new Cidr({
+                    author: network.id, 
+                    owner: network.author,
+                    fromToRange: pattern
+                })
+                cidrModel.save()
+                // debugging
+                // console.log(cidrModel)
             }
             // IF INCLUDES DASH CIDR NOTATION 
             if(cidr.match(/(\-)/)){
@@ -241,6 +256,11 @@ networkSchema.post('save', async function (doc, next) {
             // TODO PERFORMANCE CONSIDERATION RATHER PERFORM INSERT WITH CIDR UPDATES OF ALL ADDRESSES
             // THEN WITHIN IP SCOPE FUNCTION DELETE DOCUMENTS THAT MEET CIDR REGEX 
             scopeExclusionCheck(network)
+            const update = await Network.findByIdAndUpdate({
+                _id: network.id
+            }, {
+                loadingExclusion: false
+            })
             // for (i = 0; i < addresses.length; i++) {
             //     const ip = addresses[i].ip
             //     if (ip === network.networkAddress || ip === network.firstAddress || ip === network.lastAddress || ip === network.broadcastAddress || ip === network.defaultGateway) {

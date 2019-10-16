@@ -25,7 +25,13 @@ var run = async function (baseUrl, path, query, jwt, conf){
             // STARTING
             // await logger.log('info', `${moment()} mode scanSynchronous=${conf.scanSynchronous}`)
             // QUERY IF ANY INIT ADDRESSES
-            addresses = await httpFetch(baseUrl, '/addresses/init?count=true', true, '', 'GET', jwt)
+            var initQuery = '/addresses/init?count=true'
+            if (networkAddress !== 'all'){
+                initQuery = `/addresses/init?count=true&network=${networkAddress}`
+                // debugging
+                logger.log('info',`${moment()} --- initQuery ${initQuery} ---`)
+            } 
+            addresses = await httpFetch(baseUrl, initQuery, true, '', 'GET', jwt)
 
             // IF OBJECTS TO INITIATION, UPDATE QUERY STRING
             // ELSE IF WEEKDAY INTERVAL 'FULL SCAN' OMIT OWNER AND AVAILABLE, ADJUST QUERY STRING, SET EVENT FIRED TO TRUE
@@ -33,6 +39,9 @@ var run = async function (baseUrl, path, query, jwt, conf){
             if(addresses.body.message > 0){
                 // await logger.log('info', `${moment()} --- init count, ${addresses.body.message} ---`)
                 innerQuery = `/init?sort=updatedAt:acs`
+                if (networkAddress !== 'all'){
+                    innerQuery = `/init?network=${networkAddress}&sort=updatedAt:acs`
+                } 
                 init = true
             } 
             if(!init && moment().isoWeekday() === conf.weekdayInterval && !conf.eventFired){

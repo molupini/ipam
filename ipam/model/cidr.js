@@ -18,7 +18,7 @@ const cidrSchema = new mongoose.Schema({
         required: true,
         default: null,
         trim: true,
-        unique: true,
+        // unique: true,
         index: true
     }, 
     regexPattern: {
@@ -29,6 +29,8 @@ const cidrSchema = new mongoose.Schema({
     }
 }, {
 })
+
+cidrSchema.index({author: 1, fromToRange: 1}, {unique: true})
 
 // toJSON
 cidrSchema.methods.toJSON = function () {
@@ -81,9 +83,9 @@ cidrSchema.pre('save', async function (next) {
             // console.log('re =')
             // console.log(re)
             cidr.regexPattern = reg
-            const r = new RegExp(reg)
+            // const r = new RegExp(reg)
             // debugging
-            console.log(r)
+            // console.log(r)
         }
     }
     next()

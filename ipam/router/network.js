@@ -89,8 +89,9 @@ router.get('/networks/:id', auth, async (req, res) => {
         if (network.loadingAddress) {
             return res.status(404).send({message:'Loading Addresses'})
         }
-        if (req.query.count === 'true') {
-            network.updateNumHosts(network._id)
+        if (req.query.count) {
+            const num = await network.updateNumHosts(network._id, req.query.count)
+            network.numHosts = num
         }
         if (req.query.populate === 'true') {
             if(req.query.document === 'cidr'){

@@ -1,11 +1,10 @@
-// modules 
 const iprange = require('iprange')
 const ip = require('ip')
 const Cidr = require('../../model/cidr')
 const Address = require('../../model/address')
+const Network = require('../../model/network')
 
-// function
-// TODO CREATE SCOPE AND WITH EVERY EXCLUSION REMOVE DOCUMENTS THAT MATCH WHILE KEEPING THE REMAINING 
+// CREATE SCOPE AND WITH EVERY EXCLUSION REMOVE DOCUMENTS THAT MATCH WHILE KEEPING THE REMAINING 
 const seedIpAddresses = async (network, build=false) => {
     const cidrSubnet = `${network.networkAddress}/${network.subnetMaskLength}`
     const range = await iprange(cidrSubnet)
@@ -51,20 +50,23 @@ const scopeExclusionCheck = async (network) => {
     var cidr = null
     var re = null 
     // debugging
-    console.log('network =')
-    console.log(network)
+    // console.log('network =')
+    // console.log(network)
     
     // ITERATE OVER EXCLUSIONS
     for (i = 0; i < network.cidrExclusion.length; i++) {
-        const exclusion = network.cidrExclusion[i]
+        var exclusion = network.cidrExclusion[i]
         // debugging
-        console.log('exclusion =')
-        console.log(exclusion)
-
+        // console.log('exclusion =')
+        // console.log(exclusion)
+        if(exclusion.match(/(\/)/)){
+            exclusion = `${ip.cidrSubnet(exclusion).firstAddress}-${ip.cidrSubnet(exclusion).lastAddress}`
+        }
         // BUILD EXCLUSION FROM TO RANGE REGEX
         if(exclusion.match(/(\-)/)){
             cidr = await Cidr.findOne({
-                fromToRange: exclusion
+                fromToRange: exclusion,
+                author: network._id
             })
             if(!cidr){
                 throw new Error('Cidr not Found')
@@ -72,71 +74,16 @@ const scopeExclusionCheck = async (network) => {
             // provide regex
             re = new RegExp(cidr.regexPattern)
             // debugging
-            console.log('re =')
-            console.log(re)
+            // console.log('re =')
+            // console.log(re)
             const removed = await Address.deleteMany({"address": {$regex: re}})
             // debugging
-            console.log('removed =')
-            console.log(removed)
-            if(network.cidrExclusion.length === i){
-                network.loadingExclusion === false
-            }
+            // console.log('removed =')
+            // console.log(removed)
         }
-        // for (x = 0; x < range.length; x++) {
-        //     const address = range[x]
-        //     var isExcluded = false
-        //     // console.log(address)
-        //     if (address === firstAddress || address === lastAddress || address === subnetMask || address === broadcast || address === gateway) {
-        //         continue
-        //     } else {
-        //         // EXCLUSION IS SHORT HAND NOTATION 
-        //         if(exclusion !== undefined){
-        //             if(exclusion.match(/(\/)/)){
-        //                 isExcluded = ip.cidrSubnet(exclusion).contains(address)
-        //                 // debugging
-        //                 // console.log('exclusion / =')
-        //                 // isExcluded = isExcluded === true ? false : true
-        //                 // if (!isExcluded) {
-        //                 //     // addressesArray.push({ip: address})
-        //                 // }
-        //             }
-        //             // EXCLUSION IS LONG HAND NOTATION, FROM TO RANGE
-        //             else if (exclusion.match(/(\-)/)){
-        //                 // debugging
-        //                 // console.log('exclusion - =')
-        //                 isExcluded = address.match(re) === null ? false : true
-                        
-        //                 // if (!address.match(re)){
-        //                 //     // addressesArray.push({ip: address})
-        //                 // }
-        //             }
-        //             // debugging
-
-        //             console.log('address =')
-        //             console.log(address)
-        //             console.log('isExcluded =')
-        //             console.log(isExcluded)
-        //             // ADDRESS
-        //             // var addr = null
-        //             // if(!isExcluded){
-        //             //     addr = Address.findOne({
-        //             //         address: address
-        //             //     })
-        //             //     if(!addr){
-        //             //         addr = new Address({
-        //             //             address: address,
-        //             //             author: id,
-        //             //             cloudHosted: hosted
-        //             //         })
-        //             //         addr.save()
-        //             //     }
-        //             //     // debugging
-        //             //     console.log('addr =')
-        //             //     console.log(addr)
-        //             // }
-        //         }
-        //     }
-
+        // EXCLUSION IS SHORT HAND NOTATION 
+        // if(exclusion.match(/(\/)/)){
+        //     isExcluded = ip.cidrSubnet(exclusion).
         // }
         
     }
