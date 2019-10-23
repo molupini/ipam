@@ -33,7 +33,7 @@ router.get('/networks/:id/confirm', auth, async (req, res) => {
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
-        if (network.loadingAddress) {
+        if (network.loadingAddress || network.loadingExclusion) {
             return res.status(404).send({message:'Loading Addresses'})
         }
         if (network.networkConfirmed) {
@@ -63,6 +63,14 @@ router.get('/networks', auth, async (req, res) => {
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
+        // TODO TESTING 
+        // count free and total addresses within network
+        // if (req.query.count) {
+        //     for (i = 0; i < network.length; i++){
+        //         const num = await Network.updateNumHosts(network[i]._id, req.query.count)
+        //         network[i].numHosts = num
+        //     }
+        // }
         res.status(200).send(network)
     } catch (e) {
         res.status(500).send({error: e.message})
@@ -86,7 +94,7 @@ router.get('/networks/:id', auth, async (req, res) => {
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
-        if (network.loadingAddress) {
+        if (network.loadingAddress || network.loadingExclusion) {
             return res.status(404).send({message:'Loading Addresses'})
         }
         if (req.query.count) {
@@ -133,7 +141,7 @@ router.patch('/networks/:id', auth, async (req, res) => {
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
-        if (network.loadingAddress) {
+        if (network.loadingAddress || network.loadingExclusion) {
             return res.status(404).send({message:'Loading Addresses'})
         }
         if(!req.user.userRoot){
@@ -159,9 +167,9 @@ router.delete('/networks/:id', auth, async (req, res) => {
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
-        if (network.loadingAddress) {
-            return res.status(404).send({message:'Loading Addresses'})
-        }
+        // if (network.loadingAddress || network.loadingExclusion) {
+        //     return res.status(404).send({message:'Loading Addresses'})
+        // }
         if(!req.user.userRoot){
             if (network.author.toString() !== req.user.id.toString()) {
                 return res.status(403).send({message:'Forbidden'})

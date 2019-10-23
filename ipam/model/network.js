@@ -1,7 +1,8 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
+const moment = require('moment')
 const ip = require('ip')
-const iprange = require('iprange')
+// const iprange = require('iprange')
 const Address = require('../model/address')
 const Cidr = require('../model/cidr')
 const { scopeExclusionCheck, seedIpAddresses } = require('../src/util/range')
@@ -198,15 +199,24 @@ networkSchema.pre('save', async function (next) {
             }
         })
 
-        // REMOVE WHEN CHANGES FOUND IN CIDR EXCLUSIONS 
         if(network.networkConfirmed === true){
-            await Address.deleteMany({
-                author: network._id,
-                owner: null
-            })
+            // TODO PARAM CONFIGURATION BELOW WITHIN SCHEDULE CONFIG 
+            // REMOVE WHEN CHANGES FOUND IN CIDR EXCLUSIONS IF MOMENT LONGER THEN FEW HOURS 
+            // RESULT IN RE-LOADING OF ADDRESSES 
+            const dateNow = moment()
+            const dateExp = moment(network.createdAt)
+            const drift = dateExp.diff(dateNow, 'hours')
+            if(drift > 24){
+                await Address.deleteMany({
+                    author: network._id,
+                    owner: null
+                })
+                network.loadingAddress = true
+            }
 
+            // IF NETWORK IS NOT NEW, cidrExclusion IS MODIFIED AND NETWORK PREVIOUSLY CONFIRMED SET FALSE TO FORCE USER TO CONFIRMED ONCE MORE
+            // RESULT IN LOADING EXCLUSIONS
             network.networkConfirmed = false
-            network.loadingAddress = true
         }
     }
     if(!network.isNew && network.loadingAddress === false && network.networkConfirmed === true){
@@ -225,7 +235,7 @@ networkSchema.pre('save', async function (next) {
         var first = subnet.firstAddress 
         firstNum = parseInt(first.split('.')[3])+1
         var last = subnet.firstAddress
-        lastNum = parseInt(last.split('.')[3])+4
+        lastNum = parseInt(last.split('.')[3])+3
         network.cidrExclusion.push(`${first.replace(/\d{1,3}$/, firstNum)}-${last.replace(/\d{1,3}$/, lastNum)}`)
         const cidrModel = new Cidr({
             author: network.id, 

@@ -2,24 +2,32 @@ const iprange = require('iprange')
 const ip = require('ip')
 const Cidr = require('../../model/cidr')
 const Address = require('../../model/address')
-const Network = require('../../model/network')
+// const Network = require('../../model/network')
+const moment = require('moment')
+const { logger } = require('../../src/util/log')
 
 // CREATE SCOPE AND WITH EVERY EXCLUSION REMOVE DOCUMENTS THAT MATCH WHILE KEEPING THE REMAINING 
 const seedIpAddresses = async (network, build=false) => {
     const cidrSubnet = `${network.networkAddress}/${network.subnetMaskLength}`
     const range = await iprange(cidrSubnet)
+    const dateNow = moment()
+
     if(range){
         for (a = 0; a < range.length; a++) {
             if(network.lastAddress === range[a]){
                 network.loadingAddress = false
                 await network.save()
+                // debugging
+                const dateExp = moment(network.createdAt)
+                const drift = dateExp.diff(dateNow, 'minutes')
+                await logger.log('info', `${moment()} networkAddress ${network.networkAddress}, seed completed in ${drift} minutes`)
             }
-            if(range[a] === network.networkAddress || range[a] === network.firstAddress || range[a] === network.lastAddress || range[a] === network.broadcastAddress || range[a] === network.defaultGateway){
+            if(range[a] === network.networkAddress || range[a] === network.firstAddress || range[a] === network.lastAddress || range[a] === network.broadcastAddress || range[a] === network.defaultGateway || range[a].match(/\.255$/) || range[a].match(/\.0$/)){
                 continue
             } 
             else {
                 if(build){
-                    addr = await new Address({
+                    var addr = await new Address({
                         address: range[a],
                         author: network.id,
                         cloudHosted: network.cloudHosted
@@ -39,6 +47,9 @@ const seedIpAddresses = async (network, build=false) => {
                         await addr.save()       
                     }
                 }
+                // debugging
+                // console.log('seedIpAddresses =')
+                // console.log(addr.address)
             }
             
         }
@@ -80,6 +91,7 @@ const scopeExclusionCheck = async (network) => {
             // debugging
             // console.log('removed =')
             // console.log(removed)
+            await logger.log('info', `${moment()} range exclusion ${exclusion}, deleted ${removed.deletedCount}`)
         }
         // EXCLUSION IS SHORT HAND NOTATION 
         // if(exclusion.match(/(\/)/)){

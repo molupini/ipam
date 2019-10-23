@@ -33,9 +33,11 @@ var run = async function (baseUrl, path, query, jwt, conf){
             } 
             addresses = await httpFetch(baseUrl, initQuery, true, '', 'GET', jwt)
 
-            // IF OBJECTS TO INITIATION, UPDATE QUERY STRING
-            // ELSE IF WEEKDAY INTERVAL 'FULL SCAN' OMIT OWNER AND AVAILABLE, ADJUST QUERY STRING, SET EVENT FIRED TO TRUE
-            // ELSE IF NEXT DAY, SET EVENT FIRED TO FALSE
+            // 1. IF OBJECTS TO INITIATION, UPDATE QUERY STRING
+            // 2. ELSE IF WEEKDAY INTERVAL 'FULL SCAN' OMIT OWNER AND AVAILABLE, ADJUST QUERY STRING, SET EVENT FIRED TO TRUE
+            // 3. ELSE IF NEXT DAY, SET EVENT FIRED TO FALSE
+            
+            // 1. 
             if(addresses.body.message > 0){
                 // await logger.log('info', `${moment()} --- init count, ${addresses.body.message} ---`)
                 innerQuery = `/init?sort=updatedAt:acs`
@@ -44,6 +46,7 @@ var run = async function (baseUrl, path, query, jwt, conf){
                 } 
                 init = true
             } 
+            // 2.
             if(!init && moment().isoWeekday() === conf.weekdayInterval && !conf.eventFired){
                 // UPDATE QUERY
                 // innerQuery = `?sort=updatedAt:acs`
@@ -51,6 +54,7 @@ var run = async function (baseUrl, path, query, jwt, conf){
                 // UPDATE EVENT FIRED TO TRUE
                 await httpFetch(baseUrl, `/configs/schedules/event/${conf._id}`, true, '?event=true', 'PATCH', jwt)
             }
+            // 3.
             if (!init && ((conf.weekdayInterval - moment().isoWeekday()) === -1) && conf.eventFired){
                 // UPDATE EVENT FIRED TO FALSE
                 await logger.log('info', `${moment()} --- passed full scan interval ---`)

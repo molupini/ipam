@@ -24,6 +24,9 @@ router.get('/addresses', auth, async (req, res) => {
             if (!network) {
                 return res.status(404).send({message:'Network Not Found'})
             }
+            if (network.loadingAddress || network.loadingExclusion) {
+                return res.status(404).send({message:'Loading Addresses'})
+            }
             match.author = network._id
         }
         if (req.query.available) {
@@ -64,6 +67,7 @@ router.get('/addresses', auth, async (req, res) => {
 })
 
 // used by scanner 
+// TODO VERIFY COMMENTED OUT gatewayAvailable AS FOR INIT ISN'T VALID AS THE ADDRESS STILL WILL NEED TO BE SCANNED  
 router.get('/addresses/init', auth, async (req, res) => {
     try {
         const options = {}
@@ -74,12 +78,17 @@ router.get('/addresses/init', auth, async (req, res) => {
                 networkAddress: req.query.network
             })
         }
+
+        // COUNT PARAM
         if(req.query.count === 'true'){
             var count = 0
             if(network){
+                if (network.loadingAddress || network.loadingExclusion) {
+                    return res.status(404).send({message:'Loading Addresses'})
+                }
                 count = await Address.countDocuments({
                     isInitialized: false, 
-                    gatewayAvailable: true,
+                    // gatewayAvailable: true,
                     cloudHosted: false,
                     author: network._id
                 })
@@ -87,12 +96,14 @@ router.get('/addresses/init', auth, async (req, res) => {
             else {
                 count = await Address.countDocuments({
                     isInitialized: false, 
-                    gatewayAvailable: true,
+                    // gatewayAvailable: true,
                     cloudHosted: false
                 })
             }
             return res.status(200).send({message:count})
         }
+
+        // STANDARD QUERY 
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
         }else{
@@ -107,9 +118,12 @@ router.get('/addresses/init', auth, async (req, res) => {
             options.sort = sort
         }
         if (network){
+            if (network.loadingAddress || network.loadingExclusion) {
+                return res.status(404).send({message:'Loading Addresses'})
+            }
             var address = await Address.find({
                 isInitialized: false, 
-                gatewayAvailable: true,
+                // gatewayAvailable: true,
                 cloudHosted: false,
                 author: network._id
             }, null, options)
@@ -117,7 +131,7 @@ router.get('/addresses/init', auth, async (req, res) => {
         else {
             var address = await Address.find({
                 isInitialized: false, 
-                gatewayAvailable: true,
+                // gatewayAvailable: true,
                 cloudHosted: false
             }, null, options)
         }
@@ -277,6 +291,7 @@ router.get('/addresses/checkout', auth, async (req, res) => {
         match.isAvailable = true
         match.gatewayAvailable = true
         match.noDNSPointer = true
+        match.isInitialized = true
         match.owner = null
         options.sort = {
             'updatedAt': -1
@@ -291,6 +306,9 @@ router.get('/addresses/checkout', auth, async (req, res) => {
             if (!network) {
                 return res.status(404).send({message:'Network Not Found'})
             }
+            if (network.loadingAddress || network.loadingExclusion) {
+                return res.status(404).send({message:'Loading Addresses'})
+            }
             match.author = network._id
         }
         // query by author
@@ -300,6 +318,9 @@ router.get('/addresses/checkout', auth, async (req, res) => {
             })
             if (!network) {
                 return res.status(404).send({message:'Author Not Found'})
+            }
+            if (network.loadingAddress || network.loadingExclusion) {
+                return res.status(404).send({message:'Loading Addresses'})
             }
             match.author = network._id
         }
