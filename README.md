@@ -1,8 +1,9 @@
-[!N|Solid](GET-IP.png)
+[![N|Solid](GET-IP.png)](GET-IP.png)
 
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
 
-GET-IP is a ip version 4 address management tool, docker-ready, persistance database by Mongodb, Nodejs powered api and worker services.
+Is a network address management service.
+Powered by Nodejs and Mongodb.
 
   - Type some Markdown on the left
   - See HTML in the right
