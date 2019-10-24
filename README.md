@@ -155,6 +155,10 @@ Edit environment variable:
 ```sh
 url localhost:3000
 ```
+#### User
+
+[![N|Solid](GET-IP.png)](API-USER.png)
+
 
 Create user:
 ```sh
@@ -213,7 +217,8 @@ GET {{url}}/addresses/checkout?author={{networkId}}&fqdn=www.gotobed.io&port=888
 MIT
 
 # Author
-**Want to contribute? Great! See repo [git-repo-url] from [Maurizio Lupini][mo]    -Author, Working at [...][linkIn]**
+**Want to contribute? Great! See repo [git-repo-url] from [Maurizio Lupini][mo]    -Author, Working at [.[![N|Solid](GET-IP.png)](GET-IP.png)
+..][linkIn]**
 
 
    [mo]: <https://github.com/molupini>
