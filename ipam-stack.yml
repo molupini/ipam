@@ -16,11 +16,11 @@ services:
         networks:
           - ipam-network
         environment:
-          MONGODB_USER: 'dbadmin'
-          MONGODB_PASS_FILE: 'CoffeeTea123'
-          MONGODB_URL: "mongodb://ipam-mongo:27017/ipam?authSource=admin"
-          JSON_WEB_TOKEN_SECRET: "TheresNothingYouCanDoThatCantBeDone"
-          SEND_GRID_API_KEY: ''
+          MONGODB_USER: 'ipamuser'
+          MONGODB_PASS_FILE: '?'
+          MONGODB_URL: 'mongodb://ipam-mongo:27017/ipam?authSource=admin'
+          JSON_WEB_TOKEN_SECRET: 'PlayOfWords'
+          SEND_GRID_API_KEY: '?'
         deploy:
           replicas: 1
           update_config:
@@ -41,7 +41,7 @@ services:
         - /var/run/docker.sock:/var/run/docker.sock
         - ./ipam-mongodb:/data/db
       environment:
-        MONGO_INITDB_ROOT_USERNAME: 'dbadmin'
+        MONGO_INITDB_ROOT_USERNAME: 'ipamuser'
         MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongodb-password
         MONGO_INITDB_DATABASE: 'ipam'
       deploy:
@@ -64,7 +64,7 @@ services:
       networks:
         - ipam-network
       environment:
-        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
+        JWT_SCANNER: '?'
         EXPRESS_URL: 'http://ipam-express:3000'
         NETWORK_ADDRESS: 'all'
         NODE_ENV: 'development'
@@ -76,7 +76,7 @@ services:
         restart_policy:
           condition: on-failure
 
-    ipam-scanner-stm:
+    ipam-scanner-specific:
       image: mauriziolupini/ipam-scanner:prod
       logging:
         driver: "json-file"
@@ -86,9 +86,9 @@ services:
       networks:
         - ipam-network
       environment:
-        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
+        JWT_SCANNER: '?'
         EXPRESS_URL: 'http://ipam-express:3000'
-        NETWORK_ADDRESS: '10.7.0.0'
+        NETWORK_ADDRESS: '10.0.0.0'
         NODE_ENV: 'development'
       deploy:
         replicas: 1
@@ -97,245 +97,6 @@ services:
           delay: 10s
         restart_policy:
           condition: on-failure
-
-    ipam-scanner-prd:
-      image: mauriziolupini/ipam-scanner:prod
-      logging:
-        driver: "json-file"
-        options:
-          max-size: "5m"
-          max-file: "3"
-      networks:
-        - ipam-networkversion: "3.7"
-
-services:
-
-    ipam-express:
-        image: mauriziolupini/ipam-express:prod
-        logging:
-          driver: "json-file"
-          options:
-            max-size: "5m"
-            max-file: "3"
-        secrets:
-          - mongodb-password
-        ports:
-          - "3000:3000"
-        networks:
-          - ipam-network
-        environment:
-          MONGODB_USER: 'dbadmin'
-          MONGODB_PASS_FILE: 'CoffeeTea123'
-          MONGODB_URL: "mongodb://ipam-mongo:27017/ipam?authSource=admin"
-          JSON_WEB_TOKEN_SECRET: "TheresNothingYouCanDoThatCantBeDone"
-          SEND_GRID_API_KEY: ''
-        deploy:
-          replicas: 1
-          update_config:
-            parallelism: 2
-            delay: 10s
-          restart_policy:
-            condition: on-failure
-
-    ipam-mongo:
-      image: mauriziolupini/ipam-mongo:prod
-      secrets:
-        - mongodb-password
-      ports:
-        - 37017:27017
-      networks:
-        - ipam-network
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-        - ./ipam-mongodb:/data/db
-      environment:
-        MONGO_INITDB_ROOT_USERNAME: 'dbadmin'
-        MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongodb-password
-        MONGO_INITDB_DATABASE: 'ipam'
-      deploy:
-        replicas: 1
-        update_config:
-          parallelism: 2
-          delay: 10s
-        restart_policy:
-          condition: on-failure
-        placement:
-          constraints: [node.role == Manager]
-
-    ipam-scanner-all:
-      image: mauriziolupini/ipam-scanner:prod
-      logging:
-        driver: "json-file"
-        options:
-          max-size: "5m"
-          max-file: "3"
-      networks:
-        - ipam-network
-      environment:
-        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
-        EXPRESS_URL: 'http://ipam-express:3000'
-        NETWORK_ADDRESS: 'all'
-        NODE_ENV: 'development'
-      deploy:
-        replicas: 1
-        update_config:
-          parallelism: 2
-          delay: 10s
-        restart_policy:
-          condition: on-failure
-
-    ipam-scanner-stm:
-      image: mauriziolupini/ipam-scanner:prod
-      logging:
-        driver: "json-file"
-        options:
-          max-size: "5m"
-          max-file: "3"
-      networks:
-        - ipam-network
-      environment:
-        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
-        EXPRESS_URL: 'http://ipam-express:3000'
-        NETWORK_ADDRESS: '10.7.0.0'
-        NODE_ENV: 'development'
-      deploy:
-        replicas: 1
-        update_config:
-          parallelism: 2
-          delay: 10s
-        restart_policy:
-          condition: on-failure
-
-    ipam-scanner-prd:
-      image: mauriziolupini/ipam-scanner:prod
-      logging:
-        driver: "json-file"
-        options:
-          max-size: "5m"
-          max-file: "3"
-      networks:
-        - ipam-network
-      environment:
-        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
-        EXPRESS_URL: 'http://ipam-express:3000'
-        NETWORK_ADDRESS: '10.83.0.0'
-        NODE_ENV: 'development'
-      deploy:
-        replicas: 1
-        update_config:
-          parallelism: 2
-          delay: 10s
-        restart_policy:
-          condition: on-failure
-
-    ipam-scanner-nprd:
-      image: mauriziolupini/ipam-scanner:prod
-      logging:
-        driver: "json-file"
-        options:
-          max-size: "5m"
-          max-file: "3"
-      networks:
-        - ipam-network
-      environment:
-        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
-        EXPRESS_URL: 'http://ipam-express:3000'
-        NETWORK_ADDRESS: '10.84.0.0'
-        NODE_ENV: 'development'
-      deploy:
-        replicas: 1
-        update_config:
-          parallelism: 2
-          delay: 10s
-        restart_policy:
-          condition: on-failure
-
-    ipam-scanner-poc:
-      image: mauriziolupini/ipam-scanner:prod
-      logging:
-        driver: "json-file"
-        options:
-          max-size: "5m"
-          max-file: "3"
-      networks:
-        - ipam-network
-      environment:
-        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
-        EXPRESS_URL: 'http://ipam-express:3000'
-        NETWORK_ADDRESS: '10.86.16.0'
-        NODE_ENV: 'development'
-      deploy:
-        replicas: 1
-        update_config:
-          parallelism: 2
-          delay: 10s
-        restart_policy:
-          condition: on-failure
-
-networks:
-  ipam-network:
-    driver: overlay
-
-secrets:
-  mongodb-password:
-    external: true
-
-      environment:
-        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
-        EXPRESS_URL: 'http://ipam-express:3000'
-        NETWORK_ADDRESS: '10.83.0.0'
-        NODE_ENV: 'development'
-      deploy:
-        replicas: 1
-        update_config:
-          parallelism: 2
-          delay: 10s
-        restart_policy:
-          condition: on-failure
-
-    ipam-scanner-nprd:
-      image: mauriziolupini/ipam-scanner:prod
-      logging:
-        driver: "json-file"
-        options:
-          max-size: "5m"
-          max-file: "3"
-      networks:
-        - ipam-network
-      environment:
-        JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
-        EXPRESS_URL: 'http://ipam-express:3000'
-        NETWORK_ADDRESS: '10.84.0.0'
-        NODE_ENV: 'development'
-      deploy:
-        replicas: 1
-        update_config:
-          parallelism: 2
-          delay: 10s
-        restart_policy:
-          condition: on-failure
-
-    # ipam-scanner-poc:
-    #   image: mauriziolupini/ipam-scanner:prod
-    #   logging:
-    #     driver: "json-file"
-    #     options:
-    #       max-size: "5m"
-    #       max-file: "3"
-    #   networks:
-    #     - ipam-network
-    #   environment:
-    #     JWT_SCANNER: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZDVmYTA4NGE4YzMzYTAwMDY4ZjEwZDAiLCJpYXQiOjE1Njc0Mjc1MTQsImV4cCI6MTU5ODE4NTkxNH0.cOuqLMxHVHwj_ON8fAh7svfv1GCYAmoGcpTHH99A6Fs'
-    #     EXPRESS_URL: 'http://ipam-express:3000'
-    #     NETWORK_ADDRESS: '10.86.16.0'
-    #     NODE_ENV: 'development'
-    #   deploy:
-    #     replicas: 1
-    #     update_config:
-    #       parallelism: 2
-    #       delay: 10s
-    #     restart_policy:
-    #       condition: on-failure
 
 networks:
   ipam-network:
