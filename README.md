@@ -8,7 +8,7 @@ GET-IP is a ip version 4 address management tool, docker-ready, persistance data
   - See HTML in the right
   - Magic
 
-# Features
+# Features!
 
   - Import a HTML file and watch it magically convert to Markdown
   - Drag and drop images (requires your Dropbox account be linked)
