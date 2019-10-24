@@ -1,4 +1,4 @@
-[![N|Solid](GET-IP.png)
+(GET-IP.png)
 
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
 
