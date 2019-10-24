@@ -82,7 +82,13 @@ JWT_SCANNER=
 
 
 ### Deploy
-Easily in a Docker container.
+
+Easily done in a Docker container.
+
+#### Services
+
+[![N|Solid](SERVICES.png)](SERVICES.png)
+
 Make required changes within Dockerfile + compose files if necessary. When ready, simply use docker-compose to build your environment.
 This will create the ipam-express, ipam-mongo and ipam-scanner services with necessary dependencies.
 Once done, simply import postman.json into Postman:
@@ -155,10 +161,10 @@ Edit environment variable:
 ```sh
 url localhost:3000
 ```
+
 #### Create User Process
 
 [![N|Solid](API-USER.png)](API-USER.png)
-
 
 Create user:
 ```sh
@@ -178,6 +184,10 @@ Confirm user:
 ```sh
 GET {{url}}/users/{{userId}}/confirm
 ```
+
+#### Create Network Process
+
+[![N|Solid](API-NETWORK.png)](API-NETWORK.png)
 
 Create network:
 ```sh
@@ -205,6 +215,10 @@ Confirm network:
 GET {{url}}/networks/{{networkId}}/confirm
 ```
 
+#### Get Address Process
+
+[![N|Solid](API-ADDRESS.png)](API-ADDRESS.png)
+
 Check-out Address:
 *be sure to seed JWT into scanner before you continue*
 
@@ -217,8 +231,7 @@ GET {{url}}/addresses/checkout?author={{networkId}}&fqdn=www.gotobed.io&port=888
 MIT
 
 # Author
-**Want to contribute? Great! See repo [git-repo-url] from [Maurizio Lupini][mo]    -Author, Working at [.[![N|Solid](GET-IP.png)](GET-IP.png)
-..][linkIn]**
+**Want to contribute? Great! See repo [git-repo-url] from [Maurizio Lupini][mo]    -Author, Working at [...][linkIn]**
 
 
    [mo]: <https://github.com/molupini>
