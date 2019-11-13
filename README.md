@@ -1,6 +1,4 @@
-[![N|Solid](GET-IP.png)](GET-IP.png)
-
-[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/)
+# Get-Ip
 
 Is a network address management service.
 Powered by Nodejs and Mongodb.
@@ -102,7 +100,7 @@ Verify the deployment by navigating to your server address in your preferred bro
 
 
 ```sh
-$ curl http://localhost:3000/healhv
+$ curl http://localhost:3000/healthv
 ```
 
 For prod, generate docker builds:
