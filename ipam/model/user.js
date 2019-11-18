@@ -90,6 +90,10 @@ const userSchema = new mongoose.Schema({
             }
          }
     },
+    expireInHours: {
+        type: Number, 
+        default: 0, 
+    },
     maxAmount: {
         type: Number, 
         default: 5, 
@@ -157,6 +161,7 @@ userSchema.methods.toJSON = function () {
         delete thisObject.minTTL
         delete thisObject.maxTTL
         delete thisObject.maxAmount
+        delete thisObject.expireInHours
         delete thisObject.tokens
         delete thisObject.loginFailure
         delete thisObject.userAdmin
@@ -169,7 +174,8 @@ userSchema.methods.toJSON = function () {
             delete thisObject.userNoc
             delete thisObject.userRoot
         }
-        delete thisObject.tokens
+        // temporary for troubleshooting
+        // delete thisObject.tokens
         delete thisObject.password
     }
   
@@ -194,9 +200,11 @@ userSchema.methods.generateAuthToken = async function (days) {
         days = extension
     }
     // jwt module use secret to generate a jwt and add to array
+    // trouble shooting, toggle between days, hours, minutes verify jwt status
+    // default set expiresIn days 
     const token = await jwt.sign({
         _id: user._id.toString()
-    }, process.env.JSON_WEB_TOKEN_SECRET, { expiresIn: `${parseInt(days)} days` }) // days
+    }, process.env.JSON_WEB_TOKEN_SECRET, { expiresIn: `${parseInt(days)} days` }) // days, hours, minutes. default days
     // add to tokens array
     user.tokens = user.tokens.concat({
         token

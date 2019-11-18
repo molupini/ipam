@@ -19,8 +19,19 @@ const auth = async (req, res, next) => {
 
         // VERIFY JWT
         // replace Bearer string with '' string and verify token within header against JWT secret and decode _id within data play-load
+        // debugging
+        // console.log('req.header =')
+        // console.log(req.headers)
+
         const token = req.header('Authorization').replace('Bearer ', '')
+
+        // if expired with throw error, see jwt.sign() in user model
         const decoded = jwt.verify(token, process.env.JSON_WEB_TOKEN_SECRET)
+        // debugging
+        // console.log('decoded =')
+        // console.log(decoded)
+
+        // see moment module
         const dateNow = moment()
         const dateExp = moment(decoded.exp*1000)
         // const dateExp = new Date(decoded.exp*1000)
@@ -28,6 +39,7 @@ const auth = async (req, res, next) => {
         // FIND USER BASED ON ID
         // find id with token provided 
         const user = await User.findOne({ _id: decoded._id, 'tokens.token': token })
+
         // bearer user not found
         if (!user) {
             throw new Error()
@@ -39,8 +51,14 @@ const auth = async (req, res, next) => {
                 user.userNoc = true
                 await user.save()
             }
-
+        } else {
+            // used to show the amount of time remaining in the currently used token
+            user.expireInHours = dateExp.diff(dateNow, 'hours')
         }
+
+        // debugging, toggle between days, hours, minutes see jwt.sign() in user model
+        // console.log('dateExp.diff, hours = ')
+        // console.log(dateExp.diff(dateNow, 'hours'))
 
         // ADDRESSES PATH
         // addresses path access control, only allow userAdmin access 
@@ -113,6 +131,10 @@ const auth = async (req, res, next) => {
         req.user = user
         next()
     } catch (e) {
+        logger.log('error', `${moment()} auth connection ${e.message}`)
+        if (e.message){
+            return res.status(401).send({message:`Auth, ${e.message}`})
+        }
         res.status(401).send({message:'Please authenticate'})
     }
 }
