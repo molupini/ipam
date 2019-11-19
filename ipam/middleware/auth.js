@@ -27,10 +27,6 @@ const auth = async (req, res, next) => {
 
         // if expired with throw error, see jwt.sign() in user model
         const decoded = jwt.verify(token, process.env.JSON_WEB_TOKEN_SECRET)
-        // debugging
-        // console.log('decoded =')
-        // console.log(decoded)
-
         // see moment module
         const dateNow = moment()
         const dateExp = moment(decoded.exp*1000)
