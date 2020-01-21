@@ -5,4 +5,5 @@ sandbox/
 npm-debug.log
 /mongo/seed/
 *.env
+package-lock.*
 TODO
