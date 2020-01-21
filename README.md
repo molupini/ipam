@@ -228,12 +228,12 @@ MIT
   - SCANNER, EVALUATE WITH NMAP
 
 # Author
-**Want to contribute? Great! See repo [git-repo-url] from [Maurizio Lupini][mo]    -Author, Working at [...][linkIn]**
+**Want to contribute? Great! See Repo [Repo] from [Maurizio Lupini][mo]    -Author, Working at [...][linkIn]**
 
 
    [mo]: <https://github.com/molupini>
    [linkIn]: <https://za.linkedin.com/in/mauriziolupini>
-   [git-repo-url]: <https://gitlab.com/bcx-sanlam-group/ipam.git>
+   [Repo]: <https://github.com/molupini/ipam>
    [node.js]: <http://nodejs.org>
    [express]: <http://expressjs.com>
    [mongodb]: <https://www.mongodb.com/>
