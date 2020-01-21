@@ -1,6 +1,5 @@
 // source code from scanner/src/util/check.js
 const ping = require('ping')
-const logger = require('../util/log')
 
 var doPingCheck = async function (ip) {
     try {

@@ -3,7 +3,6 @@
 // Basic CRUD operation 
 const express = require('express')
 const User = require('../model/user')
-const Messenger = require('../model/messenger')
 const auth = require('../middleware/auth')
 const router = new express.Router()
 const valid = require('../src/util/compare')
@@ -146,10 +145,6 @@ router.get('/users/my/networks', auth, async(req, res) => {
         const user = await User.findById(req.user.id)
         // create a virtual between local _id and author
         await user.populate({path:'network', options}).execPopulate()
-        // TODO NEED TO EVAL PERFORMANCE
-        // user.network.forEach(network => {
-        //     network.updateNumHosts(network._id)
-        // })
         res.status(200).send(user.network)
     } catch (e) {
         res.status(500).send({error: e.message})

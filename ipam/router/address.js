@@ -6,7 +6,6 @@ const Address = require('../model/address')
 const Network = require('../model/network')
 const { FalsePositive } = require('../src/util/counter')
 const { doPingCheck } = require('../src/util/check')
-const { logger } = require('../src/util/log')
 const valid = require('../src/util/compare')
 
 // CRUD
@@ -67,7 +66,6 @@ router.get('/addresses', auth, async (req, res) => {
 })
 
 // used by scanner 
-// TODO VERIFY COMMENTED OUT gatewayAvailable AS FOR INIT ISN'T VALID AS THE ADDRESS STILL WILL NEED TO BE SCANNED  
 router.get('/addresses/init', auth, async (req, res) => {
     try {
         const options = {}

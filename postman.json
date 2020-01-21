@@ -41,7 +41,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"emailAddress\":\"maurizio.lupini@bcx.co.za\",\n\t\"userName\":\"mauriziolupini\",\n\t\"password\":\"....\",\n\t\"mobilePhone\":\"+27659991060\"\n}"
+							"raw": "{\n\t\"emailAddress\":\"molupini.dev@gmail.com\",\n\t\"userName\":\"mauriziolupini\",\n\t\"password\":\"....\",\n\t\"mobilePhone\":\"+27659991060\"\n}"
 						},
 						"url": {
 							"raw": "{{url}}/users/create",
@@ -142,7 +142,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"emailAddress\": \"maurizio.lupini@bcx.co.za\",\n    \"password\": \"....\"\n}"
+							"raw": "{\n    \"emailAddress\": \"molupini.dev@gmail.com\",\n    \"password\": \"....\"\n}"
 						},
 						"url": {
 							"raw": "{{url}}/users/login",

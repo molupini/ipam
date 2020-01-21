@@ -122,10 +122,6 @@ messengerSchema.methods.toJSON = function(){
     return this.toObject()
 }
 
-// scheduleSchema.pre('save', async function (next) {
-//     next()    
-// })
-
 const Messenger = mongoose.model('Messenger', messengerSchema)
 
 module.exports = Messenger

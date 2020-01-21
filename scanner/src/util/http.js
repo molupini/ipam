@@ -1,6 +1,4 @@
 const got = require('got')
-const { logger } = require('../util/log')
-const moment = require('moment')
 
 
 // httpFetch function

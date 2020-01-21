@@ -147,9 +147,11 @@ See [KUBERNETES.md] coming soon.
 
 # Future Release
 
-  - Integrated DHCP, DNS
-  - IP address alerting
-  - IP Request Form
+  - DHCP, DNS FUNCTIONALITY 
+  - IP ADDRESS ALERTING
+  - UI / REQUEST FORM
+  - SCANNER, ARP LOOKUP
+  - SCANNER, EVALUATE WITH NMAP
 
 
 # Operating

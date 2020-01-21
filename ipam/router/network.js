@@ -63,14 +63,6 @@ router.get('/networks', auth, async (req, res) => {
         if (!network) {
             return res.status(404).send({message:'Not Found'})
         }
-        // TODO TESTING 
-        // count free and total addresses within network
-        // if (req.query.count) {
-        //     for (i = 0; i < network.length; i++){
-        //         const num = await Network.updateNumHosts(network[i]._id, req.query.count)
-        //         network[i].numHosts = num
-        //     }
-        // }
         res.status(200).send(network)
     } catch (e) {
         res.status(500).send({error: e.message})

@@ -81,7 +81,7 @@ const scheduleSchema = new mongoose.Schema({
             }
          }
     }
-    // useful document type, review for future use for cron style patterns 
+    // review for future use for cron style patterns 
     // ,
     // cronSchedule: {
     //     type: String, 

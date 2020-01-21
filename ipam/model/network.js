@@ -200,9 +200,6 @@ networkSchema.pre('save', async function (next) {
         })
 
         if(network.networkConfirmed === true){
-            // TODO PARAM CONFIGURATION BELOW WITHIN SCHEDULE CONFIG 
-            // REMOVE WHEN CHANGES FOUND IN CIDR EXCLUSIONS IF MOMENT LONGER THEN FEW HOURS 
-            // RESULT IN RE-LOADING OF ADDRESSES 
             const dateNow = moment()
             const dateExp = moment(network.createdAt)
             const drift = dateExp.diff(dateNow, 'hours')
@@ -259,38 +256,13 @@ networkSchema.post('save', async function (doc, next) {
             seedIpAddresses(network, true)
         }
 
-        // TODO network.isModified('networkConfirmed') isn't taking effect
-        // console.log('networkConfirmed =')
-        // console.log(network.isModified('networkConfirmed'))
         if (network.loadingExclusion === true && network.networkConfirmed === true) {
-            // TODO PERFORMANCE CONSIDERATION RATHER PERFORM INSERT WITH CIDR UPDATES OF ALL ADDRESSES
-            // THEN WITHIN IP SCOPE FUNCTION DELETE DOCUMENTS THAT MEET CIDR REGEX 
             scopeExclusionCheck(network)
-            const update = await Network.findByIdAndUpdate({
+            await Network.findByIdAndUpdate({
                 _id: network.id
             }, {
                 loadingExclusion: false
             })
-            // for (i = 0; i < addresses.length; i++) {
-            //     const ip = addresses[i].ip
-            //     if (ip === network.networkAddress || ip === network.firstAddress || ip === network.lastAddress || ip === network.broadcastAddress || ip === network.defaultGateway) {
-            //         continue
-            //     }
-            //     else {
-            //         // match found and skipped
-            //         const address = await Address.findOne({
-            //             address: ip
-            //         })
-            //         if(!address){
-            //             const address = await new Address({
-            //                 address: ip,
-            //                 author: network._id,
-            //                 cloudHosted: network.cloudHosted
-            //             })
-            //             await address.save()
-            //         }
-            //     }
-            // }
         }
         next()
     } 

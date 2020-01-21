@@ -154,28 +154,17 @@ userSchema.methods.toJSON = function () {
     const thisObject = this.toObject()
     if (!thisObject.userAdmin){
         delete thisObject.n
-        // delete thisObject.userConfirmed
         delete thisObject.userNoc
         delete thisObject.password
         delete thisObject.authProvider
-        // delete thisObject.minTTL
-        // delete thisObject.maxTTL
-        // delete thisObject.maxAmount
-        // delete thisObject.expireInHours
-        // delete thisObject.tokens
-        // delete thisObject.loginFailure
-        // delete thisObject.userAdmin
         delete thisObject.userRoot
-        // delete thisObject.createdAt
-        // delete thisObject.updatedAt
         delete thisObject.__v
     } else if (thisObject.userAdmin){
         if(!thisObject.userAdmin){
             delete thisObject.userNoc
             delete thisObject.userRoot
         }
-        // temporary for troubleshooting
-        // delete thisObject.tokens
+        delete thisObject.tokens
         delete thisObject.password
     }
   

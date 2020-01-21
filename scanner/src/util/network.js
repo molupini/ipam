@@ -1,8 +1,6 @@
 const tcp = require('tcp-port-used')
 const ping = require('ping') 
 const { Resolver } = require('dns').promises
-const moment = require('moment')
-const { logger } = require('../util/log')
 
 
 var doTcpCheck = async function (ip, port) {

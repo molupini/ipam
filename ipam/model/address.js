@@ -91,9 +91,6 @@ addressSchema.virtual('network', {
 // toJSON
 addressSchema.methods.toJSON = function () {
     const address = this.toObject()
-    // delete address.falseCount
-    // delete address.trueCount
-    // delete address.count
     return address
 }
 

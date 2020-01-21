@@ -77,6 +77,7 @@ cidrSchema.pre('save', async function (next) {
             if (correct) {
                 reg = reg.replace(/\\.$/, ')$')
             }
+            // debugging
             // console.log('reg =')
             // console.log(reg)
             // const re = new RegExp(reg)

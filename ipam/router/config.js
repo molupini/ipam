@@ -1,7 +1,6 @@
 const express = require('express')
 const router = new express.Router()
 const auth = require('../middleware/auth')
-// const Port = require('../model/port')
 const Address = require('../model/address')
 const Schedule = require('../model/schedule')
 const Messenger = require('../model/messenger')
