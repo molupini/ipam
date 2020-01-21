@@ -29,7 +29,6 @@ get-ip uses a number of open source projects to work properly:
 
 # Installation
 
-
 #### Install
 
 get-ip requires [Node.js](https://nodejs.org/) v7+ to run.
@@ -79,7 +78,7 @@ JWT_SCANNER=
 ```
 
 
-### Deploy
+#### Deploy
 
 Easily done in a Docker container.
 
@@ -143,16 +142,6 @@ docker stack deploy -c ipam.yml IPAM
 #### Kubernetes + Google Cloud
 
 See [KUBERNETES.md] coming soon.
-
-
-# Future Release
-
-  - DHCP, DNS FUNCTIONALITY 
-  - IP ADDRESS ALERTING
-  - UI / REQUEST FORM
-  - SCANNER, ARP LOOKUP
-  - SCANNER, EVALUATE WITH NMAP
-
 
 # Operating
 Simple API operating instructions. Using [postman], a collaboration platform for API development. Import postman.json. 
@@ -229,6 +218,14 @@ GET {{url}}/addresses/checkout?author={{networkId}}&fqdn=www.gotobed.io&port=888
 # License
 
 MIT
+
+# Future Release
+
+  - DHCP, DNS FUNCTIONALITY 
+  - IP ADDRESS ALERTING
+  - UI / REQUEST FORM
+  - SCANNER, ARP LOOKUP
+  - SCANNER, EVALUATE WITH NMAP
 
 # Author
 **Want to contribute? Great! See repo [git-repo-url] from [Maurizio Lupini][mo]    -Author, Working at [...][linkIn]**
