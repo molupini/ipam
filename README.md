@@ -44,7 +44,7 @@ $ git init
 ```
 Third:
 ```sh
-$ git clone git@gitlab.com:bcx-sanlam-group/ipam.git
+$ git clone git@github.com:molupini/ipam.git
 ```
 
 
