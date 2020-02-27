@@ -15,6 +15,12 @@ const options = {
     bufferMaxEntries: 0
 }
 
+// debugging
+// console.log('db object=')
+// console.log(options)
+// console.log('db url=')
+// console.log(process.env.MONGODB_URL)
+
 const mongooseConnection = () => {
     mongoose.connect(process.env.MONGODB_URL, options).then((result) => {
         logger.log('info', `${moment()} mongoose connected`)

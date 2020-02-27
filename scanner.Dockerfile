@@ -1,5 +1,5 @@
 # # base
-FROM node:12-alpine as base 
+FROM node:13-alpine as base 
 
 ARG CREATED_DATE=not-set
 ARG SOURCE_COMMIT=not-set
@@ -20,9 +20,9 @@ RUN apk add --no-cache tini
 
 WORKDIR /node
 
-COPY ./scanner/package.json ./scanner/package*.json ./
+COPY ./scanner/package.json ./
 
-RUN npm config list && npm ci && npm cache clean --force 
+RUN npm install && npm cache clean --force 
 
 ENTRYPOINT [ "/sbin/tini", "--" ]
 

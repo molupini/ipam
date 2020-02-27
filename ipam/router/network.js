@@ -50,6 +50,7 @@ router.get('/networks/:id/confirm', auth, async (req, res) => {
 // get, all 
 router.get('/networks', auth, async (req, res) => {
     try {
+        var result = true
         var options = {}
         if (req.query.limit) { 
             options.limit = parseInt(req.query.limit)
@@ -59,11 +60,19 @@ router.get('/networks', auth, async (req, res) => {
         if (req.query.skip) {
             options.skip = parseInt(req.query.skip)
         }
-        const network = await Network.find({}, null, options)
-        if (!network) {
+        if (req.query.network){
+            result = await Network.findOne({
+                networkAddress: req.query.network
+            })
+        }
+        else {
+            result = await Network.find({}, null, options)
+        }
+        
+        if (!result) {
             return res.status(404).send({message:'Not Found'})
         }
-        res.status(200).send(network)
+        res.status(200).send(result)
     } catch (e) {
         res.status(500).send({error: e.message})
     }

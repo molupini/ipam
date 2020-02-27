@@ -1,5 +1,5 @@
 # # base
-FROM node:12-alpine as base 
+FROM node:13-alpine as base 
 # MEMORY LEAK FAILURE, INVESTIGATING NEW IMAGE
 # FROM node:10-alpine as base 
 
@@ -27,9 +27,9 @@ RUN apk add --no-cache tini
 
 WORKDIR /node
 
-COPY ./ipam/package.json ./ipam/package*.json ./
+COPY ./ipam/package.json ./
 
-RUN npm config list && npm ci && npm cache clean --force 
+RUN npm install && npm cache clean --force 
 
 ENTRYPOINT [ "/sbin/tini", "--" ]
 
